@@ -1,0 +1,61 @@
+rild.libpath=/system/lib/libu300-ril.so
+rild.libargs=-c UNIX -n 2 -p /dev/socket/at_core -s /dev/socket/at_core -i rmnet
+
+# The OpenGL ES API level that is natively supported by this device.
+# This is a 16.16 fixed point number
+ro.opengles.version=131072
+
+# debug.sf.hw=0 Use b2r2 as compositor in SurfaceFlinger
+# debug.sf.hw=1 Use Mali as compositor in SurfaceFlinger
+debug.sf.hw=1
+
+# Android defaults EGL preserved swap behaviour
+# This gives bad performace for deferred renderers
+# such as Mali.
+hwui.render_dirty_regions=false
+
+# System props for SOLS
+ro.semc.sols.product-code=105
+ro.semc.sols.company-code=5
+
+# STE: Low power audio - enable ULP mode
+ste.nmf.autoidle=1
+
+# STE: Address of DBus STE bus
+ste.dbus.bus.address=unix:path=/dev/socket/dbus_ste
+
+# STE: UNSOL_CALL_RING is only sent once from RIL.
+# Android needs to generate more rings if needed.
+ro.telephony.call_ring.multiple=false
+
+# prop to indicate what kind of external memory the product have.
+ro.semc.product.user_storage=emmc_only
+ro.build.characteristics=nosdcard
+
+# NFC
+ro.nfc.on.default=false
+ro.nfc.se.sim.enable=true
+ro.nfc.se.smx.enable=false
+ro.nfc.icon.enable=true
+ro.nfc.vendor.name=nxp
+
+#STE: Hardware video codecs configuration
+ste.video.dec.mpeg4.in.size=8192
+ste.video.enc.out.buffercnt=5
+ste.video.dec.recycle.delay=1
+
+#STE: Fast Dormancy Flag
+# Fast Dormancy based on USB Tether Events and Screen States
+ste.special_fast_dormancy=false
+
+#Limitation on how much hwmem MM codecs should use
+ste.video.decoder.max.hwmem=0x3600000
+ste.video.decoder.max.res=1080p
+ste.video.decoder.h264.max.lev=4.2
+
+# System props for audio
+persist.audio.hp=true
+
+ro.sf.lcd_density=240
+ro.service.swiqi.supported=false
+persist.service.swiqi.enable=0
