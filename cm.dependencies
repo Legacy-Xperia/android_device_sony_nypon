@@ -6,10 +6,10 @@
   {
     "repository": "android_hardware_sony_DASH",
     "target_path": "hardware/somc/dash"
- },
- {
-   "repository": "sony-kernel-u8500,
-   "target_path": "kernel/sony/u8500",
-   "branch": "ics"
+  },
+  {
+    "repository": "sony-kernel-u8500",
+    "target_path": "kernel/sony/u8500",
+    "branch": "ics"
   }
 ]
