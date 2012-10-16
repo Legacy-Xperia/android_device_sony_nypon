@@ -217,3 +217,7 @@ etc/firmware/R1f.2_SoC1v20_BT_src_coeff_1.1.fw
 etc/firmware/cg2900_fm_fm_coeff_info.fw
 etc/firmware/sdd_22.bin
 etc/cspsa.conf
+framework/com.sonyericsson.privateapis_impl.jar
+app/HdmiService.apk
+etc/permissions/com.sonyericsson.privateapis.xml
+lib/libhdmiservicejni.so
