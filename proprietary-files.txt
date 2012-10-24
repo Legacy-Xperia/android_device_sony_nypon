@@ -114,6 +114,7 @@ lib/ste_omxcomponents/libste_dec_h264.so
 lib/ste_omxcomponents/libste_val_src_sink.so
 lib/ste_omxcomponents/libste_tonegen.so
 lib/ste_omxcomponents/libste_audio_mixer.so
+lib/libste_audio_mixer.so
 lib/ste_omxcomponents/libste_pcm_splitter.so
 lib/ste_omxcomponents/libste_dec_wmapro_v10.so
 lib/ste_omxcomponents/libste_exif_mixer.so
