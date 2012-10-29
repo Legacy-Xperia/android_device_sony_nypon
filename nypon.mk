@@ -77,6 +77,13 @@ PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/config/dash.conf:system/etc/dash.conf \
    $(LOCAL_PATH)/config/sysmon.cfg:system/etc/sysmon.cfg
 
+# NFC
+PRODUCT_PACKAGES += \
+    libnfc \
+    libnfc_jni \
+    Nfc \
+    Tag
+
 $(call inherit-product, frameworks/base/build/phone-hdpi-512-dalvik-heap.mk)
 
 $(call inherit-product-if-exists, vendor/sony/nypon/nypon-vendor.mk)
