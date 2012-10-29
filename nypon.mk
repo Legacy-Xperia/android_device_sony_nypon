@@ -40,7 +40,6 @@ PRODUCT_AAPT_PREF_CONFIG := hdpi
 PRODUCT_COPY_FILES += \
    device/sony/montblanc-common/prebuilt/logo.rle:root/logo.rle \
 
-
 # Configuration scripts
 PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/prebuilt/hw_config.sh:system/etc/hw_config.sh
@@ -77,16 +76,6 @@ PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/config/flashled_param_config.cfg:system/etc/flashled_param_config.cfg \
    $(LOCAL_PATH)/config/dash.conf:system/etc/dash.conf \
    $(LOCAL_PATH)/config/sysmon.cfg:system/etc/sysmon.cfg
-
-#Offline charging animation
-PRODUCT_COPY_FILES += \
-    device/sony/montblanc-common/prebuilt/animations/charging_animation_01.png:system/semc/chargemon/data/charging_animation_01.png \
-    device/sony/montblanc-common/prebuilt/animations/charging_animation_02.png:system/semc/chargemon/data/charging_animation_02.png \
-    device/sony/montblanc-common/prebuilt/animations/charging_animation_03.png:system/semc/chargemon/data/charging_animation_03.png \
-    device/sony/montblanc-common/prebuilt/animations/charging_animation_04.png:system/semc/chargemon/data/charging_animation_04.png \
-    device/sony/montblanc-common/prebuilt/animations/charging_animation_05.png:system/semc/chargemon/data/charging_animation_05.png \
-    device/sony/montblanc-common/prebuilt/animations/charging_animation_06.png:system/semc/chargemon/data/charging_animation_06.png \
-    device/sony/montblanc-common/prebuilt/animations/charging_animation_07.png:system/semc/chargemon/data/charging_animation_07.png
 
 $(call inherit-product, frameworks/base/build/phone-hdpi-512-dalvik-heap.mk)
 
