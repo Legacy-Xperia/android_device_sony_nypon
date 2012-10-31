@@ -172,8 +172,7 @@ lib/libste_ens_video_common.so
 lib/libste_dec_amrwb.so
 lib/libMiscTaAccessor.so
 lib/libste_ext_ens_image_common.so
-vendor/firmware/libpn544_fw_c2.so
-vendor/firmware/libpn544_fw_c3.so
+vendor/firmware/libpn544_fw.so
 vendor/camera/product.dat
 vendor/camera/flash.dat
 vendor/camera/APT00YP1.dat
