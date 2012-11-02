@@ -56,6 +56,5 @@ ste.video.decoder.h264.max.lev=4.2
 # System props for audio
 persist.audio.hp=true
 
-ro.sf.lcd_density=240
 ro.service.swiqi.supported=false
 persist.service.swiqi.enable=0
