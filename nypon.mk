@@ -74,8 +74,7 @@ PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/config/button_light_curve.cfg:system/etc/button_light_curve.cfg \
    $(LOCAL_PATH)/config/cflashlib.cfg:system/etc/cflashlib.cfg \
    $(LOCAL_PATH)/config/flashled_param_config.cfg:system/etc/flashled_param_config.cfg \
-   $(LOCAL_PATH)/config/dash.conf:system/etc/dash.conf \
-   $(LOCAL_PATH)/config/sysmon.cfg:system/etc/sysmon.cfg
+   $(LOCAL_PATH)/config/dash.conf:system/etc/dash.conf
 
 # NFC
 PRODUCT_PACKAGES += \
