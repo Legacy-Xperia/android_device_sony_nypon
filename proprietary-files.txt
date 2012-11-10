@@ -1,7 +1,4 @@
 app/HdmiService.apk
-usr/lib/alsa-lib/libasound_module_pcm_bluetooth.so
-usr/lib/alsa-lib/libasound_module_pcm_steiop.so
-usr/lib/alsa-lib/libasound_module_ctl_bluetooth.so
 lib/libmalpipe.so
 lib/libu300-parser.so
 lib/libmalsms.so
