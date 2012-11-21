@@ -6,6 +6,8 @@ USE_CAMERA_STUB := true
 #inherit from the common montblanc definitions
 -include device/sony/montblanc-common/BoardConfigCommon.mk
 
+TARGET_SPECIFIC_HEADER_PATH += device/sony/nypon/include
+
 TARGET_KERNEL_CONFIG := cyanogen_nypon_defconfig
 
 # Partition information
@@ -20,8 +22,6 @@ BOARD_USERDATA_PARTITION_SIZE := 2147483648
 BOARD_FLASH_BLOCK_SIZE := 131072
 BOARD_FORCE_KERNEL_ADDRESS  := 0x00008000
 BOARD_FORCE_RAMDISK_ADDRESS := 0x01000000
-
-COMMON_GLOBAL_CFLAGS += -DNO_BLINK
 
 BOARD_HAS_NO_SELECT_BUTTON := true
 TARGET_USERIMAGES_USE_EXT4 := true
