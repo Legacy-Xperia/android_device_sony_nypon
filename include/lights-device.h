@@ -32,5 +32,5 @@ char const*const BUTTON_BACKLIGHT_FILE[] = {
   "/sys/class/leds/so34-led2/brightness",
 };
 
-char const*const LCD_BACKLIGHT_FILE = "/sys/class/leds/lcd-backlight/brightness";
-
+char const*const ON = "timer";
+char const*const OFF = "none";
