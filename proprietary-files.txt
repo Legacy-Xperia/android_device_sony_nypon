@@ -197,7 +197,6 @@ bin/cspsa-server
 bin/pand
 bin/taimport
 bin/at_core
-bin/illumination_service
 bin/system_monitor
 bin/lbsstelp
 bin/admsrv
