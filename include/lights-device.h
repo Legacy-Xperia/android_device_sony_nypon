@@ -33,4 +33,4 @@ char const*const BUTTON_BACKLIGHT_FILE[] = {
 };
 
 char const*const ON = "timer";
-char const*const OFF = "none";
+char const*const OFF = "timer";
