@@ -194,7 +194,6 @@ bin/ta_reader
 bin/wait4tad
 bin/cspsa-cmd
 bin/cspsa-server
-bin/pand
 bin/taimport
 bin/at_core
 bin/system_monitor
