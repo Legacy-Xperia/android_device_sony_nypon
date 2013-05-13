@@ -10,6 +10,5 @@
   {
     "repository": "sony-kernel-u8500",
     "target_path": "kernel/sony/u8500",
-    "branch": "ics"
   }
 ]
