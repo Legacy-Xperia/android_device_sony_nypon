@@ -79,21 +79,26 @@ PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/config/flashled_param_config.cfg:system/etc/flashled_param_config.cfg \
    $(LOCAL_PATH)/config/dash.conf:system/etc/dash.conf
 
-# NFC
+# NFC Support
 PRODUCT_PACKAGES += \
     libnfc \
     libnfc_jni \
     Nfc \
-    Tag
+    Tag \
+    com.android.nfc_extras
+
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/com.android.nfc_extras.xml:system/etc/permissions/com.android.nfc_extras.xml
 
 # NFCEE access control
 ifeq ($(TARGET_BUILD_VARIANT),user)
-    NFCEE_ACCESS_PATH := device/sony/montblanc-common/config/nfcee_access.xml
+    NFCEE_ACCESS_PATH := $(COMMON_PATH)/config/nfcee_access.xml
 else
-    NFCEE_ACCESS_PATH := device/sony/montblanc-common/config/nfcee_access_debug.xml
+    NFCEE_ACCESS_PATH := $(COMMON_PATH)/config/nfcee_access_debug.xml
 endif
 PRODUCT_COPY_FILES += \
     $(NFCEE_ACCESS_PATH):system/etc/nfcee_access.xml
+
 
 $(call inherit-product, frameworks/native/build/phone-xhdpi-1024-dalvik-heap.mk)
 
