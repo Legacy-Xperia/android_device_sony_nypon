@@ -71,9 +71,6 @@ PRODUCT_COPY_FILES += \
 
 # Misc configuration files
 PRODUCT_COPY_FILES += \
-   $(LOCAL_PATH)/config/manuf_id.cfg:system/etc/AT/manuf_id.cfg \
-   $(LOCAL_PATH)/config/model_id.cfg:system/etc/AT/model_id.cfg \
-   $(LOCAL_PATH)/config/system_id.cfg:system/etc/AT/system_id.cfg \
    $(LOCAL_PATH)/config/button_light_curve.cfg:system/etc/button_light_curve.cfg \
    $(LOCAL_PATH)/config/cflashlib.cfg:system/etc/cflashlib.cfg \
    $(LOCAL_PATH)/config/flashled_param_config.cfg:system/etc/flashled_param_config.cfg \
