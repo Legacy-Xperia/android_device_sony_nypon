@@ -1,0 +1,15 @@
+on boot
+    # Permissions for Liblights.
+    chown system system /sys/class/leds/red/delay_on
+    chown system system /sys/class/leds/red/delay_off
+    chown system system /sys/class/leds/red/delay_trigger
+    chown system system /sys/class/leds/green/delay_on
+    chown system system /sys/class/leds/green/delay_off
+    chown system system /sys/class/leds/green/delay_trigger
+    chown system system /sys/class/leds/blue/delay_on
+    chown system system /sys/class/leds/blue/delay_off
+    chown system system /sys/class/leds/blue/delay_trigger
+
+    # Permissions for HDMI
+    chmod 666 /sys/devices/av8100_hdmi.3/disponoff
+    chmod 666 /sys/devices/av8100_hdmi.3/hdmisdtvswitch
