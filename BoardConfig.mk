@@ -10,6 +10,8 @@ TARGET_SPECIFIC_HEADER_PATH += device/sony/nypon/include
 
 TARGET_KERNEL_CONFIG := cm_montblanc_nypon_defconfig
 
+COMMON_GLOBAL_CFLAGS += -DSTE_HDMI
+
 # Partition information
 BOARD_VOLD_MAX_PARTITIONS := 16
 
