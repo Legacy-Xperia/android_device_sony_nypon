@@ -11,7 +11,7 @@ BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/sony/nypon/bluetooth
 
 TARGET_SPECIFIC_HEADER_PATH := device/sony/nypon/include
 
-TARGET_KERNEL_CONFIG := cm_montblanc_nypon_defconfig
+TARGET_KERNEL_CONFIG := riogrande_nypon_defconfig
 
 COMMON_GLOBAL_CFLAGS += -DSTE_HDMI
 
