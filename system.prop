@@ -20,6 +20,10 @@ hwui.render_dirty_regions=false
 # Enable ADB persistence
 persist.service.adb.enable=1
 
+# Disable red border
+persist.sys.strictmode.disable=1
+persist.sys.strictmode.visual=0
+
 # System props for SOLS
 ro.semc.sols.product-code=105
 ro.semc.sols.company-code=5
