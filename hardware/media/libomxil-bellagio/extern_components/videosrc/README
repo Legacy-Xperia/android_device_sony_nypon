@@ -1,0 +1,9 @@
+The OpenMAX Video Source component from ST.
+
+To compile the component execute:
+
+autoreconf -i -f
+./configure --prefix=$INSTALL_DIR_PATH
+make
+make install
+

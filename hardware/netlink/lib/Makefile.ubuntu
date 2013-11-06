@@ -1,0 +1,51 @@
+# Makefile for building libnl
+# Includes Android.mk in lib/
+#
+
+CC ?= gcc
+MAKE ?= make
+LDO ?= $(CC)
+
+CP ?= cp
+MV ?= mv
+SED ?= sed
+
+
+ifndef CFLAGS
+CFLAGS := -O2 -Wall -g -fPIC -D_GNU_SOURCE
+endif
+
+-include Android.mk
+
+INCLUDES += -I../include
+
+KLIB := /lib/modules/$(shell uname -r)
+KLIB_BUILD ?= $(KLIB)/build
+INCLUDES += -I$(KLIB_BUILD)/include
+
+LIBS += -lm
+LDFLAGS += -shared
+
+
+OBJS := $(LOCAL_SRC_FILES:%.c=%.o)
+
+
+$(LOCAL_MODULE).so: create-version-h $(OBJS)
+	$(LDO) $(LDFLAGS) -Wl,-soname,$(LOCAL_MODULE).so -o $(LOCAL_MODULE).so $(OBJS) $(LIBS)
+
+create-version-h:
+	@if ! test -f ../include/netlink/version.h ; then \
+		(cd .. && \
+		$(CP) -f include/netlink/version.h.in include/netlink/version.h && \
+		$(SED) s/@PACKAGE_STRING@/libnl\ 2.0/g include/netlink/version.h > include/netlink/version.h-new && \
+		$(MV) -f include/netlink/version.h-new include/netlink/version.h && \
+		$(SED) s/@PACKAGE_VERSION@/2.0/g include/netlink/version.h > include/netlink/version.h-new && \
+		$(MV) -f include/netlink/version.h-new include/netlink/version.h ) ; \
+	fi
+
+%.o: %.c
+	$(CC) $(INCLUDES) -MD -c -o $@ $(CFLAGS) $<
+
+clean:
+	rm -f *.o *.d fib_lookup/*.o fib_lookup/*.d genl/*.o genl/*.d netfilter/*.o netfilter/*.d route/*.o route/*.d
+
