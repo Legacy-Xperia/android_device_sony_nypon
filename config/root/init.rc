@@ -3,9 +3,10 @@
 # IMPORTANT: Do not create world writable files or directories.
 # This is a common source of Android security bugs.
 #
+
 import /init.environ.rc
 import /init.usb.rc
-import /init.st-ericsson.rc
+import /init.${ro.hardware}.rc
 import /init.trace.rc
 import /init.carrier.rc
 
@@ -36,7 +37,6 @@ sysclktz 0
 
 loglevel 3
 
-
 # Backward compatibility
     symlink /system/etc /etc
     symlink /sys/kernel/debug /d
@@ -62,7 +62,7 @@ loglevel 3
     write /sys/fs/cgroup/memory/sw/memory.move_charge_at_immigrate 1
     chown root system /sys/fs/cgroup/memory/sw/tasks
     chmod 0660 /sys/fs/cgroup/memory/sw/tasks
- 
+
     mkdir /system
     mkdir /data 0771 system system
     mkdir /cache 0771 system cache
@@ -70,7 +70,8 @@ loglevel 3
 
     # See storage config details at http://source.android.com/tech/storage/
     mkdir /mnt/shell 0700 shell shell
-    mkdir /storage 0050 root sdcard_r
+    mkdir /mnt/media_rw 0700 media_rw media_rw
+    mkdir /storage 0751 root sdcard_r
 
     # Directory for putting things only root should see.
     mkdir /mnt/secure 0700 root root
@@ -146,14 +147,6 @@ loglevel 3
 # This is needed by any process that uses socket tagging.
     chmod 0644 /dev/xt_qtaguid
 
-on fs
-# mount mtd partitions
-    # Mount /system rw first to give the filesystem a chance to save a checkpoint
-    mount yaffs2 mtd@system /system
-    mount yaffs2 mtd@system /system ro remount
-    mount yaffs2 mtd@userdata /data nosuid nodev
-    mount yaffs2 mtd@cache /cache nosuid nodev
-    
 # Create location for fs_mgr to store abbreviated output from filesystem
 # checker programs.
     mkdir /dev/fscklogs 0770 root system
@@ -202,10 +195,9 @@ on post-fs-data
     # We restorecon /data in case the userdata partition has been reset.
     restorecon /data
 
-
-# Avoid predictable entropy pool. Carry over entropy from previous boot.
+    # Avoid predictable entropy pool. Carry over entropy from previous boot.
     copy /data/system/entropy.dat /dev/urandom
- 
+
     # Create dump dir and collect dumps.
     # Do this before we mount cache so eventually we can use cache for
     # storing dumps on platforms which do not have a dedicated dump partition.
@@ -292,55 +284,6 @@ on post-fs-data
     import /init.cm.rc
 
 on boot
-    # interactive governor
-    chown system system /sys/devices/system/cpu/cpufreq/interactive/timer_rate
-    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/timer_rate
-    chown system system /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
-    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/min_sample_time
-    chown system system /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
-    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/hispeed_freq
-    chown system system /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
-    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/go_hispeed_load
-    chown system system /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
-    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay
-    chown system system /sys/devices/system/cpu/cpufreq/interactive/boost
-    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/boost
-    chown system system /sys/devices/system/cpu/cpufreq/interactive/boostpulse
-    chown system system /sys/devices/system/cpu/cpufreq/interactive/input_boost
-    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/input_boost
-    chown system system /sys/devices/system/cpu/cpufreq/interactive/boostpulse_duration
-    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/boostpulse_duration
-    chown system system /sys/devices/system/cpu/cpufreq/interactive/io_is_busy
-    chmod 0660 /sys/devices/system/cpu/cpufreq/interactive/io_is_busy
-
-    # ondemand governor
-    chown system system /sys/devices/system/cpu/cpufreq/ondemand/boostfreq
-    chmod 0660 /sys/devices/system/cpu/cpufreq/ondemand/boostfreq
-    chown system system /sys/devices/system/cpu/cpufreq/ondemand/boostpulse
-    chmod 0660 /sys/devices/system/cpu/cpufreq/ondemand/boostpulse
-    chown system system /sys/devices/system/cpu/cpufreq/ondemand/boosttime
-    chmod 0660 /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-    chown system system /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy
-    chmod 0660 /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy
-    chown system system /sys/devices/system/cpu/cpufreq/ondemand/down_differential
-    chmod 0660 /sys/devices/system/cpu/cpufreq/ondemand/down_differential
-    chown system system /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-    chmod 0660 /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-    chown system system /sys/devices/system/cpu/cpufreq/ondemand/powersave_bias
-    chmod 0660 /sys/devices/system/cpu/cpufreq/ondemand/powersave_bias
-    chown system system /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
-    chmod 0660 /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
-    chown system system /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
-    chmod 0660 /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
-
-    # Assume SMP uses shared cpufreq policy for all CPUs
-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-    chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-
 # basic network init
     ifup lo
     hostname localhost
@@ -424,9 +367,6 @@ on boot
     chown system system /sys/class/leds/red/brightness
     chown system system /sys/class/leds/green/brightness
     chown system system /sys/class/leds/blue/brightness
-    chown system system /sys/class/leds/red/device/grpfreq
-    chown system system /sys/class/leds/red/device/grppwm
-    chown system system /sys/class/leds/red/device/blink
     chown system system /sys/class/timed_output/vibrator/enable
     chown system system /sys/module/sco/parameters/disable_esco
     chown system system /sys/kernel/ipv4/tcp_wmem_min
@@ -441,31 +381,25 @@ on boot
     chown system system /sys/fs/selinux/load
     chown system system /sys/fs/selinux/enforce
 
-    # allow system to modify cpufreq control files
-    chown root system /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-    chown root system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-    chown root system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-    chmod 0664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-
-# Define TCP buffer sizes for various networks
-#   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
+ # Define TCP buffer sizes for various networks
+ #   ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
     setprop net.tcp.buffersize.default 4096,87380,704512,4096,16384,110208
     setprop net.tcp.buffersize.wifi    524288,1048576,2097152,262144,524288,1048576
-    setprop net.tcp.buffersize.lte     4096,87380,1220608,4096,16384,563200
-    setprop net.tcp.buffersize.umts    4096,87380,563200,4096,16384,110208
-    setprop net.tcp.buffersize.hspa    4096,87380,704512,4096,16384,110208
-    setprop net.tcp.buffersize.hsupa   4096,87380,704512,4096,16384,262144
-    setprop net.tcp.buffersize.hsdpa   4096,87380,704512,4096,16384,262144
-    setprop net.tcp.buffersize.hspap   4096,87380,1220608,4096,16384,393216
-    setprop net.tcp.buffersize.edge    4096,26280,35040,4096,16384,35040
-    setprop net.tcp.buffersize.gprs    4096,8760,11680,4096,8760,11680
-    setprop net.tcp.buffersize.evdo    4096,87380,563200,4096,16384,262144
+    setprop net.tcp.buffersize.lte     524288,1048576,2097152,262144,524288,1048576
+    setprop net.tcp.buffersize.umts    4094,87380,110208,4096,16384,110208
+    setprop net.tcp.buffersize.hspa    4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.hsupa   4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.hsdpa   4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.hspap   4094,87380,1220608,4096,16384,1220608
+    setprop net.tcp.buffersize.edge    4093,26280,35040,4096,16384,35040
+    setprop net.tcp.buffersize.gprs    4092,8760,11680,4096,8760,11680
+    setprop net.tcp.buffersize.evdo    4094,87380,262144,4096,16384,262144
     setprop net.tcp.buffersize.evdo_b  4096,87380,704512,4096,16384,262144
 
-# Set this property so surfaceflinger is not started by system_init
-    setprop system_init.startsurfaceflinger 0
+# Assign TCP buffer thresholds to be ceiling value of technology maximums
+# Increased technology maximums should be reflected here.
+    write /proc/sys/net/core/rmem_max  2097152
+    write /proc/sys/net/core/wmem_max  2097152
 
     class_start core
     class_start main
@@ -502,8 +436,7 @@ on property:sys.powerctl=*
 # system server cannot write to /proc/sys files, so proxy it through init
 on property:sys.sysctl.extra_free_kbytes=*
     write /proc/sys/vm/extra_free_kbytes ${sys.sysctl.extra_free_kbytes}
- 
- 
+
 ## Daemon processes to be run by init.
 ##
 service ueventd /sbin/ueventd
@@ -520,7 +453,7 @@ service healthd-charger /sbin/healthd -n
     class charger
     critical
     seclabel u:r:healthd:s0
- 
+
 on property:selinux.reload_policy=1
     restart ueventd
     restart installd
@@ -556,8 +489,8 @@ service servicemanager /system/bin/servicemanager
     user system
     group system
     critical
-    onrestart restart zygote
     onrestart restart healthd
+    onrestart restart zygote
     onrestart restart media
     onrestart restart surfaceflinger
     onrestart restart drm
@@ -605,7 +538,7 @@ service drm /system/bin/drmserver
 service media /system/bin/mediaserver
     class main
     user media
-    group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc qcom_diag mediadrm
+    group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc mediadrm
     ioprio rt 4
 
 service bootanim /system/bin/bootanimation
@@ -646,7 +579,6 @@ service keystore /system/bin/keystore /data/misc/keystore
     class main
     user keystore
     group keystore drmrpc
-    socket keystore stream 666
 
 service dumpstate /system/bin/dumpstate -s
     class main
