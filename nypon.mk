@@ -157,7 +157,8 @@ PRODUCT_COPY_FILES += \
     device/sony/nypon/config/root/init.rc:root/init.rc \
     device/sony/nypon/config/root/fstab.st-ericsson:root/fstab.st-ericsson \
     device/sony/nypon/config/root/init.st-ericsson.rc:root/init.st-ericsson.rc \
-    device/sony/nypon/config/root/ueventd.st-ericsson.rc:root/ueventd.st-ericsson.rc
+    device/sony/nypon/config/root/ueventd.st-ericsson.rc:root/ueventd.st-ericsson.rc \
+    device/sony/nypon/config/root/init.environ.rc:root/init.environ.rc
 
 # Recovery bootstrap script
 PRODUCT_COPY_FILES += \
@@ -171,7 +172,8 @@ PRODUCT_COPY_FILES += \
     device/sony/nypon/config/omxloaders:system/etc/omxloaders \
     device/sony/nypon/config/ril_config:system/etc/ril_config \
     device/sony/nypon/config/install_wlan:system/bin/install_wlan \
-    device/sony/nypon/config/ste_modem.sh:system/etc/ste_modem.sh
+    device/sony/nypon/config/ste_modem.sh:system/etc/ste_modem.sh \
+    device/sony/nypon/config/omxloaders:system/omxloaders
 
 # GPS
 PRODUCT_COPY_FILES += \
