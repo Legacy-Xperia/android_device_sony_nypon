@@ -169,7 +169,6 @@ PRODUCT_COPY_FILES += \
 
 # HW Configs
 PRODUCT_COPY_FILES += \
-    device/sony/nypon/config/omxloaders:system/etc/omxloaders \
     device/sony/nypon/config/ril_config:system/etc/ril_config \
     device/sony/nypon/config/install_wlan:system/bin/install_wlan \
     device/sony/nypon/config/ste_modem.sh:system/etc/ste_modem.sh \
