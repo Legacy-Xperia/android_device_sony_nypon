@@ -92,6 +92,9 @@ RECOVERY_FSTAB_VERSION := 2
 
 TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/devices/platform/musb-ux500.0/musb-hdrc/gadget/lun%d/file"
 
+#HDMI
+COMMON_GLOBAL_CFLAGS += -DSTE_HDMI
+ 
 # Kernel information
 TARGET_KERNEL_CONFIG := xperiap_defconfig
 TARGET_KERNEL_SOURCE := kernel/sony/u8500
