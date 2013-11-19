@@ -130,7 +130,7 @@ index 7f8cde6..bca366f 100644
  {
      friend class Flattenable<GraphicBuffer>;
 diff --git a/frameworks/native/include/ui/PixelFormat.h b/frameworks/native/include/ui/PixelFormat.h
-index 627cfb6..9af1ce6 100644
+index 19228c4..5734838 100644
 --- a/frameworks/native/include/ui/PixelFormat.h
 +++ b/frameworks/native/include/ui/PixelFormat.h
 @@ -63,6 +63,13 @@ enum {

@@ -2,7 +2,7 @@
 #       modified:   include/hardware/fb.h
 #       modified:   include/hardware/hwcomposer.h
 diff --git a/hardware/libhardware/include/hardware/audio_policy.h b/hardware/libhardware/include/hardware/audio_policy.h
-index bfaef3b..d5c6b08 100644
+index bfaef3b..69449be 100644
 --- a/hardware/libhardware/include/hardware/audio_policy.h
 +++ b/hardware/libhardware/include/hardware/audio_policy.h
 @@ -159,7 +159,12 @@ struct audio_policy {
@@ -18,7 +18,20 @@ index bfaef3b..d5c6b08 100644
  
      /* indicates to the audio policy manager that the input starts being used */
      int (*start_input)(struct audio_policy *pol, audio_io_handle_t input);
-@@ -317,10 +322,19 @@ struct audio_policy_service_ops {
+@@ -236,10 +241,12 @@ struct audio_policy {
+             uint32_t in_past_ms);
+ #ifndef ICS_AUDIO_BLOB
+ #ifndef MR1_AUDIO_BLOB
++#ifndef MR0_AUDIO_BLOB
+     bool (*is_stream_active_remotely)(const struct audio_policy *pol,
+             audio_stream_type_t stream,
+             uint32_t in_past_ms);
+ #endif
++#endif
+ 
+     bool (*is_source_active)(const struct audio_policy *pol,
+             audio_source_t source);
+@@ -317,10 +324,19 @@ struct audio_policy_service_ops {
                                      uint32_t *pSamplingRate,
                                      audio_format_t *pFormat,
                                      audio_channel_mask_t *pChannelMask,
@@ -38,7 +51,7 @@ index bfaef3b..d5c6b08 100644
  
      /* */
      /* misc control functions */
-@@ -413,7 +427,12 @@ struct audio_policy_service_ops {
+@@ -413,7 +429,12 @@ struct audio_policy_service_ops {
                                      audio_devices_t *pDevices,
                                      uint32_t *pSamplingRate,
                                      audio_format_t *pFormat,
