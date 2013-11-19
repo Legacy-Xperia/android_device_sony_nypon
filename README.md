@@ -5,8 +5,8 @@ Unoficial CM-11.0 for Sony Xperia P
 
 Getting Started :
 
-    mkdir cm-10.2
-    cd cm-10.2
+    mkdir cm-11.0
+    cd cm-11.0
     repo init -u git://github.com/Legacy-Xperia/manifest.git -b cm-11.0
     repo sync -j16
     
