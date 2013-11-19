@@ -242,10 +242,6 @@ PRODUCT_COPY_FILES += \
 # Barometar permissions
 PRODUCT_COPY_FILES += \
    frameworks/native/data/etc/android.hardware.sensor.barometer.xml:system/etc/permissions/android.hardware.sensor.barometer.xml
-
-# Bootanimation
-PRODUCT_COPY_FILES += \
-   $(LOCAL_PATH)/prebuilt/bootanimation.zip:system/media/bootanimation.zip
    
    
 # NFC Support
