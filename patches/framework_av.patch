@@ -1,8 +1,6 @@
 #       modified:   camera/CameraParameters.cpp
 #       modified:   include/camera/CameraParameters.h
-#       modified:   include/media/AudioParameter.h
 #       modified:   include/media/AudioRecord.h
-#       modified:   include/media/AudioSystem.h
 #       modified:   include/media/AudioTrack.h
 #       modified:   include/media/IAudioFlinger.h
 #       modified:   include/media/IAudioPolicyService.h
@@ -10,11 +8,9 @@
 #       modified:   include/media/stagefright/MediaDefs.h
 #       modified:   include/media/stagefright/OMXCodec.h
 #       modified:   include/private/media/AudioTrackShared.h
-#       modified:   media/libmedia/AudioParameter.cpp
 #       modified:   media/libmedia/AudioRecord.cpp
 #       modified:   media/libmedia/AudioSystem.cpp
 #       modified:   media/libmedia/AudioTrack.cpp
-#       modified:   media/libmedia/IAudioFlinger.cpp
 #       modified:   media/libmedia/IAudioPolicyService.cpp
 #       modified:   media/libstagefright/ACodec.cpp
 #       modified:   media/libstagefright/CameraSource.cpp
@@ -25,7 +21,6 @@
 #       modified:   media/libstagefright/omx/SoftOMXPlugin.cpp
 #       modified:   services/audioflinger/Android.mk
 #       modified:   services/audioflinger/AudioFlinger.cpp
-#       modified:   services/audioflinger/AudioFlinger.h
 #       modified:   services/audioflinger/AudioPolicyService.cpp
 #       modified:   services/audioflinger/AudioPolicyService.h
 #       modified:   services/audioflinger/Effects.h
@@ -125,19 +120,6 @@ index 2758989..455c4dc 100644
  private:
      DefaultKeyedVector<String8,String8>    mMap;
  };
-diff --git a/frameworks/av/include/media/AudioParameter.h b/frameworks/av/include/media/AudioParameter.h
-index 891bc4b..263ace7 100644
---- a/frameworks/av/include/media/AudioParameter.h
-+++ b/frameworks/av/include/media/AudioParameter.h
-@@ -48,6 +48,9 @@ public:
-     static const char * const keyFrameCount;
-     static const char * const keyInputSource;
-     static const char * const keyScreenState;
-+#ifdef STE_AUDIO
-+    static const char *keySinkLatency;
-+#endif
- 
-     String8 toString();
  
 diff --git a/frameworks/av/include/media/AudioRecord.h b/frameworks/av/include/media/AudioRecord.h
 index 052064d..2251fa0 100644
@@ -154,84 +136,7 @@ index 052064d..2251fa0 100644
  private:
      class DeathNotifier : public IBinder::DeathRecipient {
      public:
-diff --git a/frameworks/av/include/media/AudioSystem.h b/frameworks/av/include/media/AudioSystem.h
-index 225ef76..72b0328 100644
---- a/frameworks/av/include/media/AudioSystem.h
-+++ b/frameworks/av/include/media/AudioSystem.h
-@@ -27,6 +27,9 @@
- namespace android {
- 
- typedef void (*audio_error_callback)(status_t err);
-+#ifdef STE_AUDIO
-+typedef void (*latency_update_callback)(void *cookie, audio_io_handle_t output, uint32_t sinkLatency);
-+#endif
- 
- class IAudioFlinger;
- class IAudioPolicyService;
-@@ -138,6 +141,11 @@ public:
-     static void acquireAudioSessionId(int audioSession);
-     static void releaseAudioSessionId(int audioSession);
- 
-+#ifdef STE_AUDIO
-+    static int registerLatencyNotificationClient(latency_update_callback cb, void *cookie, audio_io_handle_t output);
-+    static void unregisterLatencyNotificationClient(int clientId);
-+#endif
-+
-     // types of io configuration change events received with ioConfigChanged()
-     enum io_config_event {
-         OUTPUT_OPENED,
-@@ -147,6 +155,9 @@ public:
-         INPUT_CLOSED,
-         INPUT_CONFIG_CHANGED,
-         STREAM_CONFIG_CHANGED,
-+#ifdef STE_AUDIO
-+        SINK_LATENCY_CHANGED,
-+#endif
-         NUM_CONFIG_EVENTS
-     };
- 
-@@ -210,7 +221,13 @@ public:
-                                     uint32_t samplingRate = 0,
-                                     audio_format_t format = AUDIO_FORMAT_DEFAULT,
-                                     audio_channel_mask_t channelMask = AUDIO_CHANNEL_IN_MONO,
-+#ifdef STE_AUDIO
-+                                    audio_in_acoustics_t acoustics = (audio_in_acoustics_t)0,
-+                                    int sessionId = 0,
-+                                    audio_input_clients *inputClientId = NULL);
-+#else
-                                     int sessionId = 0);
-+#endif
-     static status_t startInput(audio_io_handle_t input);
-     static status_t stopInput(audio_io_handle_t input);
-     static void releaseInput(audio_io_handle_t input);
-@@ -285,6 +302,14 @@ private:
-         virtual void binderDied(const wp<IBinder>& who);
-     };
- 
-+#ifdef STE_AUDIO
-+    struct NotificationClient : public RefBase {
-+        latency_update_callback mCb;
-+        void *mCookie;
-+        audio_io_handle_t mOutput;
-+    };
-+#endif
-+
-     static sp<AudioFlingerClient> gAudioFlingerClient;
-     static sp<AudioPolicyServiceClient> gAudioPolicyServiceClient;
-     friend class AudioFlingerClient;
-@@ -307,6 +332,12 @@ private:
-     // list of output descriptors containing cached parameters
-     // (sampling rate, framecount, channel count...)
-     static DefaultKeyedVector<audio_io_handle_t, OutputDescriptor *> gOutputs;
-+
-+#ifdef STE_AUDIO
-+    static Mutex gLatencyLock;
-+    static int gNextUniqueLatencyId;
-+    static DefaultKeyedVector<int, sp<AudioSystem::NotificationClient> > gLatencyNotificationClients;
-+#endif
- };
- 
- };  // namespace android
+
 diff --git a/frameworks/av/include/media/AudioTrack.h b/frameworks/av/include/media/AudioTrack.h
 index f2f9c22..6156a18 100644
 --- a/frameworks/av/include/media/AudioTrack.h
@@ -417,20 +322,7 @@ index 7fd9379..0554d9b 100644
      volatile    int32_t     mFlags;         // combinations of CBLK_*
  
                  // Cache line boundary (32 bytes)
-diff --git a/frameworks/av/media/libmedia/AudioParameter.cpp b/frameworks/av/media/libmedia/AudioParameter.cpp
-index e3fea77..6c84355 100644
---- a/frameworks/av/media/libmedia/AudioParameter.cpp
-+++ b/frameworks/av/media/libmedia/AudioParameter.cpp
-@@ -32,6 +32,9 @@ const char * const AudioParameter::keyChannels = AUDIO_PARAMETER_STREAM_CHANNELS
- const char * const AudioParameter::keyFrameCount = AUDIO_PARAMETER_STREAM_FRAME_COUNT;
- const char * const AudioParameter::keyInputSource = AUDIO_PARAMETER_STREAM_INPUT_SOURCE;
- const char * const AudioParameter::keyScreenState = AUDIO_PARAMETER_KEY_SCREEN_STATE;
-+#ifdef STE_AUDIO
-+const char *AudioParameter::keySinkLatency = "sink_latency";
-+#endif
- 
- AudioParameter::AudioParameter(const String8& keyValuePairs)
- {
+
 diff --git a/frameworks/av/media/libmedia/AudioRecord.cpp b/frameworks/av/media/libmedia/AudioRecord.cpp
 index 666fafa..0a15c5b 100644
 --- a/frameworks/av/media/libmedia/AudioRecord.cpp
@@ -659,188 +551,7 @@ index fe5cd9e..36a5424 100644
  // =========================================================================
  
  AudioTrack::AudioTrackThread::AudioTrackThread(AudioTrack& receiver, bool bCanCallJava)
-diff --git a/frameworks/av/media/libmedia/IAudioFlinger.cpp b/frameworks/av/media/libmedia/IAudioFlinger.cpp
-index 448a82e..bad1250 100644
---- a/frameworks/av/media/libmedia/IAudioFlinger.cpp
-+++ b/frameworks/av/media/libmedia/IAudioFlinger.cpp
-@@ -56,6 +56,10 @@ enum {
-     CLOSE_OUTPUT,
-     SUSPEND_OUTPUT,
-     RESTORE_OUTPUT,
-+#ifdef STE_AUDIO
-+    ADD_INPUT_CLIENT,
-+    REMOVE_INPUT_CLIENT,
-+#endif
-     OPEN_INPUT,
-     CLOSE_INPUT,
-     SET_STREAM_OUTPUT,
-@@ -74,6 +78,9 @@ enum {
-     GET_PRIMARY_OUTPUT_SAMPLING_RATE,
-     GET_PRIMARY_OUTPUT_FRAME_COUNT,
-     SET_LOW_RAM_DEVICE,
-+#ifdef STE_AUDIO
-+    READ_INPUT,
-+#endif
- };
- 
- class BpAudioFlinger : public BpInterface<IAudioFlinger>
-@@ -463,11 +470,36 @@ public:
-         return reply.readInt32();
-     }
- 
-+#ifdef STE_AUDIO
-+    virtual uint32_t *addInputClient(uint32_t clientId)
-+    {
-+        Parcel data, reply;
-+        data.writeInterfaceToken(IAudioFlinger::getInterfaceDescriptor());
-+        data.writeInt32(clientId);
-+        remote()->transact(ADD_INPUT_CLIENT, data, &reply);
-+        return (uint32_t*) reply.readIntPtr();
-+    }
-+
-+    virtual status_t removeInputClient(uint32_t *pClientId)
-+    {
-+        Parcel data, reply;
-+        data.writeInterfaceToken(IAudioFlinger::getInterfaceDescriptor());
-+        data.writeIntPtr((intptr_t)pClientId);
-+        remote()->transact(REMOVE_INPUT_CLIENT, data, &reply);
-+        return reply.readInt32();
-+    }
-+#endif
-+
-     virtual audio_io_handle_t openInput(audio_module_handle_t module,
-                                         audio_devices_t *pDevices,
-                                         uint32_t *pSamplingRate,
-                                         audio_format_t *pFormat,
-+#ifdef STE_AUDIO
-+                                        audio_channel_mask_t *pChannelMask,
-+                                        audio_input_clients *pInputClientId)
-+#else
-                                         audio_channel_mask_t *pChannelMask)
-+#endif
-     {
-         Parcel data, reply;
-         audio_devices_t devices = pDevices != NULL ? *pDevices : (audio_devices_t)0;
-@@ -482,6 +514,9 @@ public:
-         data.writeInt32(samplingRate);
-         data.writeInt32(format);
-         data.writeInt32(channelMask);
-+#ifdef STE_AUDIO
-+        data.writeIntPtr((intptr_t)pInputClientId);
-+#endif
-         remote()->transact(OPEN_INPUT, data, &reply);
-         audio_io_handle_t input = (audio_io_handle_t) reply.readInt32();
-         devices = (audio_devices_t)reply.readInt32();
-@@ -495,7 +530,11 @@ public:
-         return input;
-     }
- 
-+#ifdef STE_AUDIO
-+    virtual status_t closeInput(int input, audio_input_clients *inputClientId)
-+#else
-     virtual status_t closeInput(int input)
-+#endif
-     {
-         Parcel data, reply;
-         data.writeInterfaceToken(IAudioFlinger::getInterfaceDescriptor());
-@@ -553,6 +592,22 @@ public:
-         return reply.readInt32();
-     }
- 
-+#ifdef STE_AUDIO
-+    virtual size_t readInput(audio_io_handle_t input, audio_input_clients inputClientId,
-+            void *buffer, uint32_t bytes, uint32_t *pOverwrittenBytes)
-+    {
-+        Parcel data, reply;
-+        data.writeInterfaceToken(IAudioFlinger::getInterfaceDescriptor());
-+        data.writeInt32(input);
-+        data.writeInt32((uint32_t) inputClientId);
-+        data.writeIntPtr((intptr_t) buffer);
-+        data.writeInt32(bytes);
-+        data.writeIntPtr((intptr_t) pOverwrittenBytes);
-+        remote()->transact(READ_INPUT, data, &reply);
-+        return reply.readInt32();
-+    }
-+#endif
-+
-     virtual int newAudioSessionId()
-     {
-         Parcel data, reply;
-@@ -969,6 +1024,20 @@ status_t BnAudioFlinger::onTransact(
-             reply->writeInt32(restoreOutput((audio_io_handle_t) data.readInt32()));
-             return NO_ERROR;
-         } break;
-+#ifdef STE_AUDIO
-+        case ADD_INPUT_CLIENT: {
-+            CHECK_INTERFACE(IAudioFlinger, data, reply);
-+            uint32_t clientId = data.readInt32();
-+            reply->writeIntPtr((intptr_t)addInputClient(clientId));
-+            return NO_ERROR;
-+        } break;
-+        case REMOVE_INPUT_CLIENT: {
-+            CHECK_INTERFACE(IAudioFlinger, data, reply);
-+            uint32_t *pClientId = (uint32_t*) data.readIntPtr();
-+            reply->writeInt32(removeInputClient(pClientId));
-+            return NO_ERROR;
-+        } break;
-+#endif
-         case OPEN_INPUT: {
-             CHECK_INTERFACE(IAudioFlinger, data, reply);
-             audio_module_handle_t module = (audio_module_handle_t)data.readInt32();
-@@ -976,12 +1045,20 @@ status_t BnAudioFlinger::onTransact(
-             uint32_t samplingRate = data.readInt32();
-             audio_format_t format = (audio_format_t) data.readInt32();
-             audio_channel_mask_t channelMask = (audio_channel_mask_t)data.readInt32();
-+#ifdef STE_AUDIO
-+            audio_input_clients *inputClientId = (audio_input_clients*) data.readIntPtr();
-+#endif
- 
-             audio_io_handle_t input = openInput(module,
-                                              &devices,
-                                              &samplingRate,
-                                              &format,
-+#ifdef STE_AUDIO
-+                                             &channelMask,
-+                                             inputClientId);
-+#else
-                                              &channelMask);
-+#endif
-             reply->writeInt32((int32_t) input);
-             reply->writeInt32(devices);
-             reply->writeInt32(samplingRate);
-@@ -991,7 +1068,13 @@ status_t BnAudioFlinger::onTransact(
-         } break;
-         case CLOSE_INPUT: {
-             CHECK_INTERFACE(IAudioFlinger, data, reply);
-+#ifdef STE_AUDIO
-+            uint32_t input = data.readInt32();
-+            audio_input_clients *inputClientId = (audio_input_clients*) data.readIntPtr();
-+            reply->writeInt32(closeInput((audio_io_handle_t) data.readInt32(), inputClientId));
-+#else
-             reply->writeInt32(closeInput((audio_io_handle_t) data.readInt32()));
-+#endif
-             return NO_ERROR;
-         } break;
-         case SET_STREAM_OUTPUT: {
-@@ -1125,6 +1208,18 @@ status_t BnAudioFlinger::onTransact(
-             reply->writeInt32(setLowRamDevice(isLowRamDevice));
-             return NO_ERROR;
-         } break;
-+#ifdef STE_AUDIO
-+        case READ_INPUT: {
-+            CHECK_INTERFACE(IAudioFlinger, data, reply);
-+            audio_io_handle_t input = data.readInt32();
-+            audio_input_clients inputClientId = (audio_input_clients) data.readInt32();
-+            void* buffer = (void*) data.readIntPtr();
-+            uint32_t bytes = data.readInt32();
-+            uint32_t *pOverwrittenBytes = (uint32_t*) data.readIntPtr();
-+            reply->writeInt32(readInput(input, inputClientId, buffer, bytes, pOverwrittenBytes));
-+            return NO_ERROR;
-+        } break;
-+#endif
-         default:
-             return BBinder::onTransact(code, data, reply, flags);
-     }
+
 diff --git a/frameworks/av/media/libmedia/IAudioPolicyService.cpp b/frameworks/av/media/libmedia/IAudioPolicyService.cpp
 index 4be3c09..5397875 100644
 --- a/frameworks/av/media/libmedia/IAudioPolicyService.cpp
@@ -1572,53 +1283,7 @@ index dd47cf6..141567a 100644
  
  status_t AudioFlinger::closeInput_nonvirtual(audio_io_handle_t input)
  {
-diff --git a/frameworks/av/services/audioflinger/AudioFlinger.h b/frameworks/av/services/audioflinger/AudioFlinger.h
-index 2aeb263..a2ee3e7 100644
---- a/frameworks/av/services/audioflinger/AudioFlinger.h
-+++ b/frameworks/av/services/audioflinger/AudioFlinger.h
-@@ -173,13 +173,32 @@ public:
- 
-     virtual status_t restoreOutput(audio_io_handle_t output);
- 
-+#ifdef STE_AUDIO
-+    virtual uint32_t *addInputClient(uint32_t clientId);
-+
-+    virtual status_t removeInputClient(uint32_t *pClientId);
-+#endif
-+
-     virtual audio_io_handle_t openInput(audio_module_handle_t module,
-                                         audio_devices_t *pDevices,
-                                         uint32_t *pSamplingRate,
-                                         audio_format_t *pFormat,
-+#ifdef STE_AUDIO
-+                                        audio_channel_mask_t *pChannelMask,
-+			                                        audio_input_clients *pInputClientId = NULL);
-+
-+    virtual status_t closeInput(audio_io_handle_t input, audio_input_clients *inputClientId = NULL);
-+    virtual size_t readInput(audio_io_handle_t input,
-+                            audio_input_clients inputClientId,
-+                            void *buffer,
-+                            uint32_t bytes,
-+                            uint32_t *pOverwrittenBytes);
-+
-+#else
-                                         audio_channel_mask_t *pChannelMask);
- 
-     virtual status_t closeInput(audio_io_handle_t input);
-+#endif
- 
-     virtual status_t setStreamOutput(audio_stream_type_t stream, audio_io_handle_t output);
- 
-@@ -593,6 +612,9 @@ private:
-                 // protected by mLock
-                 Vector<AudioSessionRef*> mAudioSessionRefs;
- 
-+#ifdef STE_AUDIO
-+                SortedVector<uint32_t*> mInputClients;
-+#endif
-                 float       masterVolume_l() const;
-                 bool        masterMute_l() const;
-                 audio_module_handle_t loadHwModule_l(const char *name);
+
 diff --git a/frameworks/av/services/audioflinger/AudioPolicyService.cpp b/frameworks/av/services/audioflinger/AudioPolicyService.cpp
 index 7f40812..352ba8b 100644
 --- a/frameworks/av/services/audioflinger/AudioPolicyService.cpp
