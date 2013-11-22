@@ -11,12 +11,12 @@
 #       adefines.h
 #       minui/lucidaconsole_10x18.h
 diff --git a/bootable/recovery/Android.mk b/bootable/recovery/Android.mk
-index 9b66f54..586957d 100644
+index f7b6901..6cdc849 100644
 --- a/bootable/recovery/Android.mk
 +++ b/bootable/recovery/Android.mk
-@@ -44,6 +44,19 @@ RECOVERY_NAME := CWM-based Recovery
- endif
- endif
+@@ -35,6 +35,19 @@ LOCAL_FORCE_STATIC_EXECUTABLE := true
+ 
+ RECOVERY_FSTAB_VERSION := 2
  
 +ifeq ($(TARGET_PRODUCT),cm_lotus)
 +  LOCAL_CFLAGS += -DXPERIA_GO
@@ -31,9 +31,9 @@ index 9b66f54..586957d 100644
 +  LOCAL_CFLAGS += -DXPERIA_P
 +endif
 +
- RECOVERY_VERSION := $(RECOVERY_NAME) v6.0.4.4
- 
- LOCAL_CFLAGS += -DRECOVERY_VERSION="$(RECOVERY_VERSION)"
+ ifdef I_AM_KOUSH
+ RECOVERY_NAME := ClockworkMod Recovery
+ LOCAL_CFLAGS += -DI_AM_KOUSH
 diff --git a/bootable/recovery/default_recovery_ui.c b/bootable/recovery/default_recovery_ui.c
 index 032c1b3..79502d4 100644
 --- a/bootable/recovery/default_recovery_ui.c
@@ -47,7 +47,7 @@ index 032c1b3..79502d4 100644
  
  void device_ui_init(UIParameters* ui_parameters) {
 diff --git a/bootable/recovery/extendedcommands.c b/bootable/recovery/extendedcommands.c
-index 00c1660..5df944d 100644
+index 82dece3..58a404e 100644
 --- a/bootable/recovery/extendedcommands.c
 +++ b/bootable/recovery/extendedcommands.c
 @@ -32,6 +32,7 @@
@@ -58,7 +58,7 @@ index 00c1660..5df944d 100644
  #include "nandroid.h"
  #include "mounts.h"
  #include "flashutils/flashutils.h"
-@@ -142,7 +143,7 @@ int install_zip(const char* packagefilepath)
+@@ -163,7 +164,7 @@ int install_zip(const char* packagefilepath)
         }
      }
  #endif
@@ -67,7 +67,7 @@ index 00c1660..5df944d 100644
      ui_print("\nInstall from sdcard complete.\n");
      return 0;
  }
-@@ -510,28 +511,96 @@ static int control_usb_storage(bool on)
+@@ -546,28 +547,96 @@ static int control_usb_storage(bool on)
  
  void show_mount_usb_storage_menu()
  {
@@ -179,7 +179,7 @@ index 00c1660..5df944d 100644
  }
  
  int confirm_selection(const char* title, const char* confirm)
-@@ -1370,11 +1439,44 @@ int can_partition(const char* volume) {
+@@ -1408,11 +1477,44 @@ int can_partition(const char* volume) {
  
  
  #ifdef ENABLE_LOKI
@@ -226,7 +226,7 @@ index 00c1660..5df944d 100644
  int show_advanced_menu()
  {
      char buf[80];
-@@ -1410,6 +1512,9 @@ int show_advanced_menu()
+@@ -1448,6 +1550,9 @@ int show_advanced_menu()
      list[6] = "show log";
  #ifdef ENABLE_LOKI
      list[7] = "toggle loki support";
@@ -236,7 +236,7 @@ index 00c1660..5df944d 100644
  #endif
  
      char list_prefix[] = "partition ";
-@@ -1498,6 +1603,18 @@ int show_advanced_menu()
+@@ -1536,6 +1641,18 @@ int show_advanced_menu()
              case 7:
                  toggle_loki_support();
                  break;
@@ -256,10 +256,10 @@ index 00c1660..5df944d 100644
              default:
                  partition_sdcard(list[chosen_item] + strlen(list_prefix));
 diff --git a/bootable/recovery/recovery.c b/bootable/recovery/recovery.c
-index fbbb06b..c8e8184 100644
+index 2f82e0f..1d41ada 100644
 --- a/bootable/recovery/recovery.c
 +++ b/bootable/recovery/recovery.c
-@@ -776,6 +776,7 @@ wipe_data(int confirm) {
+@@ -775,6 +775,7 @@ wipe_data(int confirm) {
      }
      erase_volume("/sd-ext");
      erase_volume(get_android_secure_path());
@@ -267,7 +267,7 @@ index fbbb06b..c8e8184 100644
      ui_print("Data wipe complete.\n");
  }
  
-@@ -788,6 +789,17 @@ static void headless_wait() {
+@@ -787,6 +788,17 @@ static void headless_wait() {
      }
  }
  
@@ -285,7 +285,7 @@ index fbbb06b..c8e8184 100644
  int ui_menu_level = 1;
  int ui_root_menu = 0;
  static void
-@@ -832,12 +844,14 @@ prompt_and_wait() {
+@@ -830,12 +842,14 @@ prompt_and_wait() {
                          ui_print("\n-- Wiping cache...\n");
                          erase_volume("/cache");
                          ui_print("Cache wipe complete.\n");
@@ -300,7 +300,7 @@ index fbbb06b..c8e8184 100644
                      break;
  
                  case ITEM_NANDROID:
-@@ -851,6 +865,14 @@ prompt_and_wait() {
+@@ -849,6 +863,14 @@ prompt_and_wait() {
                  case ITEM_ADVANCED:
                      ret = show_advanced_menu();
                      break;
@@ -328,7 +328,7 @@ index 3141a94..984df62 100644
  // Header text to display above the main menu.
  extern char* MENU_HEADERS[];
 diff --git a/bootable/recovery/ui.c b/bootable/recovery/ui.c
-index a0dc289..16c125c 100644
+index a0dc289..4898e5f 100644
 --- a/bootable/recovery/ui.c
 +++ b/bootable/recovery/ui.c
 @@ -33,6 +33,7 @@

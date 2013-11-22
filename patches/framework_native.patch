@@ -229,7 +229,7 @@ index 5c82330..105c5df 100644
  }; // namespace android
  
 diff --git a/frameworks/native/libs/gui/Android.mk b/frameworks/native/libs/gui/Android.mk
-index d931bc0..970179d 100644
+index b42fa63..7f9ede5 100644
 --- a/frameworks/native/libs/gui/Android.mk
 +++ b/frameworks/native/libs/gui/Android.mk
 @@ -39,6 +39,12 @@ LOCAL_SHARED_LIBRARIES := \
@@ -244,7 +244,7 @@ index d931bc0..970179d 100644
 +
  # Executed only on QCOM BSPs
  ifeq ($(TARGET_USES_QCOM_BSP),true)
-     LOCAL_C_INCLUDES += hardware/qcom/display/libgralloc
+ ifneq ($(TARGET_QCOM_DISPLAY_VARIANT),)
 diff --git a/frameworks/native/libs/gui/GLConsumer.cpp b/frameworks/native/libs/gui/GLConsumer.cpp
 index 7ee3081..a122283 100644
 --- a/frameworks/native/libs/gui/GLConsumer.cpp
@@ -513,7 +513,7 @@ index 70d0e52..138f41e 100644
  
  EGL_ENTRY(EGLBoolean, eglHibernateProcessIMG, void)
 diff --git a/frameworks/native/services/surfaceflinger/Android.mk b/frameworks/native/services/surfaceflinger/Android.mk
-index ee24d27..4a131bd 100644
+index 7b7a49b..51c2700 100644
 --- a/frameworks/native/services/surfaceflinger/Android.mk
 +++ b/frameworks/native/services/surfaceflinger/Android.mk
 @@ -48,6 +48,10 @@ ifeq ($(TARGET_DISABLE_TRIPLE_BUFFERING),true)

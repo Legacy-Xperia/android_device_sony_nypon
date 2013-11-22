@@ -640,7 +640,7 @@ index 0000000..ca07c57
 +    // we take the wakelock here because the stop/start is lengthy
 +    acquire_wake_lock(PARTIAL_WAKE_LOCK, AP_WAKE_LOCK);
 +
-+    // switch interface to wlan1
++    // switch interface to p2p0
 +    ret = switchInterface(true);
 +    if (ret != 0)
 +        goto fail_switch;
@@ -728,7 +728,7 @@ index 0000000..d462ce3
 +#define HOSTAPD_STOP_DELAY_US 500000
 +
 +#define STA_INTERFACE  "wlan0"
-+#define AP_INTERFACE   "wlan1"
++#define AP_INTERFACE   "p2p0"
 +
 +class SoftapController {
 +    bool mHostapdStarted;

@@ -91,7 +91,7 @@ index e974aeb..94dcdec 100644
      // only accept input with the exact requested set of parameters
      if (input == 0 ||
 diff --git a/hardware/libhardware_legacy/audio/audio_policy_hal.cpp b/hardware/libhardware_legacy/audio/audio_policy_hal.cpp
-index 545d177..dbb058a 100644
+index 545d177..bbda520 100644
 --- a/hardware/libhardware_legacy/audio/audio_policy_hal.cpp
 +++ b/hardware/libhardware_legacy/audio/audio_policy_hal.cpp
 @@ -177,11 +177,20 @@ static audio_io_handle_t ap_get_input(struct audio_policy *pol, audio_source_t i
@@ -115,17 +115,6 @@ index 545d177..dbb058a 100644
  }
  
  static int ap_start_input(struct audio_policy *pol, audio_io_handle_t input)
-@@ -378,8 +387,10 @@ static int create_legacy_ap(const struct audio_policy_device *device,
-     lap->policy.is_stream_active = ap_is_stream_active;
- #ifndef ICS_AUDIO_BLOB
- #ifndef MR1_AUDIO_BLOB
-+#ifndef MR0_AUDIO_BLOB
-     lap->policy.is_stream_active_remotely = ap_is_stream_active_remotely;
- #endif
-+#endif
-     lap->policy.is_source_active = ap_is_source_active;
- #endif
-     lap->policy.dump = ap_dump;
 diff --git a/hardware/libhardware_legacy/include/hardware_legacy/AudioPolicyInterface.h b/hardware/libhardware_legacy/include/hardware_legacy/AudioPolicyInterface.h
 index 7847bdd..b82de09 100644
 --- a/hardware/libhardware_legacy/include/hardware_legacy/AudioPolicyInterface.h
