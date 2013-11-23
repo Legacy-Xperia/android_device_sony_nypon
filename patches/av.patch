@@ -1,14 +1,13 @@
-
 Subject: [PATCH] frameworks_av: Support pre-KitKat audio blobs
 
----
+
  services/audioflinger/Android.mk             |    4 ++++
  services/audioflinger/AudioFlinger.cpp       |   18 ++++++++++++++++++
  services/audioflinger/AudioFlinger.h         |   10 ++++++++++
  services/audioflinger/AudioPolicyService.cpp |    7 +++++++
  4 files changed, 39 insertions(+)
 
-diff --git a/services/audioflinger/Android.mk b/services/audioflinger/Android.mk
+diff --git frameworks/av/services/audioflinger/Android.mk  frameworks/av/services/audioflinger/Android.mk
 index 54377f1..96aa9e7 100644
 --- a/services/audioflinger/Android.mk
 +++ b/services/audioflinger/Android.mk
@@ -23,7 +22,7 @@ index 54377f1..96aa9e7 100644
  LOCAL_CFLAGS += -fvisibility=hidden
  
  include $(BUILD_SHARED_LIBRARY)
-diff --git a/services/audioflinger/AudioFlinger.cpp b/services/audioflinger/AudioFlinger.cpp
+diff --git frameworks/av/services/audioflinger/AudioFlinger.cpp  frameworks/av/services/audioflinger/AudioFlinger.cpp
 index dd47cf6..031fe4a 100644
 --- a/services/audioflinger/AudioFlinger.cpp
 +++ b/services/audioflinger/AudioFlinger.cpp
@@ -71,7 +70,7 @@ index dd47cf6..031fe4a 100644
  
      if (pDevices == NULL || *pDevices == 0) {
          return 0;
-diff --git a/services/audioflinger/AudioFlinger.h b/services/audioflinger/AudioFlinger.h
+diff --git frameworks/av/services/audioflinger/AudioFlinger.h  frameworks/av/services/audioflinger/AudioFlinger.h
 index 2aeb263..b498d68 100644
 --- a/services/audioflinger/AudioFlinger.h
 +++ b/services/audioflinger/AudioFlinger.h
@@ -92,7 +91,7 @@ index 2aeb263..b498d68 100644
      virtual audio_io_handle_t openOutput(audio_module_handle_t module,
                                           audio_devices_t *pDevices,
                                           uint32_t *pSamplingRate,
-diff --git a/services/audioflinger/AudioPolicyService.cpp b/services/audioflinger/AudioPolicyService.cpp
+diff --git frameworks/av/services/audioflinger/AudioPolicyService.cpp  frameworks/av/services/audioflinger/AudioPolicyService.cpp
 index 7f40812..ffd96c6 100644
 --- a/services/audioflinger/AudioPolicyService.cpp
 +++ b/services/audioflinger/AudioPolicyService.cpp
