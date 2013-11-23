@@ -1,7 +1,7 @@
-diff --git frameworks/av/services/audioflinger/Android.mk  frameworks/av/services/audioflinger/Android.mk
+diff --git a/frameworks/av/services/audioflinger/Android.mk  a/frameworks/av/services/audioflinger/Android.mk
 index 54377f1..96aa9e7 100644
----  frameworks/av/services/audioflinger/Android.mk
-+++  frameworks/av/services/audioflinger/Android.mk
+---  a/frameworks/av/services/audioflinger/Android.mk
++++  a/frameworks/av/services/audioflinger/Android.mk
 @@ -64,6 +64,10 @@ else
      LOCAL_CFLAGS += -DANDROID_SMP=0
  endif
@@ -13,10 +13,10 @@ index 54377f1..96aa9e7 100644
  LOCAL_CFLAGS += -fvisibility=hidden
  
  include $(BUILD_SHARED_LIBRARY)
-diff --git frameworks/av/services/audioflinger/AudioFlinger.cpp  frameworks/av/services/audioflinger/AudioFlinger.cpp
+diff --git a/frameworks/av/services/audioflinger/AudioFlinger.cpp  a/frameworks/av/services/audioflinger/AudioFlinger.cpp
 index dd47cf6..031fe4a 100644
----  frameworks/av/services/audioflinger/AudioFlinger.cpp
-+++  frameworks/av/services/audioflinger/AudioFlinger.cpp
+---  a/frameworks/av/services/audioflinger/AudioFlinger.cpp
++++  a/frameworks/av/services/audioflinger/AudioFlinger.cpp
 @@ -1454,6 +1454,20 @@ status_t AudioFlinger::setLowRamDevice(bool isLowRamDevice)
  
  // ----------------------------------------------------------------------------
@@ -61,10 +61,10 @@ index dd47cf6..031fe4a 100644
  
      if (pDevices == NULL || *pDevices == 0) {
          return 0;
-diff --git frameworks/av/services/audioflinger/AudioFlinger.h  frameworks/av/services/audioflinger/AudioFlinger.h
+diff --git a/frameworks/av/services/audioflinger/AudioFlinger.h  a/frameworks/av/services/audioflinger/AudioFlinger.h
 index 2aeb263..b498d68 100644
----  frameworks/av/services/audioflinger/AudioFlinger.h
-+++  frameworks/av/services/audioflinger/AudioFlinger.h
+---  a/frameworks/av/services/audioflinger/AudioFlinger.h
++++  a/frameworks/av/services/audioflinger/AudioFlinger.h
 @@ -155,6 +155,16 @@ public:
      virtual     size_t      getInputBufferSize(uint32_t sampleRate, audio_format_t format,
                                                 audio_channel_mask_t channelMask) const;
@@ -82,10 +82,10 @@ index 2aeb263..b498d68 100644
      virtual audio_io_handle_t openOutput(audio_module_handle_t module,
                                           audio_devices_t *pDevices,
                                           uint32_t *pSamplingRate,
-diff --git frameworks/av/services/audioflinger/AudioPolicyService.cpp  frameworks/av/services/audioflinger/AudioPolicyService.cpp
+diff --git a/frameworks/av/services/audioflinger/AudioPolicyService.cpp  a/frameworks/av/services/audioflinger/AudioPolicyService.cpp
 index 7f40812..ffd96c6 100644
----  frameworks/av/services/audioflinger/AudioPolicyService.cpp
-+++  frameworks/av/services/audioflinger/AudioPolicyService.cpp
+---  a/frameworks/av/services/audioflinger/AudioPolicyService.cpp
++++  a/frameworks/av/services/audioflinger/AudioPolicyService.cpp
 @@ -1148,6 +1148,12 @@ int AudioPolicyService::setVoiceVolume(float volume, int delayMs)
      return (int)mAudioCommandThread->voiceVolumeCommand(volume, delayMs);
  }
