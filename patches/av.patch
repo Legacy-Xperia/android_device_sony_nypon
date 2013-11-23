@@ -1,11 +1,3 @@
-Subject: [PATCH] frameworks_av: Support pre-KitKat audio blobs
-
-
- services/audioflinger/Android.mk             |    4 ++++
- services/audioflinger/AudioFlinger.cpp       |   18 ++++++++++++++++++
- services/audioflinger/AudioFlinger.h         |   10 ++++++++++
- services/audioflinger/AudioPolicyService.cpp |    7 +++++++
- 4 files changed, 39 insertions(+)
 
 diff --git frameworks/av/services/audioflinger/Android.mk  frameworks/av/services/audioflinger/Android.mk
 index 54377f1..96aa9e7 100644
