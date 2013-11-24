@@ -56,7 +56,7 @@ PRODUCT_COPY_FILES += \
     device/sony/nypon/config/init.d/50selinuxrelabel:system/etc/init.d/50selinuxrelabel \
     device/sony/nypon/config/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
     device/sony/nypon/config/wpa_supplicant_overlay.conf:system/etc/wifi/wpa_supplicant_supplicant.conf \
-    device/sony/nypon/configs/p2p_supplicant_overlay.conf:system/etc/wifi/p2p_supplicant_supplicant.conf
+    device/sony/nypon/config/p2p_supplicant_overlay.conf:system/etc/wifi/p2p_supplicant_supplicant.conf
 
 # Filesystem management tools
 PRODUCT_PACKAGES += \
