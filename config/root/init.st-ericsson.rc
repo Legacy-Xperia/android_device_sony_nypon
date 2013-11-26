@@ -434,7 +434,7 @@ service lbsd /system/bin/lbsd
     class main
     user root
     group radio
-    disabled
+
 
 service wpa_supplicant /system/bin/wpa_supplicant \
     -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
