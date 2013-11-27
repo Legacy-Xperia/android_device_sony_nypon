@@ -180,22 +180,19 @@ enum {
      * - a horizontal stride multiple of 16 pixels (32 bytes).
      */
 
-#ifdef STE_HARDWARE
-/* STE: Added Support of YUV42XMBN, required for Copybit CC acceleration */
-    HAL_PIXEL_FORMAT_YCBCR42XMBN        = 0xE,
-    HAL_PIXEL_FORMAT_YCbCr_420_P        = 0x13,
-    HAL_PIXEL_FORMAT_YCbCr_420_SP       = 0x21,
-#endif
-
+    /* STE: Added Support of YUV42XMBN, required for Copybit CC acceleration */
+    HAL_PIXEL_FORMAT_YCBCR42XMBN = 0xE,
     /* Legacy formats (deprecated), used by ImageFormat.java */
     HAL_PIXEL_FORMAT_YCbCr_422_SP       = 0x10, // NV16
     HAL_PIXEL_FORMAT_YCrCb_420_SP       = 0x11, // NV21
     HAL_PIXEL_FORMAT_YCbCr_422_P        = 0x12,
+    HAL_PIXEL_FORMAT_YCbCr_420_P        = 0x13,
     HAL_PIXEL_FORMAT_YCbCr_422_I        = 0x14, // YUY2
     HAL_PIXEL_FORMAT_YCbCr_420_I        = 0x15,
     HAL_PIXEL_FORMAT_CbYCrY_422_I       = 0x16,
     HAL_PIXEL_FORMAT_CbYCrY_420_I       = 0x17,
     HAL_PIXEL_FORMAT_YCbCr_420_SP_TILED = 0x20,
+    HAL_PIXEL_FORMAT_YCbCr_420_SP       = 0x21,
     HAL_PIXEL_FORMAT_YCrCb_420_SP_TILED = 0x22,
     HAL_PIXEL_FORMAT_YCrCb_422_SP       = 0x23,
     HAL_PIXEL_FORMAT_YCrCb_422_P        = 0x24,
