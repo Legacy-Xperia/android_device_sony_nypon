@@ -92,6 +92,11 @@ BOARD_CUSTOM_BOOTIMG_MK := device/sony/nypon/custombootimg.mk
 TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT := device/sony/nypon/releasetools/semc_ota_from_target_files
 BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/sony/nypon/recovery/recovery-keys.c
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_10x18.h\"
+BOARD_USES_MMCUTILS := true
+
+#cwm TOUCH (All credits munjeni)
+RECOVERY_NAME := CWM-Nypon
+COMMON_GLOBAL_CFLAGS += -DXPERIA_CWM_TOUCH
 
 #CWM recovery fix
 TARGET_RECOVERY_FSTAB = device/sony/nypon/config/root/fstab.st-ericsson
@@ -124,7 +129,7 @@ BOARD_FLASH_BLOCK_SIZE := 131072
 BOARD_FORCE_KERNEL_ADDRESS  := 0x00008000
 BOARD_MKBOOTIMG_ARGS := 0x01000000
 
-BOARD_HAS_NO_SELECT_BUTTON := true
+#BOARD_HAS_NO_SELECT_BUTTON := true
 TARGET_USERIMAGES_USE_EXT4 := true
 
 BOARD_SDCARD_INTERNAL_DEVICE := /dev/block/mmcblk0p14
