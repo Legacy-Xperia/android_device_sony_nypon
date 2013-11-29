@@ -158,6 +158,78 @@ enum {
      *
      */
     HAL_PIXEL_FORMAT_YV12   = 0x32315659, // YCrCb 4:2:0 Planar
+    
+    /*
+     * Android RAW sensor format:
+     *
+     * This format is exposed outside of the HAL to applications.
+     *
+     * RAW_SENSOR is a single-channel 16-bit format, typically representing raw
+     * Bayer-pattern images from an image sensor, with minimal processing.
+     *
+     * The exact pixel layout of the data in the buffer is sensor-dependent, and
+     * needs to be queried from the camera device.
+     *
+     * Generally, not all 16 bits are used; more common values are 10 or 12
+     * bits. All parameters to interpret the raw data (black and white points,
+     * color space, etc) must be queried from the camera device.
+     *
+     * This format assumes
+     * - an even width
+     * - an even height
+     * - a horizontal stride multiple of 16 pixels (32 bytes).
+     */
+    HAL_PIXEL_FORMAT_RAW_SENSOR = 0x20,
+
+    /*
+     * Android binary blob graphics buffer format:
+     *
+     * This format is used to carry task-specific data which does not have a
+     * standard image structure. The details of the format are left to the two
+     * endpoints.
+     *
+     * A typical use case is for transporting JPEG-compressed images from the
+     * Camera HAL to the framework or to applications.
+     *
+     * Buffers of this format must have a height of 1, and width equal to their
+     * size in bytes.
+     */
+    HAL_PIXEL_FORMAT_BLOB = 0x21,
+
+    /*
+     * Android format indicating that the choice of format is entirely up to the
+     * device-specific Gralloc implementation.
+     *
+     * The Gralloc implementation should examine the usage bits passed in when
+     * allocating a buffer with this format, and it should derive the pixel
+     * format from those usage flags.  This format will never be used with any
+     * of the GRALLOC_USAGE_SW_* usage flags.
+     *
+     * If a buffer of this format is to be used as an OpenGL ES texture, the
+     * framework will assume that sampling the texture will always return an
+     * alpha value of 1.0 (i.e. the buffer contains only opaque pixel values).
+     *
+     */
+    HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED = 0x22,
+
+    /*
+     * Android flexible YCbCr formats
+     *
+     * This format allows platforms to use an efficient YCbCr/YCrCb buffer
+     * layout, while still describing the buffer layout in a way accessible to
+     * the CPU in a device-independent manner.  While called YCbCr, it can be
+     * used to describe formats with either chromatic ordering, as well as
+     * whole planar or semiplanar layouts.
+     *
+     * struct android_ycbcr (below) is the the struct used to describe it.
+     *
+     * This format must be accepted by the gralloc module when
+     * USAGE_HW_CAMERA_WRITE and USAGE_SW_READ_* are set.
+     *
+     * This format is locked for use by gralloc's (*lock_ycbcr) method, and
+     * locking with the (*lock) method will return an error.
+     */
+    HAL_PIXEL_FORMAT_YCbCr_420_888 = 0x23,
 
     /*
      * Android RAW sensor format:
