@@ -13,18 +13,18 @@ Getting Started :
 Patch android source code :
 
     patch -p1 < device/sony/nypon/patches/framework_base.patch
-    patch -p1 < device/sony/nypon/patches/system_netd.patch
+    patch -p1 < device/sony/nypon/patches/bootable_recovery.patch
     patch -p1 < device/sony/nypon/patches/bionic.patch
 
 Our step is optional!!! Use only if you going to sync CM 11 source code daily, than simple revert each patch before you sync CM 11 source code :
 
     patch -p1 -R < device/sony/nypon/patches/framework_base.patch
-    patch -p1 -R < device/sony/nypon/patches/system_netd.patch
+    patch -p1 -R < device/sony/nypon/patches/bootable_recovery.patch
     patch -p1 -R < device/sony/nypon/patches/bionic.patch
     repo forall -p -c 'git checkout -f'
     repo sync
     patch -p1 < device/sony/nypon/patches/framework_base.patch
-    patch -p1 < device/sony/nypon/patches/system_netd.patch
+    patch -p1 < device/sony/nypon/patches/bootable_recovery.patch
     patch -p1 < device/sony/nypon/patches/bionic.patch
 
 Download CM prebuilts :
