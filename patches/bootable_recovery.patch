@@ -203,13 +203,13 @@ index 82dece3..58a404e 100644
 +        switch (action) {
 +            case HIGHLIGHT_UP:
 +                if (time_adj != 14) {
-+                    time_adj += 1;
++                    time_adj += 0.30;
 +                    ui_print("time zone (%d)\n", time_adj);
 +                }
 +                break;
 +            case HIGHLIGHT_DOWN:
 +                if (time_adj != -11) {
-+                    time_adj -= 1;
++                    time_adj -= 0.30;
 +                    ui_print("time zone (%d)\n", time_adj);
 +                }
 +                break;
