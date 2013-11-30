@@ -124,6 +124,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libbt-vendor
 
+# libaudioparameter
+PRODUCT_PACKAGES += \
+    libaudioparameter
+
 # light package
 PRODUCT_PACKAGES += \
     lights.montblanc
@@ -146,7 +150,9 @@ PRODUCT_PACKAGES += \
     
 # libtinyalsa & audio.usb.default
 PRODUCT_PACKAGES += \
+    tinyalsa \
     libtinyalsa \
+    audio_policy.default \
     audio.usb.default
 
 # We have enough storage space to hold precise GC data
