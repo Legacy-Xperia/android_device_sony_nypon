@@ -70,7 +70,7 @@ PRODUCT_PACKAGES += \
 
 # Netlink
 PRODUCT_PACKAGES += \
-    libnl
+    libnl_2
 
 # Dbus
 PRODUCT_PACKAGES += \
@@ -113,7 +113,8 @@ PRODUCT_PACKAGES += \
     hcitool \
     l2ping \
     hciattach \
-    rfcomm
+    rfcomm \
+    btiotest
 
 # BT A2DP
 PRODUCT_PACKAGES += \
@@ -132,6 +133,12 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     lights.montblanc
 
+# bluedroid, a2dp, BluetoothExt
+PRODUCT_PACKAGES += \
+    bluetooth.default \
+    audio.a2dp.default \
+    BluetoothExt
+	
 # Misc
 PRODUCT_PACKAGES += \
     com.android.future.usb.accessory
@@ -154,6 +161,10 @@ PRODUCT_PACKAGES += \
     libtinyalsa \
     audio_policy.default \
     audio.usb.default
+	
+# WiFi config utility
+PRODUCT_PACKAGES += \
+    iw
 
 # We have enough storage space to hold precise GC data
 PRODUCT_TAGS += dalvik.gc.type-precise

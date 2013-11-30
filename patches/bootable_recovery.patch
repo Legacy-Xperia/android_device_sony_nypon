@@ -271,7 +271,7 @@ index 2f82e0f..1d41ada 100644
      }
  }
  
-+static const char *about = "modified CWM by Munjeni";
++static const char *about = "Modified CWM by Munjeni";
 +
 +int getwtf(void) {
 +	int i, u;
@@ -1063,7 +1063,7 @@ index 0000000..459174e
 +++ b/bootable/recovery/minui/lucidaconsole_10x18.h
 @@ -0,0 +1,205 @@
 +/*
-+ * Crated by Munjeni @ 2013
++ * Created By Munjeni @XDA 2013
 + * Enjoy :)
 + */
 +struct {
