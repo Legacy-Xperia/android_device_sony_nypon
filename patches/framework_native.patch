@@ -7,6 +7,7 @@
 #       modified:   libs/binder/MemoryBase.cpp
 #       modified:   libs/gui/Android.mk
 #       modified:   libs/gui/GLConsumer.cpp
+#       modified:   libs/ui/PixelFormat.cpp
 #       modified:   opengl/include/EGL/eglext.h
 #       modified:   opengl/libs/EGL/eglApi.cpp
 #       modified:   opengl/libs/EGL/egl_entries.in
@@ -442,6 +443,37 @@ index 7ee3081..a122283 100644
  
  }; // namespace android
 +
+diff --git a/frameworks/native/libs/ui/PixelFormat.cpp b/frameworks/native/libs/ui/PixelFormat.cpp
+index 0595315..5e5951e 100644
+--- a/frameworks/native/libs/ui/PixelFormat.cpp
++++ b/frameworks/native/libs/ui/PixelFormat.cpp
+@@ -88,10 +88,26 @@ status_t getPixelFormatInfo(PixelFormat format, PixelFormatInfo* info)
+     switch (format) {
+     case HAL_PIXEL_FORMAT_YCbCr_422_SP:
+     case HAL_PIXEL_FORMAT_YCbCr_422_I:
++#ifdef STE_HARDWARE
++    case HAL_PIXEL_FORMAT_YCrCb_422_SP:
++    case HAL_PIXEL_FORMAT_YCbCr_422_P:
++    case HAL_PIXEL_FORMAT_YCrCb_422_P:
++    case HAL_PIXEL_FORMAT_CbYCrY_422_I:
++#endif
+         info->bitsPerPixel = 16;
+         goto done;
+     case HAL_PIXEL_FORMAT_YCrCb_420_SP:
+     case HAL_PIXEL_FORMAT_YV12:
++#ifdef STE_HARDWARE
++    case HAL_PIXEL_FORMAT_YCbCr_420_SP:
++    case HAL_PIXEL_FORMAT_YCbCr_420_SP_TILED:
++    case HAL_PIXEL_FORMAT_YCrCb_420_SP_TILED:
++    case HAL_PIXEL_FORMAT_YCbCr_420_P:
++    case HAL_PIXEL_FORMAT_YCrCb_420_P:
++    case HAL_PIXEL_FORMAT_YCbCr_420_I:
++    case HAL_PIXEL_FORMAT_CbYCrY_420_I:
++    case HAL_PIXEL_FORMAT_YCBCR42XMBN:
++#endif
+         info->bitsPerPixel = 12;
+      done:
+         info->format = format;
 diff --git a/frameworks/native/opengl/include/EGL/eglext.h b/frameworks/native/opengl/include/EGL/eglext.h
 index 3b2984a..9736c5a 100644
 --- a/frameworks/native/opengl/include/EGL/eglext.h

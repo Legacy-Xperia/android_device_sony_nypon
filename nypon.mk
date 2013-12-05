@@ -38,6 +38,7 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml \
     frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml \
     frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
+    frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
     frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml \
     frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml \
     frameworks/native/data/etc/com.android.nfc_extras.xml:system/etc/permissions/com.google.android.nfc_extras.xml \
@@ -52,8 +53,7 @@ PRODUCT_COPY_FILES += \
     device/sony/nypon/config/dbus.conf:system/etc/dbus.conf \
     device/sony/nypon/config/hostapd.conf:system/etc/wifi/hostapd.conf \
     device/sony/nypon/config/init.d/01stesetup:system/etc/init.d/01stesetup \
-    device/sony/nypon/config/init.d/10dhcpcd:system/etc/init.d/10dhcpcd \
-    device/sony/nypon/config/init.d/10hostapd:system/etc/init.d/10hostapd \
+    device/sony/nypon/config/init.d/10wireless:system/etc/init.d/10wireless \
     device/sony/nypon/config/init.d/50selinuxrelabel:system/etc/init.d/50selinuxrelabel \
     device/sony/nypon/config/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
     device/sony/nypon/config/p2p_supplicant.conf:system/etc/wifi/p2p_supplicant.conf

@@ -434,7 +434,7 @@ index 4240a9a..ebb1ad8 100644
  AudioParameter::AudioParameter(const String8& keyValuePairs)
  {
 diff --git a/frameworks/av/media/libmedia/AudioRecord.cpp b/frameworks/av/media/libmedia/AudioRecord.cpp
-index 84df353..ae1a65b 100644
+index a3ee6c2..a818a1f 100644
 --- a/frameworks/av/media/libmedia/AudioRecord.cpp
 +++ b/frameworks/av/media/libmedia/AudioRecord.cpp
 @@ -77,8 +77,18 @@ status_t AudioRecord::getMinFrameCount(
@@ -1345,7 +1345,7 @@ index d6cde73..0780ad2 100644
      { "OMX.google.vorbis.decoder", "vorbisdec", "audio_decoder.vorbis" },
      { "OMX.google.vp8.decoder", "vpxdec", "video_decoder.vp8" },
 diff --git a/frameworks/av/services/audioflinger/Android.mk b/frameworks/av/services/audioflinger/Android.mk
-index b944062..3c1b238 100644
+index cba7af0..ae1a9a7 100644
 --- a/frameworks/av/services/audioflinger/Android.mk
 +++ b/frameworks/av/services/audioflinger/Android.mk
 @@ -13,6 +13,10 @@ include $(BUILD_STATIC_LIBRARY)
@@ -1360,10 +1360,10 @@ index b944062..3c1b238 100644
      AudioFlinger.cpp            \
      Threads.cpp                 \
 diff --git a/frameworks/av/services/audioflinger/AudioFlinger.cpp b/frameworks/av/services/audioflinger/AudioFlinger.cpp
-index 092f512..1b303a2 100644
+index 7bc1c7d..fe90dcd 100644
 --- a/frameworks/av/services/audioflinger/AudioFlinger.cpp
 +++ b/frameworks/av/services/audioflinger/AudioFlinger.cpp
-@@ -1239,6 +1239,20 @@ unsigned int AudioFlinger::getInputFramesLost(audio_io_handle_t ioHandle) const
+@@ -1246,6 +1246,20 @@ unsigned int AudioFlinger::getInputFramesLost(audio_io_handle_t ioHandle) const
      return 0;
  }
  
@@ -1384,7 +1384,7 @@ index 092f512..1b303a2 100644
  status_t AudioFlinger::setVoiceVolume(float value)
  {
      status_t ret = initCheck();
-@@ -1870,7 +1884,11 @@ audio_io_handle_t AudioFlinger::openOutput(audio_module_handle_t module,
+@@ -1895,7 +1909,11 @@ audio_io_handle_t AudioFlinger::openOutput(audio_module_handle_t module,
  
  
          // the first primary output opened designates the primary hw device
@@ -1396,7 +1396,7 @@ index 092f512..1b303a2 100644
              ALOGI("Using module %d has the primary audio interface", module);
              mPrimaryHardwareDev = outHwDev;
  #ifdef SRS_PROCESSING
-@@ -2019,11 +2037,50 @@ status_t AudioFlinger::restoreOutput(audio_io_handle_t output)
+@@ -2044,11 +2062,50 @@ status_t AudioFlinger::restoreOutput(audio_io_handle_t output)
      return NO_ERROR;
  }
  
@@ -1447,7 +1447,7 @@ index 092f512..1b303a2 100644
  {
      status_t status;
      RecordThread *thread = NULL;
-@@ -2037,6 +2094,10 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
+@@ -2062,6 +2119,10 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
      audio_channel_mask_t reqChannels = config.channel_mask;
      audio_stream_in_t *inStream = NULL;
      AudioHwDevice *inHwDev;
@@ -1458,7 +1458,7 @@ index 092f512..1b303a2 100644
  
      if (pDevices == NULL || *pDevices == 0) {
          return 0;
-@@ -2048,6 +2109,12 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
+@@ -2073,6 +2134,12 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
      if (inHwDev == NULL)
          return 0;
  
@@ -1471,7 +1471,7 @@ index 092f512..1b303a2 100644
      audio_hw_device_t *inHwHal = inHwDev->hwDevice();
      audio_io_handle_t id = nextUniqueId();
  
-@@ -2062,17 +2129,33 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
+@@ -2087,17 +2154,33 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
                                          &inStream);
  #endif
      ALOGV("openInput() openInputStream returned input %p, SamplingRate %d, Format %d, Channels %x, "
@@ -1505,7 +1505,7 @@ index 092f512..1b303a2 100644
          reqFormat == config.format && config.format == AUDIO_FORMAT_PCM_16_BIT &&
          (config.sample_rate <= 2 * reqSamplingRate) &&
          (getInputChannelCount(config.channel_mask) <= FCC_2) && (getInputChannelCount(reqChannels) <= FCC_2)) {
-@@ -2151,7 +2234,12 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
+@@ -2176,7 +2259,12 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
                                    reqChannels,
                                    id,
                                    primaryOutputDevice_l(),
@@ -1518,7 +1518,7 @@ index 092f512..1b303a2 100644
  #ifdef TEE_SINK
                                    , teeSink
  #endif
-@@ -2168,6 +2256,12 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
+@@ -2193,6 +2281,12 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
              *pChannelMask = reqChannels;
          }
  
@@ -1531,7 +1531,7 @@ index 092f512..1b303a2 100644
          // notify client processes of the new input creation
          thread->audioConfigChanged_l(AudioSystem::INPUT_OPENED);
          return id;
-@@ -2176,10 +2270,45 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
+@@ -2201,10 +2295,45 @@ audio_io_handle_t AudioFlinger::openInput(audio_module_handle_t module,
      return 0;
  }
  
@@ -1578,10 +1578,10 @@ index 092f512..1b303a2 100644
  status_t AudioFlinger::closeInput_nonvirtual(audio_io_handle_t input)
  {
 diff --git a/frameworks/av/services/audioflinger/AudioFlinger.h b/frameworks/av/services/audioflinger/AudioFlinger.h
-index 9844659..871a67e 100644
+index 97de2f6..e64f861 100644
 --- a/frameworks/av/services/audioflinger/AudioFlinger.h
 +++ b/frameworks/av/services/audioflinger/AudioFlinger.h
-@@ -199,13 +199,32 @@ public:
+@@ -209,13 +209,32 @@ public:
  
      virtual status_t restoreOutput(audio_io_handle_t output);
  
@@ -1614,7 +1614,7 @@ index 9844659..871a67e 100644
  
      virtual status_t setStreamOutput(audio_stream_type_t stream, audio_io_handle_t output);
  
-@@ -767,6 +786,9 @@ private:
+@@ -777,6 +796,9 @@ private:
                  int                                 mLPANumChannels;
                  volatile bool                       mAllChainsLocked;
  #endif
@@ -1625,7 +1625,7 @@ index 9844659..871a67e 100644
                  bool        masterMute_l() const;
                  audio_module_handle_t loadHwModule_l(const char *name);
 diff --git a/frameworks/av/services/audioflinger/AudioPolicyService.cpp b/frameworks/av/services/audioflinger/AudioPolicyService.cpp
-index 7f40812..0c03748 100644
+index 4cb6df5..6d44b7e 100644
 --- a/frameworks/av/services/audioflinger/AudioPolicyService.cpp
 +++ b/frameworks/av/services/audioflinger/AudioPolicyService.cpp
 @@ -290,7 +290,12 @@ audio_io_handle_t AudioPolicyService::getInput(audio_source_t inputSource,
@@ -1653,7 +1653,7 @@ index 7f40812..0c03748 100644
  
      if (input == 0) {
          return input;
-@@ -1065,6 +1074,14 @@ void AudioPolicyService::AudioCommandThread::insertCommand_l(AudioCommand *comma
+@@ -1067,6 +1076,14 @@ void AudioPolicyService::AudioCommandThread::insertCommand_l(AudioCommand *comma
          for (size_t k = i + 1; k < mAudioCommands.size(); k++) {
              if (mAudioCommands[k] == removedCommands[j]) {
                  ALOGV("suppressing command: %d", mAudioCommands[k]->mCommand);
@@ -1668,7 +1668,7 @@ index 7f40812..0c03748 100644
                  mAudioCommands.removeAt(k);
                  break;
              }
-@@ -1147,7 +1164,12 @@ int AudioPolicyService::setVoiceVolume(float volume, int delayMs)
+@@ -1149,7 +1166,12 @@ int AudioPolicyService::setVoiceVolume(float volume, int delayMs)
  {
      return (int)mAudioCommandThread->voiceVolumeCommand(volume, delayMs);
  }
@@ -1681,8 +1681,8 @@ index 7f40812..0c03748 100644
 +#else
  bool AudioPolicyService::isOffloadSupported(const audio_offload_info_t& info)
  {
-     if (mpAudioPolicy == NULL) {
-@@ -1162,6 +1184,7 @@ bool AudioPolicyService::isOffloadSupported(const audio_offload_info_t& info)
+ #ifdef HAVE_PRE_KITKAT_AUDIO_BLOB
+@@ -1167,6 +1189,7 @@ bool AudioPolicyService::isOffloadSupported(const audio_offload_info_t& info)
  
      return mpAudioPolicy->is_offload_supported(mpAudioPolicy, &info);
  }
@@ -1690,7 +1690,7 @@ index 7f40812..0c03748 100644
  
  // ----------------------------------------------------------------------------
  // Audio pre-processing configuration
-@@ -1556,7 +1579,12 @@ static audio_io_handle_t aps_open_input(void *service,
+@@ -1561,7 +1584,12 @@ static audio_io_handle_t aps_open_input(void *service,
                                          uint32_t *pSamplingRate,
                                          audio_format_t *pFormat,
                                          audio_channel_mask_t *pChannelMask,
@@ -1703,7 +1703,7 @@ index 7f40812..0c03748 100644
  {
      sp<IAudioFlinger> af = AudioSystem::get_audio_flinger();
      if (af == 0) {
-@@ -1564,7 +1592,11 @@ static audio_io_handle_t aps_open_input(void *service,
+@@ -1569,7 +1597,11 @@ static audio_io_handle_t aps_open_input(void *service,
          return 0;
      }
  
@@ -1715,7 +1715,7 @@ index 7f40812..0c03748 100644
  }
  
  static audio_io_handle_t aps_open_input_on_module(void *service,
-@@ -1572,7 +1604,12 @@ static audio_io_handle_t aps_open_input_on_module(void *service,
+@@ -1577,7 +1609,12 @@ static audio_io_handle_t aps_open_input_on_module(void *service,
                                                    audio_devices_t *pDevices,
                                                    uint32_t *pSamplingRate,
                                                    audio_format_t *pFormat,
@@ -1728,7 +1728,7 @@ index 7f40812..0c03748 100644
  {
      sp<IAudioFlinger> af = AudioSystem::get_audio_flinger();
      if (af == 0) {
-@@ -1580,16 +1617,29 @@ static audio_io_handle_t aps_open_input_on_module(void *service,
+@@ -1585,16 +1622,29 @@ static audio_io_handle_t aps_open_input_on_module(void *service,
          return 0;
      }
  
@@ -1807,7 +1807,7 @@ index a2e2511..497b851 100644
              status_t    attachAuxEffect(int EffectId);
              void        setAuxBuffer(int EffectId, int32_t *buffer);
 diff --git a/frameworks/av/services/audioflinger/Threads.cpp b/frameworks/av/services/audioflinger/Threads.cpp
-index aa9097b..b72233a 100644
+index 7559d4c..d6d5699 100644
 --- a/frameworks/av/services/audioflinger/Threads.cpp
 +++ b/frameworks/av/services/audioflinger/Threads.cpp
 @@ -1593,6 +1593,9 @@ void AudioFlinger::PlaybackThread::audioConfigChanged_l(int event, int param) {
@@ -1833,7 +1833,7 @@ index aa9097b..b72233a 100644
          if (status == NO_ERROR) {
              status = mOutput->stream->common.set_parameters(&mOutput->stream->common,
                                                      keyValuePair.string());
-@@ -4407,7 +4416,12 @@ AudioFlinger::RecordThread::RecordThread(const sp<AudioFlinger>& audioFlinger,
+@@ -4408,7 +4417,12 @@ AudioFlinger::RecordThread::RecordThread(const sp<AudioFlinger>& audioFlinger,
                                           audio_channel_mask_t channelMask,
                                           audio_io_handle_t id,
                                           audio_devices_t outDevice,
@@ -1846,7 +1846,7 @@ index aa9097b..b72233a 100644
  #ifdef TEE_SINK
                                           , const sp<NBAIO_Sink>& teeSink
  #endif
-@@ -4424,7 +4438,9 @@ AudioFlinger::RecordThread::RecordThread(const sp<AudioFlinger>& audioFlinger,
+@@ -4425,7 +4439,9 @@ AudioFlinger::RecordThread::RecordThread(const sp<AudioFlinger>& audioFlinger,
  #endif
  {
      snprintf(mName, kNameLength, "AudioIn_%X", id);
@@ -1857,15 +1857,17 @@ index aa9097b..b72233a 100644
      readInputParameters();
      mClientUid = IPCThreadState::self()->getCallingUid();
  }
-@@ -5348,6 +5364,12 @@ KeyedVector<int, bool> AudioFlinger::RecordThread::sessionIds() const
+@@ -5349,6 +5365,14 @@ KeyedVector<int, bool> AudioFlinger::RecordThread::sessionIds() const
      return ids;
  }
  
++#ifdef STE_AUDIO
 +AudioFlinger::AudioStreamIn* AudioFlinger::RecordThread::getInput() const
 +{
 +    Mutex::Autolock _l(mLock);
 +    return mInput;
 +}
++#endif
 +
  AudioFlinger::AudioStreamIn* AudioFlinger::RecordThread::clearInput()
  {

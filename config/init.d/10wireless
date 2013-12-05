@@ -1,0 +1,23 @@
+#!/system/xbin/ash
+
+# Clean the DHCP leases before starting.
+rm -f /data/misc/dhcp/dhcpcd-wlan0.lease
+rm -f /data/misc/dhcp/dhcpcd-wlan0.pid
+
+# copy hostap.conf to data wifi if it doesnt exists...
+if [ ! -f /data/misc/wifi/hostapd.conf ]; then
+    cp /system/etc/wifi/hostapd.conf /data/misc/wifi/hostapd.conf
+    chown system.wifi /data/misc/wifi/hostapd.conf
+    chmod 660 /data/misc/wifi/hostapd.conf
+fi
+
+# create ipconfig.txt if not exisr - needed for WifiConfigStore
+if [ ! -f /data/misc/wifi/ipconfig.txt ]; then
+     touch /data/misc/wifi/ipconfig.txt
+     chown system.wifi /data/misc/wifi/ipconfig.txt
+fi
+
+# without proper permission wifi unable to store configured netwok settings
+if [ -f /data/misc/wifi/wpa_supplicant.conf ]; then
+     chown wifi.wifi /data/misc/wifi/wpa_supplicant.conf
+fi

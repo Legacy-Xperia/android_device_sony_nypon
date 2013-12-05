@@ -77,101 +77,6 @@ LOCAL_MODULE := lights.$(TARGET_BOARD_PLATFORM)
 LOCAL_MODULE_TAGS := optional
 include $(BUILD_SHARED_LIBRARY)
 
-include $(CLEAR_VARS)
-SRC := netlink/lib
-LOCAL_SRC_FILES := \
-   $(SRC)/cache_mngr.c \
-   $(SRC)/nl.c \
-   $(SRC)/cache.c \
-   $(SRC)/error.c \
-   $(SRC)/data.c \
-   $(SRC)/addr.c \
-   $(SRC)/socket.c \
-   $(SRC)/msg.c \
-   $(SRC)/attr.c \
-   $(SRC)/object.c \
-   $(SRC)/doc.c \
-   $(SRC)/cache_mngt.c \
-   $(SRC)/utils.c \
-   $(SRC)/handlers.c \
-   $(SRC)/fib_lookup/lookup.c \
-   $(SRC)/fib_lookup/request.c \
-   $(SRC)/genl/ctrl.c \
-   $(SRC)/genl/mngt.c \
-   $(SRC)/genl/family.c \
-   $(SRC)/genl/genl.c \
-   $(SRC)/netfilter/log_obj.c \
-   $(SRC)/netfilter/log.c \
-   $(SRC)/netfilter/queue.c \
-   $(SRC)/netfilter/log_msg_obj.c \
-   $(SRC)/netfilter/queue_obj.c \
-   $(SRC)/netfilter/netfilter.c \
-   $(SRC)/netfilter/log_msg.c \
-   $(SRC)/netfilter/queue_msg.c \
-   $(SRC)/netfilter/nfnl.c \
-   $(SRC)/netfilter/queue_msg_obj.c \
-   $(SRC)/netfilter/ct.c \
-   $(SRC)/netfilter/ct_obj.c \
-   $(SRC)/route/tc.c \
-   $(SRC)/route/class_api.c \
-   $(SRC)/route/qdisc_obj.c \
-   $(SRC)/route/nexthop.c \
-   $(SRC)/route/route_utils.c \
-   $(SRC)/route/cls_api.c \
-   $(SRC)/route/cls.c \
-   $(SRC)/route/qdisc_api.c \
-   $(SRC)/route/link/vlan.c \
-   $(SRC)/route/link/api.c \
-   $(SRC)/route/link.c \
-   $(SRC)/route/sch/dsmark.c \
-   $(SRC)/route/sch/red.c \
-   $(SRC)/route/sch/netem.c \
-   $(SRC)/route/sch/cbq.c \
-   $(SRC)/route/sch/blackhole.c \
-   $(SRC)/route/sch/sfq.c \
-   $(SRC)/route/sch/tbf.c \
-   $(SRC)/route/sch/htb.c \
-   $(SRC)/route/sch/prio.c \
-   $(SRC)/route/sch/fifo.c \
-   $(SRC)/route/addr.c \
-   $(SRC)/route/neightbl.c \
-   $(SRC)/route/rtnl.c \
-   $(SRC)/route/route.c \
-   $(SRC)/route/class.c \
-   $(SRC)/route/rule.c \
-   $(SRC)/route/class_obj.c \
-   $(SRC)/route/qdisc.c \
-   $(SRC)/route/route_obj.c \
-   $(SRC)/route/cls/u32.c \
-   $(SRC)/route/cls/cgroup.c \
-   $(SRC)/route/cls/fw.c \
-   $(SRC)/route/cls/police.c \
-   $(SRC)/route/cls/basic.c \
-   $(SRC)/route/cls/ematch.c \
-   $(SRC)/route/neigh.c \
-   $(SRC)/route/cls_obj.c
-
-# We need to include out own set of
-# linux header files before the bionic ones,
-# so we turn off the default compiler flags
-# and add them ourselves after our own
-# include directory.
-LOCAL_NO_DEFAULT_COMPILER_FLAGS := true
-LOCAL_C_INCLUDES := \
-	$(LOCAL_PATH)/netlink/include \
-	$(TARGET_PROJECT_INCLUDES) \
-	$(TARGET_C_INCLUDES)
-LOCAL_CFLAGS := \
-	$(TARGET_GLOBAL_CFLAGS)
-ifeq ($(TARGET_ARCH),arm)
-	LOCAL_CFLAGS += $(normal_objects_cflags)
-endif
-LOCAL_PRELINK_MODULE := false
-LOCAL_SHARED_LIBRARIES := libc libcutils
-LOCAL_MODULE := libnl
-LOCAL_MODULE_TAGS := optional
-include $(BUILD_SHARED_LIBRARY)
-
 LOG_TO_ANDROID_LOGCAT := true
 include $(CLEAR_VARS)
 SRC := dbus
@@ -233,10 +138,10 @@ LOCAL_MODULE:=libdbus
 LOCAL_CFLAGS+= \
 	-DDBUS_COMPILATION \
 	-DANDROID_MANAGED_SOCKET \
-    -DANDROID_ATOMIC \
+	-DANDROID_ATOMIC \
 	-DDBUS_MACHINE_UUID_FILE=\"/etc/machine-id\" \
-    -DDBUS_SYSTEM_CONFIG_FILE=\"/system/etc/dbus.conf\" \
-    -DDBUS_SESSION_CONFIG_FILE=\"/system/etc/session.conf\"
+	-DDBUS_SYSTEM_CONFIG_FILE=\"/system/etc/dbus.conf\" \
+	-DDBUS_SESSION_CONFIG_FILE=\"/system/etc/session.conf\"
 ifeq ($(LOG_TO_ANDROID_LOGCAT),true)
 LOCAL_CFLAGS+= -DDBUS_ANDROID_LOG
 LOCAL_SHARED_LIBRARIES+= libcutils
@@ -264,7 +169,7 @@ include $(BUILD_SHARED_LIBRARY)
 # lib_net_iface_cmd
 #
 include $(CLEAR_VARS)
-SRC := bcmdhd_net_iface
+SRC := wifi/bcmdhd_net_iface
 LOCAL_SRC_FILES := \
     ${SRC}/bcmdhd_net_iface.c
 LOCAL_MODULE := libnetcmdiface
@@ -273,5 +178,66 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
 include $(BUILD_SHARED_LIBRARY)
 
+# iw
+#
+include $(CLEAR_VARS)
+SRC := wifi/iw_util
+NO_PKG_CONFIG=y
+LOCAL_SRC_FILES := \
+    ${SRC}/bitrate.c \
+    ${SRC}/coalesce.c \
+    ${SRC}/connect.c \
+    ${SRC}/cqm.c \
+    ${SRC}/event.c \
+    ${SRC}/genl.c \
+    ${SRC}/hwsim.c \
+    ${SRC}/ibss.c \
+    ${SRC}/info.c \
+    ${SRC}/interface.c \
+    ${SRC}/iw.c \
+    ${SRC}/link.c \
+    ${SRC}/mesh.c \
+    ${SRC}/mpath.c \
+    ${SRC}/offch.c \
+    ${SRC}/p2p.c \
+    ${SRC}/phy.c \
+    ${SRC}/ps.c \
+    ${SRC}/reason.c \
+    ${SRC}/reg.c \
+    ${SRC}/roc.c \
+    ${SRC}/scan.c \
+    ${SRC}/sections.c \
+    ${SRC}/station.c \
+    ${SRC}/status.c \
+    ${SRC}/survey.c \
+    ${SRC}/util.c \
+    ${SRC}/wowlan.c \
+    ${SRC}/version.c \
+    ${SRC}/android-nl.c
+
+LOCAL_C_INCLUDES := \
+	$(LOCAL_PATH)/wifi/iw_util \
+	external/libnl-headers
+
+LOCAL_CFLAGS := -O2 -g -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs
+LOCAL_CFLAGS += -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -DCONFIG_LIBNL20
+LOCAL_LDFLAGS := -Wl,--no-gc-sections
+LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
+LOCAL_MODULE_TAGS := optional
+LOCAL_STATIC_LIBRARIES := libnl_2 libc libstdc++ libm
+LOCAL_FORCE_STATIC_EXECUTABLE := true
+LOCAL_MODULE:=iw
+include $(BUILD_EXECUTABLE)
+
+include $(CLEAR_VARS)
+SRC := wifi/hostapd_patcher
+LOCAL_SRC_FILES := $(SRC)/hostapd_patcher.c
+LOCAL_CFLAGS := -O2 -g -Wall -Wundef -Werror-implicit-function-declaration
+LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
+LOCAL_MODULE_TAGS := optional
+LOCAL_SHARED_LIBRARIES := liblog
+LOCAL_STATIC_LIBRARIES := libcrecovery
+LOCAL_MODULE:=hostapdpatcher
+include $(BUILD_EXECUTABLE)
 
 endif # BOARD_USES_STE_HARDWARE
