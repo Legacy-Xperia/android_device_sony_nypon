@@ -17,6 +17,6 @@
 #ifndef _BDROID_BUILDCFG_H
 #define _BDROID_BUILDCFG_H
 
-#define BTM_DEF_LOCAL_NAME   "ST27i"
+#define BTM_DEF_LOCAL_NAME   "LT22i"
 
 #endif
