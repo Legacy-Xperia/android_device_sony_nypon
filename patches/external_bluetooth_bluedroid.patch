@@ -1,0 +1,14 @@
+#       modified:   Android.mk
+diff --git a/external/bluetooth/bluedroid/Android.mk b/external/bluetooth/bluedroid/Android.mk
+index b5fe1d8..c38c96a 100644
+--- a/external/bluetooth/bluedroid/Android.mk
++++ b/external/bluetooth/bluedroid/Android.mk
+@@ -9,7 +9,7 @@ else
+   bdroid_CFLAGS := -DHAS_NO_BDROID_BUILDCFG
+ endif
+ 
+-include $(call all-subdir-makefiles)
++#include $(call all-subdir-makefiles)
+ 
+ # Cleanup our locals
+ bdroid_C_INCLUDES :=
