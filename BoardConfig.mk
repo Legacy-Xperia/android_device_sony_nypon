@@ -5,8 +5,6 @@ USE_CAMERA_STUB := true
 
 TARGET_SPECIFIC_HEADER_PATH := device/sony/nypon/include
 TARGET_SPECIFIC_HEADER_PATH += device/sony/nypon/hardware
-TARGET_SPECIFIC_HEADER_PATH += hardware/semc/bluetooth/glib
-TARGET_SPECIFIC_HEADER_PATH += hardware/semc/bluetooth/bluez/lib
 
 TARGET_NO_BOOTLOADER := true
 TARGET_NO_RADIOIMAGE := true
@@ -35,8 +33,6 @@ TARGET_GLOBAL_CPPFLAGS += -mfpu=neon -mfloat-abi=softfp
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_STE := true
 COMMON_GLOBAL_CFLAGS += -DSTE_BT
-BOARD_BLUEDROID_VENDOR_CONF := device/sony/nypon/hardware/bluetooth/vnd_u8500.txt
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/sony/nypon/hardware/bluetooth/include
 
 # Audio
 BOARD_USES_GENERIC_AUDIO := false
@@ -63,6 +59,7 @@ BOARD_HOSTAPD_PRIVATE_LIB := private_lib_nl80211_cmd
 USE_OPENGL_RENDERER := true
 BOARD_EGL_CFG := device/sony/nypon/config/egl.cfg
 COMMON_GLOBAL_CFLAGS += -DSTE_HARDWARE
+BOARD_HAVE_PIXEL_FORMAT_INFO := true
 
 #libutils backward compatibility for hals
 COMMON_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
@@ -70,7 +67,7 @@ COMMON_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
 # jb camera
 COMMON_GLOBAL_CFLAGS += -DICS_CAMERA_BLOB
 
-# surfaceflinger support for Xperia Sola,Go...
+# surfaceflinger support for Xperia Sola,Go,P,U
 BOARD_EGL_NEEDS_LEGACY_FB := true
 COMMON_GLOBAL_CFLAGS += -DEGL_NEEDS_FNW
 

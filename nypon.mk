@@ -91,38 +91,27 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libasound
 
-# Bluez
+# Bluez 5.11 libs
 PRODUCT_PACKAGES += \
-    sap \
-    libsap_pts \
+    libbtio \
+    libbluetooth
+
+# Bluez 5.11 daemon, android hal and haltest
+PRODUCT_PACKAGES += \
     bluetoothd \
-    hstest \
-    l2test \
-    rctest \
-    scotest \
-    agent \
-    attest \
-    avtest \
-    bdaddr \
-    lmptest \
-    sdptest \
-    hidpts \
+	bluetooth.default \
+    haltest
+
+# Bluez 5.11 btmon
+PRODUCT_PACKAGES += \
+    btmon
+
+# Bluez 5.11 tools
+PRODUCT_PACKAGES += \
     avinfo \
+    sdptool \
     hciconfig \
-    hcitool \
-    l2ping \
-    hciattach \
-    rfcomm \
-    btiotest
-
-# BT A2DP
-PRODUCT_PACKAGES += \
-    libasound_module_ctl_bluetooth \
-    libasound_module_pcm_bluetooth
-
-# libbt-vendor
-PRODUCT_PACKAGES += \
-    libbt-vendor
+    l2ping	
 
 # libaudioparameter
 PRODUCT_PACKAGES += \
