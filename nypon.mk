@@ -83,9 +83,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libglib
 
-# Hcidump
-PRODUCT_PACKAGES += \
-    hcidump
 
 # Libasound
 PRODUCT_PACKAGES += \
@@ -108,10 +105,17 @@ PRODUCT_PACKAGES += \
 
 # Bluez 5.11 tools
 PRODUCT_PACKAGES += \
-    avinfo \
-    sdptool \
+    hciattach \
     hciconfig \
-    l2ping	
+    hcitool \
+    hcidump \
+    rfcomm \
+    rctest \
+    l2test \
+    l2ping \
+    sdptool \
+    ciptool \
+    bccmd
 
 # libaudioparameter
 PRODUCT_PACKAGES += \
