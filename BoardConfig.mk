@@ -60,6 +60,7 @@ USE_OPENGL_RENDERER := true
 BOARD_EGL_CFG := device/sony/nypon/config/egl.cfg
 COMMON_GLOBAL_CFLAGS += -DSTE_HARDWARE
 BOARD_HAVE_PIXEL_FORMAT_INFO := true
+BOARD_USE_MHEAP_SCREENSHOT := true
 
 #libutils backward compatibility for hals
 COMMON_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
