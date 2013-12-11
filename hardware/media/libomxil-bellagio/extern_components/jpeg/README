@@ -1,9 +1,0 @@
-The IJG's libjpeg library based OpenMAX component.
-
-To compile the component execute:
-
-autoreconf -i -f
-./configure --prefix=$INSTALL_DIR_PATH
-make
-make install
-
