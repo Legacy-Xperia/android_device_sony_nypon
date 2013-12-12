@@ -1,0 +1,16 @@
+The MAD, id3tag library OpenMAX Mp3 audio decoder component.
+
+To compile the component execute:
+
+autoreconf -i -f
+./configure --prefix=$INSTALL_DIR_PATH
+make
+make install
+
+
+Hints for Ubuntu:
+The packages needed for this component are not installed by default.
+They can be added with the following commands:
+
+sudo apt-get install libmad0-dev 
+sudo apt-get install libid3tag0-dev 

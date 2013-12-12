@@ -1,0 +1,2 @@
+add_lunch_combo aosp_nypon-userdebug
+add_lunch_combo aosp_nypon-eng

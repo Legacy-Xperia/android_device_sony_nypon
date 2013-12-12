@@ -1,0 +1,8 @@
+The OpenMAX Frame Buffer Video Sink component is a video display component that uses the Linux Frame Buffer /dev/fb0 for the visualization.
+To compile the component execute:
+
+autoreconf -i -f
+./configure --prefix=$INSTALL_DIR_PATH
+make
+make install
+
