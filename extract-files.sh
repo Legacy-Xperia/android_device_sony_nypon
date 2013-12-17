@@ -28,7 +28,7 @@ for FILE in `cat proprietary-files.txt | grep -v ^# | grep -v ^$`; do
         mkdir -p $BASE/$DIR
     fi
     adb pull /system/$FILE $BASE/$FILE
-    #unzip -p /root/aaaaaaaaaaaa/FXP235-cm-10-20130901-UNOFFICIAL-nypon system/$FILE > $BASE/$FILE
+    #unzip -p /root/aaaaaaaaaaaa/cm-11-20131211-UNOFFICIAL-nypon-NIGHTLY-18 system/$FILE > $BASE/$FILE
 done
 
 ./setup-makefiles.sh

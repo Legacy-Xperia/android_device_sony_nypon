@@ -1,3 +1,19 @@
+#
+# Copyright (C) 2013 The Unofficial CyanogenMod Project For Sony Xperia P [Percy Gahlot]
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 USE_CAMERA_STUB := true
 
 # inherit from the proprietary version
@@ -41,7 +57,6 @@ COMMON_GLOBAL_CFLAGS += -DMR1_AUDIO_BLOB
 COMMON_GLOBAL_CFLAGS += -DMR0_AUDIO_BLOB
 BOARD_USES_LIBMEDIA_WITH_AUDIOPARAMETER := true
 COMMON_GLOBAL_CFLAGS += -DSTE_AUDIO
-#kitkat audio blobs info http://review.cyanogenmod.org/#/c/53324/ yet to be merged 
 BOARD_HAVE_PRE_KITKAT_AUDIO_BLOB := true 
 
 # WIFI
@@ -60,12 +75,12 @@ USE_OPENGL_RENDERER := true
 BOARD_EGL_CFG := device/sony/nypon/config/egl.cfg
 COMMON_GLOBAL_CFLAGS += -DSTE_HARDWARE
 BOARD_HAVE_PIXEL_FORMAT_INFO := true
-BOARD_USE_MHEAP_SCREENSHOT := true
+TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := true
 
-#libutils backward compatibility for hals
+#Backward compatibility for hals
 COMMON_GLOBAL_CFLAGS += -DNEEDS_VECTORIMPL_SYMBOLS
 
-# jb camera
+#Jb camera
 COMMON_GLOBAL_CFLAGS += -DICS_CAMERA_BLOB
 
 # surfaceflinger support for Xperia Sola,Go,P,U
@@ -91,7 +106,7 @@ BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/sony/nypon/recovery/recovery-ke
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"lucidaconsole_10x18.h\"
 BOARD_USES_MMCUTILS := true
 
-#cwm TOUCH (All credits munjeni)
+#CWM Recovery TOUCH (All Rights Reserved By munjeni)
 RECOVERY_NAME := CWM-NYPON
 COMMON_GLOBAL_CFLAGS += -DXPERIA_CWM_TOUCH
 
@@ -99,6 +114,7 @@ COMMON_GLOBAL_CFLAGS += -DXPERIA_CWM_TOUCH
 TARGET_RECOVERY_FSTAB = device/sony/nypon/config/root/fstab.st-ericsson
 RECOVERY_FSTAB_VERSION := 2
 
+#Vold
 TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/devices/platform/musb-ux500.0/musb-hdrc/gadget/lun%d/file"
 
 #HDMI

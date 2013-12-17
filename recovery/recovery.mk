@@ -1,4 +1,4 @@
-# for cwm touch only
+# For Modified CWM touch recovery By munjeni all rights are reserved by [munjeni]
 
 ifeq ($(TARGET_PRODUCT),cm_lotus)
 PRODUCT_COPY_FILES += \
