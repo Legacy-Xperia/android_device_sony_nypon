@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 The Unofficial CyanogenMod Project For Sony Xperia P [Percy Gahlot]
+# Copyright (C) 2013 The Unofficial OMNI Project For Sony Xperia P [Percy Gahlot]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 
-add_lunch_combo cm_nypon-userdebug
-add_lunch_combo cm_nypon-eng
+add_lunch_combo omni_nypon-userdebug
+add_lunch_combo omni_nypon-eng
