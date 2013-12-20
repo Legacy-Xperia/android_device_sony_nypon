@@ -135,6 +135,7 @@ index bce7f21..29c8a53 100644
      static const char * const keyCanOpenProxy;
      static const char * const keyFmVolume;
  #endif
+     static const char * const keySoundCardStatus;
 +#ifdef STE_AUDIO
 +    static const char *keySinkLatency;
 +#endif
