@@ -15,6 +15,7 @@
 #
 
 USE_CAMERA_STUB := true
+DEVICE_RESOLUTION := 540x960
 
 # inherit from the proprietary version
 -include vendor/sony/nypon/BoardConfigVendor.mk
@@ -103,7 +104,7 @@ TARGET_RECOVERY_PRE_COMMAND := "touch /cache/recovery/boot;sync;"
 BOARD_CUSTOM_BOOTIMG_MK := device/sony/nypon/custombootimg.mk
 TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT := device/sony/nypon/releasetools/semc_ota_from_target_files
 BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/sony/nypon/recovery/recovery-keys.c
-BOARD_USE_CUSTOM_RECOVERY_FONT := \"lucidaconsole_10x18.h\"
+BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
 BOARD_USES_MMCUTILS := true
 
 #CWM Recovery TOUCH (All Rights Reserved By munjeni)
