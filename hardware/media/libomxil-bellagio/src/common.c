@@ -30,7 +30,7 @@
 #include <sys/stat.h>
 
 #include "config.h"
-#include "common.h"
+#include <common.h>
 
 #define REGISTRY_FILENAME ".omxregister"
 
