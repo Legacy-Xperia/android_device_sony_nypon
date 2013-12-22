@@ -39,7 +39,6 @@
 
 #include "omxcore.h"
 #include "omx_create_loaders.h"
-#include "tsemaphore.h"
 
 extern CPresult file_pipe_Constructor(CP_PIPETYPE* pPipe, CPstring szURI);
 extern CPresult inet_pipe_Constructor(CP_PIPETYPE* pPipe, CPstring szURI);
@@ -48,25 +47,6 @@ extern CPresult inet_pipe_Constructor(CP_PIPETYPE* pPipe, CPstring szURI);
  * It is equal to 1 when the OMX_Init has been called
  */
 static int initialized;
-
-/** The semaphore to protect the initialized variable against race condition
- */
-static tsem_t initSem;
-
-static void start(void) __attribute__ ((constructor));
-static void stop(void) __attribute__ ((destructor));
-
-void start(void) 
-{
-  tsem_init(&initSem,1);
-  return;
-}
-
-void stop(void)
-{
-  tsem_deinit(&initSem);
-  return;
-}
 
 /** The int bosa_loaders contains the number of loaders available in the system.
  */
@@ -79,20 +59,22 @@ static int bosa_loaders;
  * different types of components, or handle in different ways the same components. It can be used also
  * to create a multi-OS support
  */
-static volatile BOSA_COMPONENTLOADER **loadersList = NULL;
+BOSA_COMPONENTLOADER **loadersList = NULL;
 
 OMX_ERRORTYPE BOSA_AddComponentLoader(BOSA_COMPONENTLOADER *pLoader)
 {
   BOSA_COMPONENTLOADER **newLoadersList = NULL;
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
+
   assert(pLoader);
 
+  bosa_loaders++;
   newLoadersList = realloc(loadersList, bosa_loaders * sizeof(BOSA_COMPONENTLOADER *));
 
   if (!newLoadersList)
     return OMX_ErrorInsufficientResources;
 
-  bosa_loaders++;
-  loadersList = (volatile BOSA_COMPONENTLOADER **) newLoadersList;
+  loadersList = newLoadersList;
 
   loadersList[bosa_loaders - 1] = pLoader;
 
@@ -109,71 +91,49 @@ OMX_ERRORTYPE BOSA_AddComponentLoader(BOSA_COMPONENTLOADER *pLoader)
  *
  * @return OMX_ErrorNone
  */
-OMX_ERRORTYPE OMX_Init() {
+OSCL_EXPORT_REF OMX_ERRORTYPE OMX_Init() {
   int i = 0;
-  OMX_ERRORTYPE err = OMX_ErrorNone, errLoader = OMX_ErrorInsufficientResources;
+  OMX_ERRORTYPE err;
 
   DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
-
-  /* Get a lock in case multiple thread are calling OMX_Init at the same time */
-  tsem_down(&initSem);
-  
   if(initialized == 0) {
-    
+    initialized = 1;
+
     if (createComponentLoaders()) {
-      tsem_up(&initSem);
-      return OMX_ErrorInsufficientResources;
+    	return OMX_ErrorInsufficientResources;
     }
-    
+
     for (i = 0; i < bosa_loaders; i++) {
-      err = loadersList[i]->BOSA_InitComponentLoader((struct BOSA_COMPONENTLOADER *) loadersList[i]);
+      err = loadersList[i]->BOSA_InitComponentLoader(loadersList[i]);
       if (err != OMX_ErrorNone) {
-	
-	DEBUG(DEB_LEV_ERR, "Component loader %d constructor fails. Error= 0x%08x \n",i, err);
-	
-	/* The loader failed to initialize itself -> discarding it for the session */
-	free((void *) loadersList[i]);
-	loadersList[i] = 0;
-      }
-      
-      // Returning OMX_ErrorNone if at least one loader has been able to initialize itself
-      if (err == OMX_ErrorNone) {
-	errLoader = OMX_ErrorNone;
+        DEBUG(DEB_LEV_ERR, "A Component loader constructor fails. Exiting\n");
+        return OMX_ErrorInsufficientResources;
       }
     }
-  } else {
-    /* In case core already initialized things are fine */
-    errLoader = OMX_ErrorNone;
   }
-  initialized ++;
-  tsem_up(&initSem);
-  
+
   DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
-  return errLoader;
+  return OMX_ErrorNone;
 }
 
 /** @brief The OMX_Deinit standard function
  *
  * In this function the Deinit function for each component loader is performed
  */
-OMX_ERRORTYPE OMX_Deinit() {
+OSCL_EXPORT_REF OMX_ERRORTYPE OMX_Deinit() {
   int i = 0;
   DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
-  tsem_down(&initSem);
-  initialized --;
-  if(initialized == 0) {
+  if(initialized == 1) {
     for (i = 0; i < bosa_loaders; i++) {
-      if(loadersList[i]) {
-	loadersList[i]->BOSA_DeInitComponentLoader((struct BOSA_COMPONENTLOADER *) loadersList[i]);
-	free((void *) loadersList[i]);
-	loadersList[i] = 0;
-      }
+      loadersList[i]->BOSA_DeInitComponentLoader(loadersList[i]);
+      free(loadersList[i]);
+      loadersList[i] = 0;
     }
-    free(loadersList);
-    loadersList = 0;
-    bosa_loaders = 0;
   }
-  tsem_up(&initSem);
+  free(loadersList);
+  loadersList = 0;
+  initialized = 0;
+  bosa_loaders = 0;
   DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
   return OMX_ErrorNone;
 }
@@ -190,7 +150,7 @@ OMX_ERRORTYPE OMX_Deinit() {
  *         OMX_ErrorComponentNotFound if the requested component has not been found
  *                                    in any loader
  */
-OMX_ERRORTYPE OMX_GetHandle(OMX_HANDLETYPE* pHandle,
+OSCL_EXPORT_REF OMX_ERRORTYPE OMX_GetHandle(OMX_HANDLETYPE* pHandle,
   OMX_STRING cComponentName,
   OMX_PTR pAppData,
   OMX_CALLBACKTYPE* pCallBacks) {
@@ -200,17 +160,15 @@ OMX_ERRORTYPE OMX_GetHandle(OMX_HANDLETYPE* pHandle,
   DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for %s\n", __func__, cComponentName);
 
   for (i = 0; i < bosa_loaders; i++) {
-    if(loadersList[i]) {
-      err = loadersList[i]->BOSA_CreateComponent(
-						 (struct BOSA_COMPONENTLOADER *) loadersList[i],
-						 pHandle,
-						 cComponentName,
-						 pAppData,
-						 pCallBacks);
-      if (err == OMX_ErrorNone) {
-	// the component has been found
-	return OMX_ErrorNone;
-      }
+    err = loadersList[i]->BOSA_CreateComponent(
+          loadersList[i],
+          pHandle,
+          cComponentName,
+          pAppData,
+          pCallBacks);
+    if (err == OMX_ErrorNone) {
+      // the component has been found
+      return OMX_ErrorNone;
     }
   }
   /*Required to meet conformance test: do not remove*/
@@ -229,21 +187,20 @@ OMX_ERRORTYPE OMX_GetHandle(OMX_HANDLETYPE* pHandle,
  *
  * @return The error of the BOSA_DestroyComponent function or OMX_ErrorNone
  */
-OMX_ERRORTYPE OMX_FreeHandle(OMX_HANDLETYPE hComponent) {
+OSCL_EXPORT_REF OMX_ERRORTYPE OMX_FreeHandle(OMX_HANDLETYPE hComponent) {
 	int i;
     OMX_ERRORTYPE err;
-    DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for %x\n", __func__, (int)hComponent);
+    DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for %p\n", __func__, hComponent);
 
     for (i = 0; i < bosa_loaders; i++) {
-      if(loadersList[i]) {
-    	err = loadersList[i]->BOSA_DestroyComponent((struct BOSA_COMPONENTLOADER *) loadersList[i],
-						    hComponent);
-	
+    	err = loadersList[i]->BOSA_DestroyComponent(
+    			loadersList[i],
+    			hComponent);
+
     	if (err == OMX_ErrorNone) {
-	  // the component has been found and destroyed
-	  return OMX_ErrorNone;
+    		// the component has been found and destroyed
+    		return OMX_ErrorNone;
     	}
-      }
     }
     DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
     return OMX_ErrorComponentNotFound;
@@ -256,7 +213,7 @@ OMX_ERRORTYPE OMX_FreeHandle(OMX_HANDLETYPE hComponent) {
  * list, with a common index. This implementation orders the loaders and the
  * related list of components.
  */
-OMX_ERRORTYPE OMX_ComponentNameEnum(
+OSCL_EXPORT_REF OMX_ERRORTYPE OMX_ComponentNameEnum(
 		OMX_STRING cComponentName,
 		OMX_U32 nNameLength,
 		OMX_U32 nIndex)
@@ -268,23 +225,25 @@ OMX_ERRORTYPE OMX_ComponentNameEnum(
 
   DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
 
-  for (i = 0; i < bosa_loaders; i++) {
-    offset = 0;
-    if(loadersList[i]) {
-      while((err = loadersList[i]->BOSA_ComponentNameEnum((struct BOSA_COMPONENTLOADER *) loadersList[i],
-							  cComponentName,
-							  nNameLength,
-							  offset)) != OMX_ErrorNoMore) {
-	if (index == nIndex) {
-	  return err;
-	}
-	offset++;
-	index++;
-      }
+  for (i = 0; i < bosa_loaders; i++)
+    {
+        offset = 0;
+
+        while((err = loadersList[i]->BOSA_ComponentNameEnum(loadersList[i],
+                cComponentName,
+                nNameLength,
+                offset)) != OMX_ErrorNoMore)
+        {
+            if (index == nIndex)
+            {
+                return err;
+            }
+            offset++;
+            index++;
+        }
     }
-  }
-  
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
+
+    DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
   return OMX_ErrorNoMore;
 }
 
@@ -300,7 +259,7 @@ OMX_ERRORTYPE OMX_ComponentNameEnum(
  * @return OMX_ErrorBadParameter, OMX_ErrorPortsNotCompatible, tunnel rejected by a component
  * or OMX_ErrorNone if the tunnel has been established
  */
-OMX_ERRORTYPE OMX_SetupTunnel(
+OSCL_EXPORT_REF OMX_ERRORTYPE OMX_SetupTunnel(
   OMX_HANDLETYPE hOutput,
   OMX_U32 nPortOutput,
   OMX_HANDLETYPE hInput,
@@ -310,8 +269,8 @@ OMX_ERRORTYPE OMX_SetupTunnel(
   OMX_COMPONENTTYPE* component;
   OMX_TUNNELSETUPTYPE* tunnelSetup;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s the output port is:%x/%i, the input port is %x/%i\n",
-		  __func__, (int)hOutput, (int)nPortOutput, (int)hInput, (int)nPortInput);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s the output port is:%p/%i, the input port is %p/%i\n",
+		  __func__, hOutput, (int)nPortOutput, hInput, (int)nPortInput);
   tunnelSetup = malloc(sizeof(OMX_TUNNELSETUPTYPE));
   component = (OMX_COMPONENTTYPE*)hOutput;
   tunnelSetup->nTunnelFlags = 0;
@@ -364,7 +323,7 @@ OMX_ERRORTYPE OMX_SetupTunnel(
 
 /** @brief the OMX_GetRolesOfComponent standard function
  */
-OMX_ERRORTYPE OMX_GetRolesOfComponent (
+OSCL_EXPORT_REF OMX_ERRORTYPE OMX_GetRolesOfComponent (
   OMX_STRING CompName,
   OMX_U32 *pNumRoles,
   OMX_U8 **roles) {
@@ -373,14 +332,13 @@ OMX_ERRORTYPE OMX_GetRolesOfComponent (
 
   DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
   for (i = 0; i < bosa_loaders; i++) {
-    if(loadersList[i]) {
-      err = loadersList[i]->BOSA_GetRolesOfComponent((struct BOSA_COMPONENTLOADER *) loadersList[i],
-						     CompName,
-						     pNumRoles,
-						     roles);
-      if (err == OMX_ErrorNone) {
-	return OMX_ErrorNone;
-      }
+    err = loadersList[i]->BOSA_GetRolesOfComponent(
+          loadersList[i],
+          CompName,
+          pNumRoles,
+          roles);
+    if (err == OMX_ErrorNone) {
+      return OMX_ErrorNone;
     }
   }
   DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
@@ -397,7 +355,7 @@ OMX_ERRORTYPE OMX_GetRolesOfComponent (
  * @param compNames See spec
  *
  */
-OMX_ERRORTYPE OMX_GetComponentsOfRole (
+OSCL_EXPORT_REF OMX_ERRORTYPE OMX_GetComponentsOfRole (
   OMX_STRING role,
   OMX_U32 *pNumComps,
   OMX_U8  **compNames) {
@@ -415,46 +373,44 @@ OMX_ERRORTYPE OMX_GetComponentsOfRole (
   }
   for (i = 0; i < bosa_loaders; i++) {
     temp_num_comp = *pNumComps;
-    if(loadersList[i]) {
-      err = loadersList[i]->BOSA_GetComponentsOfRole(
-          (struct BOSA_COMPONENTLOADER *) loadersList[i],
+    err = loadersList[i]->BOSA_GetComponentsOfRole(
+          loadersList[i],
           role,
           &temp_num_comp,
           NULL);
-      if (err != OMX_ErrorNone) {
-	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
-	return OMX_ErrorComponentNotFound;
-      }
-      if (only_number_requested == 0) {
-	tempCompNames = malloc(temp_num_comp * sizeof(OMX_STRING));
-	for (j=0; j<temp_num_comp; j++) {
-	  tempCompNames[j] = malloc(OMX_MAX_STRINGNAME_SIZE * sizeof(char));
-	}
-	err = loadersList[i]->BOSA_GetComponentsOfRole(
-						       (struct BOSA_COMPONENTLOADER *) loadersList[i],
-						       role,
-						       &temp_num_comp,
-						       tempCompNames);
-	if (err != OMX_ErrorNone) {
-	  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
-	  return OMX_ErrorComponentNotFound;
-	}
-
-	for (j = 0; j<temp_num_comp; j++) {
-	  if (full_number + j < *pNumComps) {
-	    strncpy((char *)compNames[full_number + j], (const char *)tempCompNames[j], 128);
-	  }
-	}
-      }
-      full_number += temp_num_comp;
+    if (err != OMX_ErrorNone) {
+      DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
+      return OMX_ErrorComponentNotFound;
     }
+    if (only_number_requested == 0) {
+      tempCompNames = malloc(temp_num_comp * sizeof(OMX_STRING));
+      for (j=0; j<temp_num_comp; j++) {
+        tempCompNames[j] = malloc(OMX_MAX_STRINGNAME_SIZE * sizeof(char));
+      }
+      err = loadersList[i]->BOSA_GetComponentsOfRole(
+          loadersList[i],
+          role,
+          &temp_num_comp,
+          tempCompNames);
+      if (err != OMX_ErrorNone) {
+        DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
+        return OMX_ErrorComponentNotFound;
+      }
+
+      for (j = 0; j<temp_num_comp; j++) {
+        if (full_number + j < *pNumComps) {
+          strncpy((char *)compNames[full_number + j], (const char *)tempCompNames[j], 128);
+        }
+      }
+    }
+    full_number += temp_num_comp;
   }
   *pNumComps = full_number;
   DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
   return OMX_ErrorNone;
 }
 
-OMX_ERRORTYPE OMX_GetContentPipe(
+OSCL_EXPORT_REF OMX_ERRORTYPE OMX_GetContentPipe(
     OMX_HANDLETYPE *hPipe,
     OMX_STRING szURI) {
 	  OMX_ERRORTYPE err = OMX_ErrorContentPipeCreationFailed;
@@ -475,4 +431,3 @@ OMX_ERRORTYPE OMX_GetContentPipe(
 	  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
 	  return err;
 }
-

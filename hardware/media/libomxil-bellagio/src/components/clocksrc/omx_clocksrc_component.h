@@ -35,6 +35,10 @@
 #include <string.h>
 #include <sys/time.h>
 
+#define CLOCK_COMP_NAME "OMX.st.clocksrc"
+#define CLOCK_COMP_ROLE "clocksrc"
+#define MAX_CLOCK_COMPONENTS 20
+
 /** Maximum number of clock ports */
 #define MAX_CLOCK_PORTS                          8
 

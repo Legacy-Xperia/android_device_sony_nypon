@@ -34,6 +34,10 @@
 #include <omx_base_filter.h>
 #include <omx_base_audio_port.h>
 
+#define MIXER_COMP_NAME "OMX.st.audio.mixer"
+#define MIXER_COMP_ROLE "audio.mixer"
+#define MAX_MIXER_COMPONENTS 5
+
 #define MIXER_QUALITY_LEVELS 1
 static int mixerQualityLevels []={50, 60000, 10, 40000};
 

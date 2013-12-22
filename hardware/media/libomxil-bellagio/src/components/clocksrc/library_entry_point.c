@@ -64,7 +64,7 @@ int omx_component_library_Setup(stLoaderComponentType **stComponents) {
     return OMX_ErrorInsufficientResources;
   }
 
-  strcpy(stComponents[0]->name, "OMX.st.clocksrc");
+  strcpy(stComponents[0]->name, CLOCK_COMP_NAME);
   stComponents[0]->name_specific_length = 1;
   stComponents[0]->constructor = omx_clocksrc_component_Constructor;
 
@@ -84,8 +84,8 @@ int omx_component_library_Setup(stLoaderComponentType **stComponents) {
     }
   }
 
-  strcpy(stComponents[0]->name_specific[0], "OMX.st.clocksrc");
-  strcpy(stComponents[0]->role_specific[0], "clocksrc");
+  strcpy(stComponents[0]->name_specific[0], CLOCK_COMP_NAME);
+  strcpy(stComponents[0]->role_specific[0], CLOCK_COMP_ROLE);
 
   DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s \n",__func__);
   return 1;

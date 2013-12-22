@@ -34,6 +34,12 @@
 #include "utils.h"
 #include "component_loader.h"
 #include "omx_comp_debug_levels.h"
+#ifdef ANDROID_COMPILATION
+#include <oscl_base_macros.h>
+#else
+#define OSCL_IMPORT_REF
+#define OSCL_EXPORT_REF
+#endif
 
 //forward decl
 struct BOSA_COMPONENTLOADER;

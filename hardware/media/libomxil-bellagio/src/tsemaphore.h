@@ -26,6 +26,12 @@
 
 #ifndef __TSEMAPHORE_H__
 #define __TSEMAPHORE_H__
+#ifdef ANDROID_COMPILATION
+#include <oscl_base_macros.h>
+#else
+#define OSCL_IMPORT_REF
+#define OSCL_EXPORT_REF
+#endif
 
 /** The structure contains the semaphore value, mutex and green light flag
  */
@@ -41,43 +47,52 @@ typedef struct tsem_t{
  *
  * @param val the initial value of the semaphore
  */
-int tsem_init(tsem_t* tsem, unsigned int val);
+OSCL_IMPORT_REF int tsem_init(tsem_t* tsem, unsigned int val);
 
 /** Destroy the semaphore
  *
  * @param tsem the semaphore to destroy
  */
-void tsem_deinit(tsem_t* tsem);
+OSCL_IMPORT_REF void tsem_deinit(tsem_t* tsem);
 
 /** Decreases the value of the semaphore. Blocks if the semaphore
  * value is zero.
  *
  * @param tsem the semaphore to decrease
  */
-void tsem_down(tsem_t* tsem);
+OSCL_IMPORT_REF void tsem_down(tsem_t* tsem);
+
+/** Decreases the value of the semaphore. Blocks if the semaphore
+ * value is zero. If the timeout is reached the function exits with
+ * error ETIMEDOUT
+ *
+ * @param tsem the semaphore to decrease
+ * @param timevalue the value of delay for the timeout
+ */
+OSCL_IMPORT_REF int tsem_timed_down(tsem_t* tsem, unsigned int milliSecondsDelay);
 
 /** Increases the value of the semaphore
  *
  * @param tsem the semaphore to increase
  */
-void tsem_up(tsem_t* tsem);
+OSCL_IMPORT_REF void tsem_up(tsem_t* tsem);
 
 /** Reset the value of the semaphore
  *
  * @param tsem the semaphore to reset
  */
-void tsem_reset(tsem_t* tsem);
+OSCL_IMPORT_REF void tsem_reset(tsem_t* tsem);
 
 /** Wait on the condition.
  *
  * @param tsem the semaphore to wait
  */
-void tsem_wait(tsem_t* tsem);
+OSCL_IMPORT_REF void tsem_wait(tsem_t* tsem);
 
 /** Signal the condition,if waiting
  *
  * @param tsem the semaphore to signal
  */
-void tsem_signal(tsem_t* tsem);
+OSCL_IMPORT_REF void tsem_signal(tsem_t* tsem);
 
 #endif

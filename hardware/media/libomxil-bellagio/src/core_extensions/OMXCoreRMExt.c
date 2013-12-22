@@ -147,8 +147,7 @@ OMX_ERRORTYPE readRegistryFile() {
 	FILE* omxregistryfp;
 	char* line = NULL;
 	char *libname;
-	int read;
-	size_t len;
+	int index_readline;
 	int listindex;
 	char *registry_filename;
 	int numberOfLines = 0;
@@ -172,7 +171,19 @@ OMX_ERRORTYPE readRegistryFile() {
 	libname = malloc(OMX_MAX_STRINGNAME_SIZE * 2);
 	fseek(omxregistryfp, 0, 0);
 
-	while((read = getline(&line, &len, omxregistryfp)) != -1) {
+	  while(1) {
+		  index_readline = 0;
+		  while(index_readline < MAX_LINE_LENGTH) {
+			  *(line+index_readline) = fgetc(omxregistryfp);
+			  if ((*(line+index_readline) == '\n') || (*(line+index_readline) == '\0')) {
+				  break;
+			  }
+			  index_readline++;
+		  }
+		  *(line+index_readline) = '\0';
+		  if ((index_readline >= MAX_LINE_LENGTH) || (index_readline == 0)) {
+			  break;
+		  }
 		if ((*line == ' ') && (*(line+1) == '=')) {
 			numberOfLines++;
 		} else {
@@ -182,14 +193,29 @@ OMX_ERRORTYPE readRegistryFile() {
 	fseek(omxregistryfp, 0, 0);
 	qualityList = malloc(numberOfLines * sizeof (stLoaderComponentType*));
 	qualityListItems = numberOfLines;
+	line = malloc(MAX_LINE_LENGTH);
 	listindex = 0;
-	while((read = getline(&line, &len, omxregistryfp)) != -1) {
+
+	  while(1) {
+		  index_readline = 0;
+		  while(index_readline < MAX_LINE_LENGTH) {
+			  *(line+index_readline) = fgetc(omxregistryfp);
+			  if ((*(line+index_readline) == '\n') || (*(line+index_readline) == '\0')) {
+				  break;
+			  }
+			  index_readline++;
+		  }
+		  *(line+index_readline) = '\0';
+		  if ((index_readline >= MAX_LINE_LENGTH) || (index_readline == 0)) {
+			  break;
+		  }
+
 		if ((*line == ' ') && (*(line+1) == '=')) {
 	        qualityList[listindex] = NULL;
 			qualityList[listindex] = calloc(1,sizeof(stLoaderComponentType));
 			index = 5;
 			wordlength = 0;
-			while((*(line + index) != ' ') && (*(line + index) != '\n')) {
+			while((*(line + index) != ' ') && (*(line + index) != '\0')) {
 				wordlength++;
 				index++;
 			}
@@ -204,7 +230,7 @@ OMX_ERRORTYPE readRegistryFile() {
 	        index = index + 5;
 	        tempindex = index;
 	        qualityList[listindex]->name_specific_length = 0;
-			while((*(line + tempindex) != ' ') && (*(line + tempindex) != '\n')) {
+			while((*(line + tempindex) != ' ') && (*(line + tempindex) != '\0')) {
 				while(*(line + tempindex) !=':') {
 					tempindex++;
 				}
@@ -227,7 +253,7 @@ OMX_ERRORTYPE readRegistryFile() {
 				roleindex++;
 				index++;
 			}
-	        if (*(line + index) == '\n') {
+	        if (*(line + index) == '\0') {
 				listindex++;
 	        	continue;
 	        }

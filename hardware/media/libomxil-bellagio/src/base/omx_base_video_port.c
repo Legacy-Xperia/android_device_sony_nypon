@@ -28,7 +28,6 @@
 #include <omxcore.h>
 #include <OMX_Core.h>
 #include <OMX_Component.h>
-#include "omx_base_component.h"
 #include "omx_base_video_port.h"
 
 /**
@@ -47,7 +46,7 @@
   * @return OMX_ErrorInsufficientResources if a memory allocation fails
   */
 
-OMX_ERRORTYPE base_video_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,omx_base_PortType **openmaxStandPort,OMX_U32 nPortIndex, OMX_BOOL isInput) {
+OSCL_EXPORT_REF OMX_ERRORTYPE base_video_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,omx_base_PortType **openmaxStandPort,OMX_U32 nPortIndex, OMX_BOOL isInput) {
 
   omx_base_video_PortType *omx_base_video_Port;
 
@@ -106,7 +105,7 @@ OMX_ERRORTYPE base_video_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,om
   * @return OMX_ErrorNone
   */
 
-OMX_ERRORTYPE base_video_port_Destructor(omx_base_PortType *openmaxStandPort){
+OSCL_EXPORT_REF OMX_ERRORTYPE base_video_port_Destructor(omx_base_PortType *openmaxStandPort){
 
   if(openmaxStandPort->sPortParam.format.video.cMIMEType) {
     free(openmaxStandPort->sPortParam.format.video.cMIMEType);

@@ -36,35 +36,49 @@
 static int globalTimestamp = 0;
 
 /**
- * Components specific section
- * Each component that has some resources to be handled by this
- * resource manager should add some fields here
- */
-/* Max allowable volume component instance */
-static ComponentListType *volumeComponentList = NULL;
-static ComponentListType *volumeWaitingList = NULL;
-#define MAX_RESOURCE_VOLUME 10
-
-/* Max allowable mixer component instance */
-static ComponentListType *mixerComponentList = NULL;
-static ComponentListType *mixerWaitingList = NULL;
-#define MAX_RESOURCE_MIXER 10
-
-/* Max allowable video scheduler component instance */
-static ComponentListType *videoschedComponentList = NULL;
-static ComponentListType *videoschedWaitingList = NULL;
-#define MAX_RESOURCE_VIDEOSCHED 10
-
-/* Max allowable video scheduler component instance */
-static ComponentListType *clockComponentList = NULL;
-static ComponentListType *clockWaitingList = NULL;
-#define MAX_RESOURCE_CLOCK 5
-
-/**
  * This function initializes the Resource manager. In the current implementation
  * it does not perform any operation
  */
 OMX_ERRORTYPE RM_Init() {
+	int i;
+	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
+	globalIndex = 0;
+	listOfcomponentRegistered = calloc(1, sizeof(struct NameIndexType) * MAX_COMPONENTS_TYPES_HANDLED);
+	for (i = 0; i<MAX_COMPONENTS_TYPES_HANDLED; i++) {
+		listOfcomponentRegistered[i].index = -1;
+		listOfcomponentRegistered[i].component_name = NULL;
+	}
+	globalComponentList = malloc(sizeof(ComponentListType*) * MAX_COMPONENTS_TYPES_HANDLED);
+	globalWaitingComponentList = malloc(sizeof(ComponentListType*) * MAX_COMPONENTS_TYPES_HANDLED);
+	memset(globalComponentList, '\0', sizeof(ComponentListType*) * MAX_COMPONENTS_TYPES_HANDLED);
+	memset(globalWaitingComponentList, '\0', sizeof(ComponentListType*) * MAX_COMPONENTS_TYPES_HANDLED);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
+	return OMX_ErrorNone;
+}
+
+/** This function is called during initialization by any component interested in be
+ * handled by the internal resource manager
+ */
+OMX_ERRORTYPE RM_RegisterComponent(char *name, int max_components) {
+	int i = 0;
+	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
+	while (listOfcomponentRegistered[i].component_name != NULL) {
+		if (!strcmp(listOfcomponentRegistered[i].component_name, name)) {
+			DEBUG(DEB_LEV_FUNCTION_NAME, "In %s component already registered\n", __func__);
+			return OMX_ErrorNone;
+		}
+		i++;
+	}
+	listOfcomponentRegistered[i].component_name = calloc(1, OMX_MAX_STRINGNAME_SIZE);
+	if (listOfcomponentRegistered[i].component_name == NULL) {
+		return OMX_ErrorInsufficientResources;
+	}
+	strcpy(listOfcomponentRegistered[i].component_name, name);
+	listOfcomponentRegistered[i].component_name[strlen(name)] = '\0';
+	listOfcomponentRegistered[i].index = globalIndex;
+	listOfcomponentRegistered[i].max_components = max_components;
+	globalIndex++;
+	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
 	return OMX_ErrorNone;
 }
 
@@ -77,15 +91,13 @@ OMX_ERRORTYPE RM_Init() {
  * beyond the usual OMX_Init - Deinit scope.
  */
 OMX_ERRORTYPE RM_Deinit() {
+	int i = 0;
 	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
-	clearList(&volumeComponentList);
-	clearList(&volumeWaitingList);
-	clearList(&mixerComponentList);
-	clearList(&mixerWaitingList);
-	clearList(&videoschedComponentList);
-	clearList(&videoschedWaitingList);
-	clearList(&clockComponentList);
-	clearList(&clockWaitingList);
+	while(globalComponentList[i] != NULL) {
+		clearList(&globalComponentList[i]);
+		clearList(&globalWaitingComponentList[i]);
+		i++;
+	}
 	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
 	return OMX_ErrorNone;
 }
@@ -94,14 +106,19 @@ OMX_ERRORTYPE RM_Deinit() {
  * This function adds a new element to a given list.
  * If it does not yet exists, this function also allocates the list.
  */
-OMX_ERRORTYPE addElemToList(ComponentListType **list, OMX_COMPONENTTYPE *openmaxStandComp) {
+OMX_ERRORTYPE addElemToList(ComponentListType **list, OMX_COMPONENTTYPE *openmaxStandComp, int index, OMX_BOOL bIsWaiting) {
 	ComponentListType *componentTemp;
 	ComponentListType *componentNext;
 	omx_base_component_PrivateType* omx_base_component_Private;
-	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s is waiting %i\n", __func__, bIsWaiting);
 	omx_base_component_Private = (omx_base_component_PrivateType*)openmaxStandComp->pComponentPrivate;
 	if (!*list) {
 		*list = malloc(sizeof(ComponentListType));
+		if (!bIsWaiting) {
+			globalComponentList[index] = *list;
+		} else {
+			globalWaitingComponentList[index] = *list;
+		}
 		if (!*list) {
 			DEBUG(DEB_LEV_ERR, "In %s OMX_ErrorInsufficientResources\n", __func__);
 			return OMX_ErrorInsufficientResources;
@@ -142,7 +159,7 @@ OMX_ERRORTYPE removeElemFromList(ComponentListType **list, OMX_COMPONENTTYPE *op
 	ComponentListType *componentPrev;
 	OMX_BOOL bFound = OMX_FALSE;
 
-	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s list %x\n", __func__, (int)*list);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s list %p\n", __func__, *list);
 	if (!*list) {
 		DEBUG(DEB_LEV_ERR, "In %s, the resource manager is not initialized\n", __func__);
 		return OMX_ErrorUndefined;
@@ -242,7 +259,7 @@ void RM_printList(ComponentListType *list, int viewFlag) {
 			printf("Name %s ", omx_base_component_Private->name);
 		}
 		if ((viewFlag & RM_SHOW_ADDRESS) == RM_SHOW_ADDRESS) {
-			printf("Address %x ", (int)componentTemp->openmaxStandComp);
+			printf("Address %p ", componentTemp->openmaxStandComp);
 		}
 		printf("\n");
 		index++;
@@ -329,105 +346,47 @@ OMX_ERRORTYPE RM_getResource(OMX_COMPONENTTYPE *openmaxStandComp) {
 	omx_base_component_PrivateType* omx_base_component_Private;
 	int candidates;
 	OMX_ERRORTYPE err;
+	int i = 0;
+	int indexComponent = -1;
 
 	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
 	omx_base_component_Private = (omx_base_component_PrivateType*)openmaxStandComp->pComponentPrivate;
-	if (!strcmp(omx_base_component_Private->name, "OMX.st.volume.component")) {
-		if (numElemInList(volumeComponentList) >= MAX_RESOURCE_VOLUME) {
-			candidates = searchLowerPriority(volumeComponentList, omx_base_component_Private->nGroupPriority, &componentCandidate);
-			if (candidates) {
-				DEBUG(DEB_LEV_SIMPLE_SEQ, "In %s candidates %i winner %x\n", __func__, candidates, (int)componentCandidate->openmaxStandComp);
-				err = preemptComponent(componentCandidate->openmaxStandComp);
-				if (err != OMX_ErrorNone) {
-					DEBUG(DEB_LEV_ERR, "In %s the component cannot be preempted\n", __func__);
-					return OMX_ErrorInsufficientResources;
-				} else {
-					err = removeElemFromList(&volumeComponentList, componentCandidate->openmaxStandComp);
-					err = addElemToList(&volumeComponentList, openmaxStandComp);
-					if (err != OMX_ErrorNone) {
-						DEBUG(DEB_LEV_ERR, "In %s memory error\n", __func__);
-						return OMX_ErrorInsufficientResources;
-					}
-				}
-			} else {
-				DEBUG(DEB_LEV_ERR, "Out of %s\n", __func__);
+	while(listOfcomponentRegistered[i].component_name != NULL ) {
+		if (!strcmp(listOfcomponentRegistered[i].component_name, omx_base_component_Private->name)) {
+			// found component in the list of the resource manager
+			indexComponent = listOfcomponentRegistered[i].index;
+			break;
+		}
+		i++;
+	}
+	if (indexComponent <0) {
+		// No resource to be handled
+		DEBUG(DEB_LEV_ERR, "In %s No resource to be handled\n", __func__);
+		return OMX_ErrorNone;
+	}
+	if (numElemInList(globalComponentList[indexComponent]) >= listOfcomponentRegistered[i].max_components) {
+		candidates = searchLowerPriority(globalComponentList[indexComponent], omx_base_component_Private->nGroupPriority, &componentCandidate);
+		if (candidates) {
+			DEBUG(DEB_LEV_SIMPLE_SEQ, "In %s candidates %i winner %p\n", __func__, candidates, componentCandidate->openmaxStandComp);
+			err = preemptComponent(componentCandidate->openmaxStandComp);
+			if (err != OMX_ErrorNone) {
+				DEBUG(DEB_LEV_ERR, "In %s the component cannot be preempted\n", __func__);
 				return OMX_ErrorInsufficientResources;
+			} else {
+				err = removeElemFromList(&globalComponentList[indexComponent], componentCandidate->openmaxStandComp);
+				err = addElemToList(&globalComponentList[indexComponent], openmaxStandComp, indexComponent, OMX_FALSE);
+				if (err != OMX_ErrorNone) {
+					DEBUG(DEB_LEV_ERR, "In %s memory error\n", __func__);
+					return OMX_ErrorInsufficientResources;
+				}
 			}
 		} else {
-			err = addElemToList(&volumeComponentList, openmaxStandComp);
+			DEBUG(DEB_LEV_SIMPLE_SEQ, "Out of %s with insufficient resources\n", __func__);
+			return OMX_ErrorInsufficientResources;
 		}
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.audio.mixer")) {
-		if (numElemInList(mixerComponentList) >= MAX_RESOURCE_MIXER) {
-			candidates = searchLowerPriority(mixerComponentList, omx_base_component_Private->nGroupPriority, &componentCandidate);
-			if (candidates) {
-				DEBUG(DEB_LEV_SIMPLE_SEQ, "In %s candidates %i winner %x\n", __func__, candidates, (int)componentCandidate->openmaxStandComp);
-				err = preemptComponent(componentCandidate->openmaxStandComp);
-				if (err != OMX_ErrorNone) {
-					DEBUG(DEB_LEV_ERR, "In %s the component cannot be preempted\n", __func__);
-					return OMX_ErrorInsufficientResources;
-				} else {
-					err = removeElemFromList(&mixerComponentList, componentCandidate->openmaxStandComp);
-					err = addElemToList(&mixerComponentList, openmaxStandComp);
-					if (err != OMX_ErrorNone) {
-						DEBUG(DEB_LEV_ERR, "In %s memory error\n", __func__);
-						return OMX_ErrorInsufficientResources;
-					}
-				}
-			} else {
-				DEBUG(DEB_LEV_ERR, "Out of %s\n", __func__);
-				return OMX_ErrorInsufficientResources;
-			}
-		} else {
-			err = addElemToList(&mixerComponentList, openmaxStandComp);
-		}
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.video.scheduler")) {
-		if (numElemInList(videoschedComponentList) >= MAX_RESOURCE_VIDEOSCHED) {
-			candidates = searchLowerPriority(videoschedComponentList, omx_base_component_Private->nGroupPriority, &componentCandidate);
-			if (candidates) {
-				DEBUG(DEB_LEV_SIMPLE_SEQ, "In %s candidates %i winner %x\n", __func__, candidates, (int)componentCandidate->openmaxStandComp);
-				err = preemptComponent(componentCandidate->openmaxStandComp);
-				if (err != OMX_ErrorNone) {
-					DEBUG(DEB_LEV_ERR, "In %s the component cannot be preempted\n", __func__);
-					return OMX_ErrorInsufficientResources;
-				} else {
-					err = removeElemFromList(&videoschedComponentList, componentCandidate->openmaxStandComp);
-					err = addElemToList(&videoschedComponentList, openmaxStandComp);
-					if (err != OMX_ErrorNone) {
-						DEBUG(DEB_LEV_ERR, "In %s memory error\n", __func__);
-						return OMX_ErrorInsufficientResources;
-					}
-				}
-			} else {
-				DEBUG(DEB_LEV_ERR, "Out of %s\n", __func__);
-				return OMX_ErrorInsufficientResources;
-			}
-		} else {
-			err = addElemToList(&videoschedComponentList, openmaxStandComp);
-		}
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.clocksrc")) {
-		if (numElemInList(clockComponentList) >= MAX_RESOURCE_CLOCK) {
-			candidates = searchLowerPriority(clockComponentList, omx_base_component_Private->nGroupPriority, &componentCandidate);
-			if (candidates) {
-				DEBUG(DEB_LEV_SIMPLE_SEQ, "In %s candidates %i winner %x\n", __func__, candidates, (int)componentCandidate->openmaxStandComp);
-				err = preemptComponent(componentCandidate->openmaxStandComp);
-				if (err != OMX_ErrorNone) {
-					DEBUG(DEB_LEV_ERR, "In %s the component cannot be preempted\n", __func__);
-					return OMX_ErrorInsufficientResources;
-				} else {
-					err = removeElemFromList(&clockComponentList, componentCandidate->openmaxStandComp);
-					err = addElemToList(&clockComponentList, openmaxStandComp);
-					if (err != OMX_ErrorNone) {
-						DEBUG(DEB_LEV_ERR, "In %s memory error\n", __func__);
-						return OMX_ErrorInsufficientResources;
-					}
-				}
-			} else {
-				DEBUG(DEB_LEV_ERR, "Out of %s\n", __func__);
-				return OMX_ErrorInsufficientResources;
-			}
-		} else {
-			err = addElemToList(&clockComponentList, openmaxStandComp);
-		}
+
+	} else {
+		err = addElemToList(&globalComponentList[indexComponent], openmaxStandComp, indexComponent, OMX_FALSE);
 	}
 	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
 	return OMX_ErrorNone;
@@ -442,81 +401,43 @@ OMX_ERRORTYPE RM_releaseResource(OMX_COMPONENTTYPE *openmaxStandComp){
 	OMX_COMPONENTTYPE *openmaxWaitingComp;
 	OMX_ERRORTYPE err;
 
+	int i = 0;
+	int indexComponent = -1;
+
 	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
 	omx_base_component_Private = (omx_base_component_PrivateType*)openmaxStandComp->pComponentPrivate;
-	if (!strcmp(omx_base_component_Private->name, "OMX.st.volume.component")) {
-		if (!volumeComponentList) {
-			DEBUG(DEB_LEV_ERR, "In %s, the resource manager is not initialized\n", __func__);
-			return OMX_ErrorUndefined;
+
+	while(listOfcomponentRegistered[i].component_name != NULL ) {
+		if (!strcmp(listOfcomponentRegistered[i].component_name, omx_base_component_Private->name)) {
+			// found component in the list of the resource manager
+			indexComponent = listOfcomponentRegistered[i].index;
+			break;
 		}
-		err = removeElemFromList(&volumeComponentList, openmaxStandComp);
-		if (err != OMX_ErrorNone) {
-			DEBUG(DEB_LEV_ERR, "In %s, the resource cannot be released\n", __func__);
-			return OMX_ErrorUndefined;
-		}
-		if(numElemInList(volumeWaitingList)) {
-			openmaxWaitingComp = volumeWaitingList->openmaxStandComp;
-			removeElemFromList(&volumeWaitingList, openmaxWaitingComp);
-	        err = OMX_SendCommand(openmaxWaitingComp, OMX_CommandStateSet, OMX_StateIdle, NULL);
-	        if (err != OMX_ErrorNone) {
-	        	DEBUG(DEB_LEV_ERR, "In %s, the state cannot be changed\n", __func__);
-	        }
-		}
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.audio.mixer")) {
-		if (!mixerComponentList) {
-			DEBUG(DEB_LEV_ERR, "In %s, the resource manager is not initialized\n", __func__);
-			return OMX_ErrorUndefined;
-		}
-		err = removeElemFromList(&mixerComponentList, openmaxStandComp);
-		if (err != OMX_ErrorNone) {
-			DEBUG(DEB_LEV_ERR, "In %s, the resource cannot be released\n", __func__);
-			return OMX_ErrorUndefined;
-		}
-		if(numElemInList(mixerWaitingList)) {
-			openmaxWaitingComp = mixerWaitingList->openmaxStandComp;
-			removeElemFromList(&mixerWaitingList, openmaxWaitingComp);
-	        err = OMX_SendCommand(openmaxWaitingComp, OMX_CommandStateSet, OMX_StateIdle, NULL);
-	        if (err != OMX_ErrorNone) {
-	        	DEBUG(DEB_LEV_ERR, "In %s, the state cannot be changed\n", __func__);
-	        }
-		}
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.video.scheduler")) {
-		if (!videoschedComponentList) {
-			DEBUG(DEB_LEV_ERR, "In %s, the resource manager is not initialized\n", __func__);
-			return OMX_ErrorUndefined;
-		}
-		err = removeElemFromList(&videoschedComponentList, openmaxStandComp);
-		if (err != OMX_ErrorNone) {
-			DEBUG(DEB_LEV_ERR, "In %s, the resource cannot be released\n", __func__);
-			return OMX_ErrorUndefined;
-		}
-		if(numElemInList(videoschedWaitingList)) {
-			openmaxWaitingComp = videoschedWaitingList->openmaxStandComp;
-			removeElemFromList(&videoschedWaitingList, openmaxWaitingComp);
-	        err = OMX_SendCommand(openmaxWaitingComp, OMX_CommandStateSet, OMX_StateIdle, NULL);
-	        if (err != OMX_ErrorNone) {
-	        	DEBUG(DEB_LEV_ERR, "In %s, the state cannot be changed\n", __func__);
-	        }
-		}
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.clocksrc")) {
-		if (!clockComponentList) {
-			DEBUG(DEB_LEV_ERR, "In %s, the resource manager is not initialized\n", __func__);
-			return OMX_ErrorUndefined;
-		}
-		err = removeElemFromList(&clockComponentList, openmaxStandComp);
-		if (err != OMX_ErrorNone) {
-			DEBUG(DEB_LEV_ERR, "In %s, the resource cannot be released\n", __func__);
-			return OMX_ErrorUndefined;
-		}
-		if(numElemInList(clockWaitingList)) {
-			openmaxWaitingComp = clockWaitingList->openmaxStandComp;
-			removeElemFromList(&clockWaitingList, openmaxWaitingComp);
-	        err = OMX_SendCommand(openmaxWaitingComp, OMX_CommandStateSet, OMX_StateIdle, NULL);
-	        if (err != OMX_ErrorNone) {
-	        	DEBUG(DEB_LEV_ERR, "In %s, the state cannot be changed\n", __func__);
-	        }
-		}
+		i++;
 	}
+	if (indexComponent <0) {
+		// No resource to be handled
+		DEBUG(DEB_LEV_ERR, "In %s No resource to be handled\n", __func__);
+		return OMX_ErrorNone;
+	}
+	if (!globalComponentList[indexComponent]) {
+		DEBUG(DEB_LEV_ERR, "In %s, the resource manager is not initialized\n", __func__);
+		return OMX_ErrorUndefined;
+	}
+	err = removeElemFromList(&globalComponentList[indexComponent], openmaxStandComp);
+	if (err != OMX_ErrorNone) {
+		DEBUG(DEB_LEV_ERR, "In %s, the resource cannot be released\n", __func__);
+		return OMX_ErrorUndefined;
+	}
+	if(numElemInList(globalWaitingComponentList[indexComponent])) {
+		openmaxWaitingComp = globalWaitingComponentList[indexComponent]->openmaxStandComp;
+		removeElemFromList(&globalWaitingComponentList[indexComponent], openmaxWaitingComp);
+        err = OMX_SendCommand(openmaxWaitingComp, OMX_CommandStateSet, OMX_StateIdle, NULL);
+        if (err != OMX_ErrorNone) {
+        	DEBUG(DEB_LEV_ERR, "In %s, the state cannot be changed\n", __func__);
+        }
+	}
+
 	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of  %s\n", __func__);
 	return OMX_ErrorNone;
 }
@@ -530,17 +451,28 @@ OMX_ERRORTYPE RM_releaseResource(OMX_COMPONENTTYPE *openmaxStandComp){
 OMX_ERRORTYPE RM_waitForResource(OMX_COMPONENTTYPE *openmaxStandComp) {
 	omx_base_component_PrivateType* omx_base_component_Private;
 
+	int i = 0;
+	int indexComponent = -1;
+
 	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
 	omx_base_component_Private = (omx_base_component_PrivateType*)openmaxStandComp->pComponentPrivate;
-	if (!strcmp(omx_base_component_Private->name, "OMX.st.volume.component")) {
-		addElemToList(&volumeWaitingList, openmaxStandComp);
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.audio.mixer")) {
-		addElemToList(&mixerWaitingList, openmaxStandComp);
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.video.scheduler")) {
-		addElemToList(&videoschedWaitingList, openmaxStandComp);
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.clocksrc")) {
-		addElemToList(&clockWaitingList, openmaxStandComp);
+
+	while(listOfcomponentRegistered[i].component_name != NULL ) {
+		if (!strcmp(listOfcomponentRegistered[i].component_name, omx_base_component_Private->name)) {
+			// found component in the list of the resource manager
+			indexComponent = listOfcomponentRegistered[i].index;
+			break;
+		}
+		i++;
 	}
+	if (indexComponent <0) {
+		// No resource to be handled
+		DEBUG(DEB_LEV_ERR, "In %s No resource to be handled\n", __func__);
+		return OMX_ErrorNone;
+	}
+
+	addElemToList(&globalWaitingComponentList[indexComponent], openmaxStandComp, listOfcomponentRegistered[i].index, OMX_TRUE);
+
 	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
 	return OMX_ErrorNone;
 }
@@ -552,17 +484,24 @@ OMX_ERRORTYPE RM_waitForResource(OMX_COMPONENTTYPE *openmaxStandComp) {
  */
 OMX_ERRORTYPE RM_removeFromWaitForResource(OMX_COMPONENTTYPE *openmaxStandComp) {
 	omx_base_component_PrivateType* omx_base_component_Private;
+	int i = 0;
+	int indexComponent = -1;
 
 	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
 	omx_base_component_Private = (omx_base_component_PrivateType*)openmaxStandComp->pComponentPrivate;
-	if (!strcmp(omx_base_component_Private->name, "OMX.st.volume.component")) {
-		removeElemFromList(&volumeWaitingList, openmaxStandComp);
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.audio.mixer")) {
-		removeElemFromList(&mixerWaitingList, openmaxStandComp);
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.video.scheduler")) {
-		removeElemFromList(&videoschedWaitingList, openmaxStandComp);
-	} else if (!strcmp(omx_base_component_Private->name, "OMX.st.clocksrc")) {
-		removeElemFromList(&clockWaitingList, openmaxStandComp);
+
+	while(listOfcomponentRegistered[i].component_name != NULL ) {
+		if (!strcmp(listOfcomponentRegistered[i].component_name, omx_base_component_Private->name)) {
+			// found component in the list of the resource manager
+			removeElemFromList(&globalComponentList[indexComponent], openmaxStandComp);
+			break;
+		}
+		i++;
+	}
+	if (indexComponent <0) {
+		// No resource to be handled
+		DEBUG(DEB_LEV_ERR, "In %s No resource to be handled\n", __func__);
+		return OMX_ErrorNone;
 	}
 	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
 	return OMX_ErrorNone;

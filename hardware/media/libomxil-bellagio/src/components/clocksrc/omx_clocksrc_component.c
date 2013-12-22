@@ -37,6 +37,8 @@ OMX_ERRORTYPE omx_clocksrc_component_Constructor(OMX_COMPONENTTYPE *openmaxStand
   omx_clocksrc_component_PrivateType* omx_clocksrc_component_Private;
   OMX_U32 i;
 
+	RM_RegisterComponent(CLOCK_COMP_NAME, MAX_CLOCK_COMPONENTS);
+
   if (!openmaxStandComp->pComponentPrivate) {
     openmaxStandComp->pComponentPrivate = calloc(1, sizeof(omx_clocksrc_component_PrivateType));
     if(openmaxStandComp->pComponentPrivate==NULL) {

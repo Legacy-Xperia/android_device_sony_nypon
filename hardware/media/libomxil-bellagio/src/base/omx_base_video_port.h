@@ -23,6 +23,7 @@
 
 */
 
+#include "omx_base_component.h"
 #include "omx_classmagic.h"
 #include "omx_base_port.h"
 
@@ -62,7 +63,7 @@ ENDCLASS(omx_base_video_PortType)
   * @return OMX_ErrorInsufficientResources if a memory allocation fails
   */
 
-OMX_ERRORTYPE base_video_port_Constructor(
+OSCL_IMPORT_REF OMX_ERRORTYPE base_video_port_Constructor(
   OMX_COMPONENTTYPE *openmaxStandComp,
   omx_base_PortType **openmaxStandPort,
   OMX_U32 nPortIndex, 
@@ -81,7 +82,7 @@ OMX_ERRORTYPE base_video_port_Constructor(
   */
 
 
-OMX_ERRORTYPE base_video_port_Destructor(
+OSCL_IMPORT_REF OMX_ERRORTYPE base_video_port_Destructor(
   omx_base_PortType *openmaxStandPort);
 
 #endif

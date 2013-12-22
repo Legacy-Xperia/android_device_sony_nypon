@@ -64,13 +64,13 @@ ENDCLASS(omx_base_filter_PrivateType)
  *
  * @return OMX_ErrorInsufficientResources if a memory allocation fails
  */
-OMX_ERRORTYPE omx_base_filter_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,OMX_STRING cComponentName);
+OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_filter_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,OMX_STRING cComponentName);
 
 /** @brief the base filter destructor for ST OpenMAX components
  *
  * @param openmaxStandComp the ST OpenMAX component to be disposed
  */
-OMX_ERRORTYPE omx_base_filter_Destructor(OMX_COMPONENTTYPE *openmaxStandComp);
+OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_filter_Destructor(OMX_COMPONENTTYPE *openmaxStandComp);
 
 /** This is the central function for component processing. It
  * is executed in a separate thread, is synchronized with

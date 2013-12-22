@@ -52,7 +52,7 @@ OMX_ERRORTYPE base_audio_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,om
 	OMX_ERRORTYPE err;
 	omx_base_audio_PortType *omx_base_audio_Port;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %x\n", __func__, (int)openmaxStandComp);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %p\n", __func__, openmaxStandComp);
   if (!(*openmaxStandPort)) {
     *openmaxStandPort = calloc(1, sizeof(omx_base_audio_PortType));
   }
@@ -89,7 +89,7 @@ OMX_ERRORTYPE base_audio_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,om
 
   omx_base_audio_Port->PortDestructor = &base_audio_port_Destructor;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %x\n", __func__, (int)openmaxStandComp);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %p\n", __func__, openmaxStandComp);
   return OMX_ErrorNone;
 }
 
@@ -107,7 +107,7 @@ OMX_ERRORTYPE base_audio_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,om
 
 OMX_ERRORTYPE base_audio_port_Destructor(omx_base_PortType *openmaxStandPort){
 	OMX_ERRORTYPE err;
-	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of port %x\n", __func__, (int)openmaxStandPort);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of port %p\n", __func__, openmaxStandPort);
 	if(openmaxStandPort->sPortParam.format.audio.cMIMEType) {
 		free(openmaxStandPort->sPortParam.format.audio.cMIMEType);
 		openmaxStandPort->sPortParam.format.audio.cMIMEType = NULL;
@@ -117,6 +117,6 @@ OMX_ERRORTYPE base_audio_port_Destructor(omx_base_PortType *openmaxStandPort){
 		DEBUG(DEB_LEV_ERR, "In %s base port destructor failed\n", __func__);
 		return err;
 	}
-	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of port %x\n", __func__, (int)openmaxStandPort);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of port %p\n", __func__, openmaxStandPort);
 	return OMX_ErrorNone;
 }

@@ -32,18 +32,13 @@
 /* Gain value */
 #define GAIN_VALUE 100.0f
 
-#define MIXER_COMP_ROLE "audio.mixer"
-
-/** Maximum Number of AudioMixer Component Instance*/
-static OMX_U32 noAudioMixerCompInstance = 0;
-
-
 OMX_ERRORTYPE omx_audio_mixer_component_Constructor(OMX_COMPONENTTYPE *openmaxStandComp, OMX_STRING cComponentName) {
   OMX_ERRORTYPE err = OMX_ErrorNone;
   omx_audio_mixer_component_PrivateType* omx_audio_mixer_component_Private;
   omx_audio_mixer_component_PortType *pPort;//,*inPort1, *outPort;
   OMX_U32 i;
 
+  RM_RegisterComponent(MIXER_COMP_NAME, MAX_MIXER_COMPONENTS);
   if (!openmaxStandComp->pComponentPrivate) {
     DEBUG(DEB_LEV_FUNCTION_NAME, "In %s, allocating component\n",__func__);
     openmaxStandComp->pComponentPrivate = calloc(1, sizeof(omx_audio_mixer_component_PrivateType));
@@ -51,7 +46,7 @@ OMX_ERRORTYPE omx_audio_mixer_component_Constructor(OMX_COMPONENTTYPE *openmaxSt
       return OMX_ErrorInsufficientResources;
     }
   } else {
-    DEBUG(DEB_LEV_FUNCTION_NAME, "In %s, Error Component %x Already Allocated\n", __func__, (int)openmaxStandComp->pComponentPrivate);
+    DEBUG(DEB_LEV_FUNCTION_NAME, "In %s, Error Component %p Already Allocated\n", __func__, openmaxStandComp->pComponentPrivate);
   }
 
   omx_audio_mixer_component_Private = openmaxStandComp->pComponentPrivate;
@@ -141,6 +136,7 @@ OMX_ERRORTYPE omx_audio_mixer_component_Destructor(OMX_COMPONENTTYPE *openmaxSta
   omx_audio_mixer_component_PrivateType* omx_audio_mixer_component_Private = openmaxStandComp->pComponentPrivate;
   OMX_U32 i;
 
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
   /* frees port/s */
   if (omx_audio_mixer_component_Private->ports) {
     for (i=0; i < omx_audio_mixer_component_Private->sPortTypesParam[OMX_PortDomainAudio].nPorts; i++) {
@@ -151,9 +147,9 @@ OMX_ERRORTYPE omx_audio_mixer_component_Destructor(OMX_COMPONENTTYPE *openmaxSta
     omx_audio_mixer_component_Private->ports=NULL;
   }
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Destructor of audiodecoder component is called\n");
   omx_base_filter_Destructor(openmaxStandComp);
-  noAudioMixerCompInstance--;
+
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
 
   return OMX_ErrorNone;
 }
@@ -521,7 +517,7 @@ void* omx_audio_mixer_BufferMgmtFunction (void* param) {
           }
 
           if((pBuffer[i]->nFlags & OMX_BUFFERFLAG_EOS) == OMX_BUFFERFLAG_EOS && pBuffer[i]->nFilledLen==0) {
-            DEBUG(DEB_LEV_FULL_SEQ, "Detected EOS flags in input buffer %x of %i filled len=%d\n", (int)pBuffer[i], (int)i, (int)pBuffer[i]->nFilledLen);
+            DEBUG(DEB_LEV_FULL_SEQ, "Detected EOS flags in input buffer %p of %i filled len=%d\n", pBuffer[i], (int)i, (int)pBuffer[i]->nFilledLen);
             pBuffer[nOutputPortIndex]->nFlags = pBuffer[i]->nFlags;
             pBuffer[i]->nFlags=0;
             (*(omx_audio_mixer_component_Private->callbacks->EventHandler))

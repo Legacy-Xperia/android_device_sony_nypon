@@ -294,24 +294,24 @@ int main(int argc, char** argv) {
   for(j=0; j<index_files; j++) {
     err = OMX_AllocateBuffer(appPriv->handle, &inBuffer[j*2], j, NULL, BUFFER_IN_SIZE);
     if (err != OMX_ErrorNone) {
-      DEBUG(DEB_LEV_ERR, "Error on AllocateBuffer %i %x on port %i\n", j*2, (int)inBuffer[j*2], j);
+      DEBUG(DEB_LEV_ERR, "Error on AllocateBuffer %i %p on port %i\n", j*2, inBuffer[j*2], j);
       exit(1);
     }
     err = OMX_AllocateBuffer(appPriv->handle, &inBuffer[j * 2 + 1], j, NULL, BUFFER_IN_SIZE);
     if (err != OMX_ErrorNone) {
-      DEBUG(DEB_LEV_ERR, "Error on AllocateBuffer %i %x on port %i\n", j*2+1, (int)inBuffer[j*2+1], j);
+      DEBUG(DEB_LEV_ERR, "Error on AllocateBuffer %i %p on port %i\n", j*2+1, inBuffer[j*2+1], j);
       exit(1);
     }
   }
 
    err = OMX_AllocateBuffer(appPriv->handle, &outBuffer[0], 4, NULL, BUFFER_IN_SIZE);
    if (err != OMX_ErrorNone) {
-     DEBUG(DEB_LEV_ERR, "Error on AllocateBuffer 0 %x on port 4\n", (int)outBuffer[0]);
+     DEBUG(DEB_LEV_ERR, "Error on AllocateBuffer 0 %p on port 4\n", outBuffer[0]);
      exit(1);
    }
    err = OMX_AllocateBuffer(appPriv->handle, &outBuffer[1], 4, NULL, BUFFER_IN_SIZE);
    if (err != OMX_ErrorNone) {
-     DEBUG(DEB_LEV_ERR, "Error on AllocateBuffer 1 %x on port 4\n", (int)outBuffer[1]);
+     DEBUG(DEB_LEV_ERR, "Error on AllocateBuffer 1 %p on port 4\n", outBuffer[1]);
      exit(1);
    }
 
@@ -540,7 +540,7 @@ OMX_ERRORTYPE audiomixerEmptyBufferDone(
     return OMX_ErrorNone;
   }
   if(!bEOS[pBuffer->nInputPortIndex]) {
-    DEBUG(DEB_LEV_FULL_SEQ, "Empty buffer %x\n", (int)pBuffer);
+    DEBUG(DEB_LEV_FULL_SEQ, "Empty buffer %p\n", pBuffer);
     err = OMX_EmptyThisBuffer(hComponent, pBuffer);
   }else {
     DEBUG(DEB_LEV_FULL_SEQ, "In %s Dropping Empty This buffer to Audio Mixer\n", __func__);
@@ -557,8 +557,8 @@ OMX_ERRORTYPE audiomixerFillBufferDone(
   OMX_ERRORTYPE err;
   int i;
 
-  DEBUG(DEB_LEV_FULL_SEQ, "Hi there, I am in the %s callback. Got buflen %i for buffer at 0x%08x\n",
-                          __func__, (int)pBuffer->nFilledLen, (int)pBuffer);
+  DEBUG(DEB_LEV_FULL_SEQ, "Hi there, I am in the %s callback. Got buflen %i for buffer at 0x%p\n",
+                          __func__, (int)pBuffer->nFilledLen, pBuffer);
 
   /* Output data to standard output */
   if(pBuffer != NULL) {

@@ -32,7 +32,9 @@
 #include <OMX_Core.h>
 #include <string.h>
 #include <omx_base_filter.h>
-
+#define VOLUME_COMP_NAME "OMX.st.volume.component"
+#define VOLUME_COMP_ROLE "volume.component"
+#define MAX_VOLUME_COMPONENTS 10
 #define VOLUME_QUALITY_LEVELS 2
 static int volumeQualityLevels []={1, 65536, 1, 32768};
 

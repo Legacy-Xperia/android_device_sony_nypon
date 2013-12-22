@@ -33,6 +33,10 @@
 #include <omx_base_video_port.h>
 #include <omx_base_clock_port.h>
 
+#define VIDEO_SCHEDULER_COMP_NAME "OMX.st.video.scheduler"
+#define VIDEO_SCHEDULER_COMP_ROLE "video.scheduler"
+#define MAX_VIDEOSCHED_COMPONENTS 10
+
 #define VIDEOSCHED_QUALITY_LEVELS 2
 static int videoSchedQualityLevels []={1, 456192, 1, 304128};
 

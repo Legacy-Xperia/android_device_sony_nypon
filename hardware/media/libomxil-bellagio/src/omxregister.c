@@ -16,7 +16,7 @@
 	BELLAGIO_SEARCH_PATH is checked.
 	If set it contains the locations of the components, separated by colons
 
-	Copyright (C) 2007-2009  STMicroelectronics
+	Copyright (C) 2007-2010  STMicroelectronics
 	Copyright (C) 2007-2009 Nokia Corporation and/or its subsidiary(-ies).
 
 	This library is free software; you can redistribute it and/or modify it under
@@ -47,6 +47,7 @@
 #include "st_static_component_loader.h"
 #include "common.h"
 
+#define DEFAULT_LINE_LENGHT 500
 /** String element to be put in the .omxregister file to indicate  an
  * OpenMAX component and its roles
  */
@@ -61,7 +62,92 @@ int int2strlen(int value) {
 	}
 	return ret;
 }
+/** This function shows all the components and related rules already registered
+ * and described in the omxregister file
+ */
+static int showComponentsList(FILE* omxregistryfp) {
+	char* buffer;
+	char* temp_buffer, *temp_rules;
+	char *comp_name, *temp_name, *comp_rules;
+	char* checkChar;
+	int data_read;
+	int allocation_length = DEFAULT_LINE_LENGHT;
+	long int start_pos, end_pos;
+	long int offset;
+	int i;
 
+	buffer = malloc(allocation_length+1);
+	comp_name = malloc(DEFAULT_LINE_LENGHT);
+	temp_name = malloc(DEFAULT_LINE_LENGHT);
+	comp_rules = malloc(DEFAULT_LINE_LENGHT);
+	checkChar = malloc(2);
+
+	printf("*********************************\n");
+	printf("* List of registered components *\n");
+	printf("*********************************\n");
+	while(1) {
+		//read line
+		start_pos = ftell(omxregistryfp);
+		do {
+			data_read = fread(checkChar, 1, 1, omxregistryfp);
+		} while ((*checkChar != '\n') && (data_read > 0));
+		if (feof(omxregistryfp)) {
+			break;
+		}
+		end_pos = ftell(omxregistryfp);
+		offset = (end_pos - start_pos);
+		fseek(omxregistryfp, start_pos, SEEK_SET);
+		data_read = fread(buffer, offset, 1, omxregistryfp);
+		buffer[offset] = '\0';
+		if (buffer[0] == '/') {
+			continue;
+		}
+		temp_buffer = buffer+5;
+		i = 0;
+		while ((temp_buffer[i] != '\0') && (temp_buffer[i] != ' ')) {
+			i++;
+		}
+		strncpy(comp_name, temp_buffer, i);
+		comp_name[i] = '\0';
+		temp_buffer += i;
+		if (*temp_buffer != '\0') {
+			temp_buffer += 5;
+			i = 0;
+			while ((temp_buffer[i] != '\n') && (temp_buffer[i] != ' ')) {
+				i++;
+			}
+			strncpy(comp_rules, temp_buffer, i);
+			comp_rules[i] = '\0';
+		} else {
+			comp_rules[0] = '\0';
+		}
+		printf("Component %s\n", comp_name);
+		if (comp_rules[0] != '\0') {
+			temp_rules = comp_rules;
+			printf("          supported formats:\n");
+			i = 0;
+			while (*(temp_rules+i) != '\0') {
+				i++;
+				if (*(temp_rules+i) == ':') {
+					strncpy(temp_name, temp_rules, i);
+					temp_name[i] = '\0';
+					temp_rules += i+1;
+					printf("             %s\n", temp_name);
+					i = 0;
+				}
+			}
+		}
+		printf("\n");
+	}
+
+	free(buffer);
+	free(comp_name);
+	free(temp_name);
+	free(comp_rules);
+	free(checkChar);
+
+	return 0;
+}
 /** @brief Creates a list of components on a registry file
  *
  * This function
@@ -281,7 +367,7 @@ static void usage(const char *app) {
 	registry_filename = componentsRegistryGetFilename();
 
 	printf(
-      "Usage: %s [-v] [-h] [componentspath[:other_components_path]]...\n"
+      "Usage: %s [-l] [-v] [-h] [componentspath[:other_components_path]]...\n"
 	  "\n"
 	  "Version 0.9.2\n"
 	  "\n"
@@ -293,6 +379,9 @@ static void usage(const char *app) {
       "The following options are supported:\n"
       "\n"
       "        -v   display a verbose output, listing all the components registered\n"
+      "        -l   list only the components already registered. If -l is specified \n"
+      "             all the other parameters are ignored and only the register file\n"
+      "             is checked\n"
       "        -h   display this message\n"
       "\n"
       "         componentspath: a searching path for components can be specified.\n"
@@ -318,6 +407,7 @@ int main(int argc, char *argv[]) {
 	char *registry_filename;
 	char *dir,*dirp;
 	char *buffer;
+	int isListOnly = 0;
 
 	for(i = 1; i < argc; i++) {
 		if(*(argv[i]) != '-') {
@@ -325,18 +415,21 @@ int main(int argc, char *argv[]) {
 		}
 		if (*(argv[i]+1) == 'v') {
 			verbose = 1;
+		} else if (*(argv[i]+1) == 'l') {
+			isListOnly = 1;
 		} else {
 			usage(argv[0]);
 			exit(*(argv[i]+1) == 'h' ? 0 : -EINVAL);
 		}
-  }
+	}
 
 	registry_filename = componentsRegistryGetFilename();
 
 	/* make sure the registry directory exists */
 	dir = strdup(registry_filename);
-	if (dir == NULL)
+	if (dir == NULL) {
 		exit(EXIT_FAILURE);
+	}
 	dirp = strrchr(dir, '/');
 	if (dirp != NULL) {
 		*dirp = '\0';
@@ -347,13 +440,24 @@ int main(int argc, char *argv[]) {
 	}
 	free(dir);
 
-	omxregistryfp = fopen(registry_filename, "w");
+	if (isListOnly) {
+		omxregistryfp = fopen(registry_filename, "r");
+	} else {
+		omxregistryfp = fopen(registry_filename, "w");
+	}
 	if (omxregistryfp == NULL){
 		DEBUG(DEB_LEV_ERR, "Cannot open OpenMAX registry file %s\n", registry_filename);
 		exit(EXIT_FAILURE);
 	}
 
 	free(registry_filename);
+	if (isListOnly) {
+		err = showComponentsList(omxregistryfp);
+		if(err) {
+			DEBUG(DEB_LEV_ERR, "Error reading omxregister file\n");
+		}
+		exit(0);
+	}
 
 	for(i = 1, found = 0; i < argc; i++) {
 		if(*(argv[i]) == '-') {

@@ -51,7 +51,7 @@ OMX_ERRORTYPE base_clock_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,om
 	OMX_ERRORTYPE err;
   omx_base_clock_PortType *omx_base_clock_Port;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %x\n", __func__, (int)openmaxStandComp);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %p\n", __func__, openmaxStandComp);
   if (!(*openmaxStandPort)) {
     *openmaxStandPort = calloc(1,sizeof (omx_base_clock_PortType));
   }
@@ -97,7 +97,7 @@ OMX_ERRORTYPE base_clock_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,om
   omx_base_clock_Port->Port_SendBufferFunction = &base_clock_port_SendBufferFunction;
   omx_base_clock_Port->PortDestructor = &base_clock_port_Destructor;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %x\n", __func__, (int)openmaxStandComp);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %p\n", __func__, openmaxStandComp);
   return OMX_ErrorNone;
 }
 
@@ -115,13 +115,13 @@ OMX_ERRORTYPE base_clock_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,om
 
 OMX_ERRORTYPE base_clock_port_Destructor(omx_base_PortType *openmaxStandPort){
 	OMX_ERRORTYPE err;
-	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %x\n", __func__, (int)openmaxStandPort->standCompContainer);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %p\n", __func__, openmaxStandPort->standCompContainer);
 	err = base_port_Destructor(openmaxStandPort);
 	if (err != OMX_ErrorNone) {
 		DEBUG(DEB_LEV_ERR, "Base port destructor failed in %s\n", __func__);
 		return err;
 	}
-	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %x\n", __func__, (int)openmaxStandPort->standCompContainer);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %p\n", __func__, openmaxStandPort->standCompContainer);
 	return OMX_ErrorNone;
 }
 
@@ -139,7 +139,7 @@ OMX_ERRORTYPE base_clock_port_SendBufferFunction(
   OMX_U32 portIndex;
   OMX_COMPONENTTYPE* omxComponent = openmaxStandPort->standCompContainer;
   omx_base_component_PrivateType* omx_base_component_Private = (omx_base_component_PrivateType*)omxComponent->pComponentPrivate;
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %x\n", __func__, (int)omxComponent);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %p\n", __func__, omxComponent);
 #if NO_GST_OMX_PATCH
   unsigned int i;
 #endif
@@ -228,6 +228,6 @@ OMX_ERRORTYPE base_clock_port_SendBufferFunction(
     DEBUG(DEB_LEV_ERR, "Port flushed but not tunneled in %s \n", __func__);
     return OMX_ErrorIncorrectStateOperation;
   }
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %x\n", __func__, (int)omx_base_component_Private);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %p\n", __func__, omx_base_component_Private);
   return OMX_ErrorNone;
 }

@@ -5,7 +5,7 @@
   be composed with binary OR.
   The debug levels defined here belong to OpenMAX components and IL core
 
-  Copyright (C) 2007-2009 STMicroelectronics
+  Copyright (C) 2007-2011 STMicroelectronics
   Copyright (C) 2007-2009 Nokia Corporation and/or its subsidiary(-ies).
 
   This library is free software; you can redistribute it and/or modify it under
@@ -29,11 +29,6 @@
 #define __OMX_COMP_DEBUG_LEVELS_H__
 
 #include <stdio.h>
-
-#ifdef ANDROID
-#define LOG_TAG "BellagioCore"
-#include <cutils/log.h>
-#endif
 
 /** Remove all debug output lines
  */
@@ -78,15 +73,10 @@
 #else
 #define DEBUG_LEVEL (DEB_LEV_ERR)
 #endif
-
 #if DEBUG_LEVEL > 0
-#ifdef ANDROID
-#define DEBUG(n, fmt, args...) do { if (DEBUG_LEVEL & (n)){ ALOGE( fmt, ##args); } } while (0)
-#else  /* #ifdef ANDROID */
-#define DEBUG(n, fmt, args...) do { if (DEBUG_LEVEL & (n)){ fprintf(stderr, "BellagioCore" fmt, ##args); } } while (0)
-#endif  /* #ifdef ANDROID */
-#else  /* #if DEBUG_LEVEL > 0 */
-#define DEBUG(n, fmt, args...)
-#endif  /* #if DEBUG_LEVEL > 0 */
+#define DEBUG(n, fmt, args...) do { if (DEBUG_LEVEL & (n)){fprintf(stderr, "OMX-" fmt, ##args);} } while (0)
+#else
+#define DEBUG(n, fmt, args...) {}
+#endif
 
 #endif

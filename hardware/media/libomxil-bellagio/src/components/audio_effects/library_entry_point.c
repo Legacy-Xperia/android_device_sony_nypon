@@ -64,7 +64,7 @@ int omx_component_library_Setup(stLoaderComponentType **stComponents) {
   if (stComponents[0]->name == NULL) {
     return OMX_ErrorInsufficientResources;
   }
-  strcpy(stComponents[0]->name, "OMX.st.volume.component");
+  strcpy(stComponents[0]->name, VOLUME_COMP_NAME);
   stComponents[0]->name_specific_length = 1;
   stComponents[0]->constructor = omx_volume_component_Constructor;
 
@@ -84,8 +84,8 @@ int omx_component_library_Setup(stLoaderComponentType **stComponents) {
     }
   }
 
-  strcpy(stComponents[0]->name_specific[0], "OMX.st.volume.component");
-  strcpy(stComponents[0]->role_specific[0], "volume.component");
+  strcpy(stComponents[0]->name_specific[0], VOLUME_COMP_NAME);
+  strcpy(stComponents[0]->role_specific[0], VOLUME_COMP_ROLE);
 
   stComponents[0]->nqualitylevels = VOLUME_QUALITY_LEVELS;
   stComponents[0]->multiResourceLevel = malloc(stComponents[0]->nqualitylevels * sizeof(multiResourceDescriptor *));
@@ -105,7 +105,7 @@ int omx_component_library_Setup(stLoaderComponentType **stComponents) {
   if (stComponents[1]->name == NULL) {
     return OMX_ErrorInsufficientResources;
   }
-  strcpy(stComponents[1]->name, "OMX.st.audio.mixer");
+  strcpy(stComponents[1]->name, MIXER_COMP_NAME);
   stComponents[1]->name_specific_length = 1;
   stComponents[1]->constructor = omx_audio_mixer_component_Constructor;
 
@@ -125,8 +125,8 @@ int omx_component_library_Setup(stLoaderComponentType **stComponents) {
     }
   }
 
-  strcpy(stComponents[1]->name_specific[0], "OMX.st.audio.mixer");
-  strcpy(stComponents[1]->role_specific[0], "audio.mixer");
+  strcpy(stComponents[1]->name_specific[0], MIXER_COMP_NAME);
+  strcpy(stComponents[1]->role_specific[0], MIXER_COMP_ROLE);
 
   stComponents[1]->nqualitylevels = MIXER_QUALITY_LEVELS;
   stComponents[1]->multiResourceLevel = malloc(stComponents[1]->nqualitylevels * sizeof(multiResourceDescriptor *));

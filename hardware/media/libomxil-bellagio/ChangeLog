@@ -1,3 +1,5 @@
+Changes in 0.9.3:
+- Added support for dynamic loading of components
 Changes in 0.9.2.1:
 - Added optional support to components quality levels
   The global setting of quality level for a component has been added.
