@@ -34,12 +34,6 @@
 #include <errno.h>
 #include <asm/unistd.h>
 
-#ifdef ANDROID_COMPILATION
-#include <oscl_base_macros.h>
-#else
-#define OSCL_IMPORT_REF
-#define OSCL_EXPORT_REF
-#endif
 #include "omxcore.h"
 #include "OMXComponentRMExt.h"
 #include "tsemaphore.h"
@@ -47,8 +41,6 @@
 #include "omx_classmagic.h"
 #include "omx_base_port.h"
 #include "extension_struct.h"
-#include "omx_reference_resource_manager.h"
-
 
 /** Default size of the internal input buffer */
 #define DEFAULT_IN_BUFFER_SIZE  4 * 1024
@@ -75,11 +67,10 @@ typedef struct OMX_VENDOR_PROP_TUNNELSETUPTYPE  {
 /** this is the list of custom vendor index */
 typedef enum OMX_INDEXVENDORTYPE {
 	/** only one index for file reader component input file */
-	OMX_IndexVendorInputFilename = OMX_IndexVendorStartUnused+1,
-	OMX_IndexVendorOutputFilename,
-	OMX_IndexVendorCompPropTunnelFlags, /* Will use OMX_TUNNELSETUPTYPE structure*/
-	OMX_IndexParameterThreadsID,
-	OMX_VIDEO_CodingTheora
+	OMX_IndexVendorInputFilename          = 0xFF000001,
+	OMX_IndexVendorOutputFilename         = 0xFF000002,
+	OMX_IndexVendorCompPropTunnelFlags    = 0xFF000003, /* Will use OMX_TUNNELSETUPTYPE structure*/
+	OMX_IndexParameterThreadsID           = 0xFF000004
 } OMX_INDEXVENDORTYPE;
 
 /** This enum defines the transition states of the Component*/
@@ -181,7 +172,7 @@ void base_constructor_remove_garbage_collected(omx_base_component_PrivateType* o
  *
  * @return OMX_ErrorInsufficientResources if a memory allocation fails
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,OMX_STRING cComponentName);
+OMX_ERRORTYPE omx_base_component_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,OMX_STRING cComponentName);
 
 /** @brief the base destructor for ST OpenMAX components
  *
@@ -190,10 +181,10 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_Constructor(OMX_COMPONENTTYPE *
  *
  * @param openmaxStandComp the ST OpenMAX component to be disposed
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_Destructor(OMX_COMPONENTTYPE *openmaxStandComp);
+OMX_ERRORTYPE omx_base_component_Destructor(OMX_COMPONENTTYPE *openmaxStandComp);
 
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_getQualityLevel(OMX_COMPONENTTYPE *openmaxStandComp, OMX_U32* pQualityLevel);
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_setQualityLevel(OMX_COMPONENTTYPE *openmaxStandComp, OMX_U32 nQualityLevel);
+OMX_ERRORTYPE omx_base_getQualityLevel(OMX_COMPONENTTYPE *openmaxStandComp, OMX_U32* pQualityLevel);
+OMX_ERRORTYPE omx_base_setQualityLevel(OMX_COMPONENTTYPE *openmaxStandComp, OMX_U32 nQualityLevel);
 
 /** Changes the state of a component taking proper actions depending on
  * the transition requested. This base function cover only the state
@@ -205,7 +196,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_setQualityLevel(OMX_COMPONENTTYPE *openma
  * @return OMX_ErrorNotImplemented if the state change is noty handled
  * in this base class, but needs a specific handling
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_DoStateSet(
+OMX_ERRORTYPE omx_base_component_DoStateSet(
   OMX_COMPONENTTYPE *openmaxStandComp,
   OMX_U32 destinationState);
 
@@ -220,7 +211,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_DoStateSet(
  * OMX_ErrorVersionMismatch is returned.
  * If the header fails the size check OMX_ErrorBadParameter is returned
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE checkHeader(OMX_PTR header, OMX_U32 size);
+OMX_ERRORTYPE checkHeader(OMX_PTR header, OMX_U32 size);
 
 /** @brief Simply fills the first two fields in any OMX structure
  * with the size and the version
@@ -235,7 +226,7 @@ void setHeader(OMX_PTR header, OMX_U32 size);
  *
  * it returns the version of the component. See OMX_Core.h
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_GetComponentVersion(
+OMX_ERRORTYPE omx_base_component_GetComponentVersion(
   OMX_HANDLETYPE hComponent,
   OMX_STRING pComponentName,
   OMX_VERSIONTYPE* pComponentVersion,
@@ -254,7 +245,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_GetComponentVersion(
  * @param cRole the output string containing the n-role of the component
  * @param nIndex the index of the role requested
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_ComponentRoleEnum(
+OMX_ERRORTYPE omx_base_component_ComponentRoleEnum(
   OMX_HANDLETYPE hComponent,
   OMX_U8 *cRole,
   OMX_U32 nIndex);
@@ -264,7 +255,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_ComponentRoleEnum(
  * it sets the callback functions given by the IL client.
  * See OMX_Component.h
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_SetCallbacks(
+OMX_ERRORTYPE omx_base_component_SetCallbacks(
   OMX_HANDLETYPE hComponent,
   OMX_CALLBACKTYPE* pCallbacks,
   OMX_PTR pAppData);
@@ -275,7 +266,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_SetCallbacks(
  * These parameters are handled in the derived components
  * See OMX_Core.h for standard reference.
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_GetParameter(
+OMX_ERRORTYPE omx_base_component_GetParameter(
   OMX_HANDLETYPE hComponent,
   OMX_INDEXTYPE nParamIndex,
   OMX_PTR ComponentParameterStructure);
@@ -288,7 +279,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_GetParameter(
  *
  * @return OMX_ErrorUnsupportedIndex if the index is not supported or not handled here
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_SetParameter(
+OMX_ERRORTYPE omx_base_component_SetParameter(
   OMX_HANDLETYPE hComponent,
   OMX_INDEXTYPE nParamIndex,
   OMX_PTR ComponentParameterStructure);
@@ -300,7 +291,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_SetParameter(
  * version of this function and assign it to the correct pointer
  * in the private component descriptor.
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_GetConfig(
+OMX_ERRORTYPE omx_base_component_GetConfig(
   OMX_HANDLETYPE hComponent,
   OMX_INDEXTYPE nIndex,
   OMX_PTR pComponentConfigStructure);
@@ -312,7 +303,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_GetConfig(
  * version of this function and assign it to the correct pointer
  * in the private component descriptor.
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_SetConfig(
+OMX_ERRORTYPE omx_base_component_SetConfig(
   OMX_HANDLETYPE hComponent,
   OMX_INDEXTYPE nIndex,
   OMX_PTR pComponentConfigStructure);
@@ -322,7 +313,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_SetConfig(
  * This function can be eventually implemented by a
  * derived component if needed.
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_GetExtensionIndex(
+OMX_ERRORTYPE omx_base_component_GetExtensionIndex(
   OMX_HANDLETYPE hComponent,
   OMX_STRING cParameterName,
   OMX_INDEXTYPE* pIndexType);
@@ -331,7 +322,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_GetExtensionIndex(
  *
  * This function does not need any override by derived components.
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_GetState(
+OMX_ERRORTYPE omx_base_component_GetState(
   OMX_HANDLETYPE hComponent,
   OMX_STATETYPE* pState);
 
@@ -340,7 +331,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_GetState(
  * In general this function does not need a overwrite, but
  * a special derived component could do it.
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_SendCommand(
+OMX_ERRORTYPE omx_base_component_SendCommand(
   OMX_HANDLETYPE hComponent,
   OMX_COMMANDTYPE Cmd,
   OMX_U32 nParam,
@@ -354,7 +345,7 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_SendCommand(
  * The implementation of the ComponentDeInit contains the
  * implementation specific part of the destroying phase.
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_ComponentDeInit(
+OMX_ERRORTYPE omx_base_component_ComponentDeInit(
   OMX_HANDLETYPE hComponent);
 
 /** @brief Component's message handler thread function
@@ -376,25 +367,25 @@ void* compMessageHandlerFunction(void*);
  * @param openmaxStandComp the component itself
  * @param message the message that has been passed to core
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_MessageHandler(OMX_COMPONENTTYPE *openmaxStandComp,internalRequestMessageType* message);
+OMX_ERRORTYPE omx_base_component_MessageHandler(OMX_COMPONENTTYPE *openmaxStandComp,internalRequestMessageType* message);
 
 /**
  * This function verify Component State and Structure header
  */
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_ParameterSanityCheck(
+OMX_ERRORTYPE omx_base_component_ParameterSanityCheck(
   OMX_HANDLETYPE hComponent,
   OMX_U32 nPortIndex,
   OMX_PTR pStructure,
   size_t size);
 
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_AllocateBuffer(
+OMX_ERRORTYPE omx_base_component_AllocateBuffer(
   OMX_HANDLETYPE hComponent,
   OMX_BUFFERHEADERTYPE** ppBuffer,
   OMX_U32 nPortIndex,
   OMX_PTR pAppPrivate,
   OMX_U32 nSizeBytes);
 
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_UseBuffer(
+OMX_ERRORTYPE omx_base_component_UseBuffer(
   OMX_HANDLETYPE hComponent,
   OMX_BUFFERHEADERTYPE** ppBufferHdr,
   OMX_U32 nPortIndex,
@@ -402,27 +393,27 @@ OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_UseBuffer(
   OMX_U32 nSizeBytes,
   OMX_U8* pBuffer);
 
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_UseEGLImage (
+OMX_ERRORTYPE omx_base_component_UseEGLImage (
   OMX_HANDLETYPE hComponent,
   OMX_BUFFERHEADERTYPE** ppBufferHdr,
   OMX_U32 nPortIndex,
   OMX_PTR pAppPrivate,
   void* eglImage);
 
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_FreeBuffer(
+OMX_ERRORTYPE omx_base_component_FreeBuffer(
   OMX_HANDLETYPE hComponent,
   OMX_U32 nPortIndex,
   OMX_BUFFERHEADERTYPE* pBuffer);
 
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_EmptyThisBuffer(
+OMX_ERRORTYPE omx_base_component_EmptyThisBuffer(
   OMX_HANDLETYPE hComponent,
   OMX_BUFFERHEADERTYPE* pBuffer);
 
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_FillThisBuffer(
+OMX_ERRORTYPE omx_base_component_FillThisBuffer(
   OMX_HANDLETYPE hComponent,
   OMX_BUFFERHEADERTYPE* pBuffer);
 
-OSCL_IMPORT_REF OMX_ERRORTYPE omx_base_component_ComponentTunnelRequest(
+OMX_ERRORTYPE omx_base_component_ComponentTunnelRequest(
   OMX_HANDLETYPE hComp,
   OMX_U32 nPort,
   OMX_HANDLETYPE hTunneledComp,

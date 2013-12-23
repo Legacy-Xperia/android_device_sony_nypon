@@ -28,10 +28,7 @@
 #ifndef _OMX_REFERENCE_RESOURCE_MANAGER_H_
 #define _OMX_REFERENCE_RESOURCE_MANAGER_H_
 
-#define MAX_COMPONENTS_TYPES_HANDLED 500
-
 #include "omxcore.h"
-
 
 typedef struct ComponentListType ComponentListType;
 struct ComponentListType {
@@ -41,21 +38,7 @@ struct ComponentListType {
 	ComponentListType* next;
 };
 
-typedef struct NameIndexType NameIndexType;
-struct NameIndexType {
-	char* component_name;
-	int index;
-	int max_components;
-};
-
-
-int globalIndex;
-NameIndexType *listOfcomponentRegistered;
-ComponentListType **globalComponentList;
-ComponentListType **globalWaitingComponentList;
-
-OMX_ERRORTYPE RM_RegisterComponent(char *name, int max_components);
-OMX_ERRORTYPE addElemToList(ComponentListType **list, OMX_COMPONENTTYPE *openmaxStandComp, int index, OMX_BOOL bIsWaiting);
+OMX_ERRORTYPE addElemToList(ComponentListType **list, OMX_COMPONENTTYPE *openmaxStandComp);
 OMX_ERRORTYPE removeElemFromList(ComponentListType **list, OMX_COMPONENTTYPE *openmaxStandComp);
 int numElemInList(ComponentListType *list);
 OMX_ERRORTYPE clearList(ComponentListType **list);

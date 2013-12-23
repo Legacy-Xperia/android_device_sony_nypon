@@ -32,6 +32,8 @@
 /* gain value */
 #define GAIN_VALUE 100.0f
 
+#define VOLUME_COMP_ROLE "volume.component"
+
 OMX_ERRORTYPE omx_volume_component_Constructor(OMX_COMPONENTTYPE *openmaxStandComp, OMX_STRING cComponentName) {
 	OMX_ERRORTYPE err;
 	omx_volume_component_PrivateType* omx_volume_component_Private;
@@ -39,16 +41,15 @@ OMX_ERRORTYPE omx_volume_component_Constructor(OMX_COMPONENTTYPE *openmaxStandCo
 
 	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n",__func__);
 
-	RM_RegisterComponent(VOLUME_COMP_NAME, MAX_VOLUME_COMPONENTS);
 	if (!openmaxStandComp->pComponentPrivate) {
 		openmaxStandComp->pComponentPrivate = calloc(1, sizeof(omx_volume_component_PrivateType));
-		DEBUG(DEB_LEV_FUNCTION_NAME, "In %s allocated private structure %p for std component %p\n",
-				__func__, openmaxStandComp->pComponentPrivate, openmaxStandComp);
+		DEBUG(DEB_LEV_FUNCTION_NAME, "In %s allocated private structure %x for std component %x\n",
+				__func__, (int)openmaxStandComp->pComponentPrivate, (int)openmaxStandComp);
 		if(openmaxStandComp->pComponentPrivate == NULL) {
 			return OMX_ErrorInsufficientResources;
 		}
 	} else {
-		DEBUG(DEB_LEV_ERR, "In %s, Error Component %p Already Allocated\n", __func__, openmaxStandComp->pComponentPrivate);
+		DEBUG(DEB_LEV_ERR, "In %s, Error Component %x Already Allocated\n", __func__, (int)openmaxStandComp->pComponentPrivate);
 		return OMX_ErrorUndefined;
 	}
 
@@ -110,7 +111,7 @@ OMX_ERRORTYPE omx_volume_component_Constructor(OMX_COMPONENTTYPE *openmaxStandCo
 	  omx_volume_component_Private->multiResourceLevel[i]->MemoryResourceRequested = volumeQualityLevels[i * 2 + 1];
   }
 
-	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for component %p\n", __func__, openmaxStandComp);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for component %x\n", __func__, (int)openmaxStandComp);
 	return OMX_ErrorNone;
 }
 
@@ -123,7 +124,7 @@ OMX_ERRORTYPE omx_volume_component_Destructor(OMX_COMPONENTTYPE *openmaxStandCom
 	OMX_U32 i;
 
 	/* frees port/s */
-	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for component %p\n", __func__, openmaxStandComp);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for component %x\n", __func__, (int)openmaxStandComp);
 	if (omx_volume_component_Private->ports) {
 		for (i=0; i < omx_volume_component_Private->sPortTypesParam[OMX_PortDomainAudio].nPorts; i++) {
 			if(omx_volume_component_Private->ports[i]) {
@@ -136,7 +137,7 @@ OMX_ERRORTYPE omx_volume_component_Destructor(OMX_COMPONENTTYPE *openmaxStandCom
 
 	omx_base_filter_Destructor(openmaxStandComp);
 
-	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for component %p\n", __func__, openmaxStandComp);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for component %x\n", __func__, (int)openmaxStandComp);
 	return OMX_ErrorNone;
 }
 

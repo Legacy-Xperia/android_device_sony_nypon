@@ -31,11 +31,11 @@
 
 #include "omx_base_filter.h"
 
-OSCL_EXPORT_REF OMX_ERRORTYPE omx_base_filter_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,OMX_STRING cComponentName) {
+OMX_ERRORTYPE omx_base_filter_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,OMX_STRING cComponentName) {
   OMX_ERRORTYPE err;
   omx_base_filter_PrivateType* omx_base_filter_Private;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %p\n", __func__, openmaxStandComp);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %x\n", __func__, (int)openmaxStandComp);
   if (openmaxStandComp->pComponentPrivate) {
     omx_base_filter_Private = (omx_base_filter_PrivateType*)openmaxStandComp->pComponentPrivate;
   } else {
@@ -59,19 +59,19 @@ OSCL_EXPORT_REF OMX_ERRORTYPE omx_base_filter_Constructor(OMX_COMPONENTTYPE *ope
 
   omx_base_filter_Private->BufferMgmtFunction = omx_base_filter_BufferMgmtFunction;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %p\n", __func__, openmaxStandComp);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %x\n", __func__, (int)openmaxStandComp);
   return OMX_ErrorNone;
 }
 
-OSCL_EXPORT_REF OMX_ERRORTYPE omx_base_filter_Destructor(OMX_COMPONENTTYPE *openmaxStandComp) {
+OMX_ERRORTYPE omx_base_filter_Destructor(OMX_COMPONENTTYPE *openmaxStandComp) {
 	OMX_ERRORTYPE err;
-	  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %p\n", __func__, openmaxStandComp);
+	  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %x\n", __func__, (int)openmaxStandComp);
 	  err = omx_base_component_Destructor(openmaxStandComp);
 	  if (err != OMX_ErrorNone) {
 		  DEBUG(DEB_LEV_ERR, "The base component destructor failed\n");
 		  return err;
 	  }
-	  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %p\n", __func__, openmaxStandComp);
+	  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %x\n", __func__, (int)openmaxStandComp);
 	  return OMX_ErrorNone;
 }
 
@@ -95,11 +95,10 @@ void* omx_base_filter_BufferMgmtFunction (void* param) {
   int inBufExchanged=0,outBufExchanged=0;
 
   omx_base_filter_Private->bellagioThreads->nThreadBufferMngtID = (long int)syscall(__NR_gettid);
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %p\n", __func__, openmaxStandComp);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s of component %x\n", __func__, (int)openmaxStandComp);
   DEBUG(DEB_LEV_SIMPLE_SEQ, "In %s the thread ID is %i\n", __func__, (int)omx_base_filter_Private->bellagioThreads->nThreadBufferMngtID);
 
   DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
-  /* checks if the component is in a state able to receive buffers */
   while(omx_base_filter_Private->state == OMX_StateIdle || omx_base_filter_Private->state == OMX_StateExecuting ||  omx_base_filter_Private->state == OMX_StatePause ||
     omx_base_filter_Private->transientState == OMX_TransStateLoadedToIdle){
 
@@ -109,7 +108,7 @@ void* omx_base_filter_BufferMgmtFunction (void* param) {
            PORT_IS_BEING_FLUSHED(pOutPort)) {
       pthread_mutex_unlock(&omx_base_filter_Private->flush_mutex);
 
-      DEBUG(DEB_LEV_FULL_SEQ, "In %s 1 signaling flush all cond iE=%d,iF=%d,oE=%d,oF=%d iSemVal=%d,oSemval=%d\n",
+      DEBUG(DEB_LEV_FULL_SEQ, "In %s 1 signalling flush all cond iE=%d,iF=%d,oE=%d,oF=%d iSemVal=%d,oSemval=%d\n",
         __func__,inBufExchanged,isInputBufferNeeded,outBufExchanged,isOutputBufferNeeded,pInputSem->semval,pOutputSem->semval);
 
       if(isOutputBufferNeeded==OMX_FALSE && PORT_IS_BEING_FLUSHED(pOutPort)) {
@@ -128,7 +127,7 @@ void* omx_base_filter_BufferMgmtFunction (void* param) {
         DEBUG(DEB_LEV_FULL_SEQ, "Ports are flushing,so returning input buffer\n");
       }
 
-      DEBUG(DEB_LEV_FULL_SEQ, "In %s 2 signaling flush all cond iE=%d,iF=%d,oE=%d,oF=%d iSemVal=%d,oSemval=%d\n",
+      DEBUG(DEB_LEV_FULL_SEQ, "In %s 2 signalling flush all cond iE=%d,iF=%d,oE=%d,oF=%d iSemVal=%d,oSemval=%d\n",
         __func__,inBufExchanged,isInputBufferNeeded,outBufExchanged,isOutputBufferNeeded,pInputSem->semval,pOutputSem->semval);
 
       tsem_up(omx_base_filter_Private->flush_all_condition);
@@ -140,7 +139,7 @@ void* omx_base_filter_BufferMgmtFunction (void* param) {
     /*No buffer to process. So wait here*/
     if((isInputBufferNeeded==OMX_TRUE && pInputSem->semval==0) &&
       (omx_base_filter_Private->state != OMX_StateLoaded && omx_base_filter_Private->state != OMX_StateInvalid)) {
-      //Signaled from EmptyThisBuffer or FillThisBuffer or some thing else
+      //Signalled from EmptyThisBuffer or FillThisBuffer or some thing else
       DEBUG(DEB_LEV_FULL_SEQ, "Waiting for next input/output buffer\n");
       tsem_down(omx_base_filter_Private->bMgmtSem);
 
@@ -152,7 +151,7 @@ void* omx_base_filter_BufferMgmtFunction (void* param) {
     if((isOutputBufferNeeded==OMX_TRUE && pOutputSem->semval==0) &&
       (omx_base_filter_Private->state != OMX_StateLoaded && omx_base_filter_Private->state != OMX_StateInvalid) &&
        !(PORT_IS_BEING_FLUSHED(pInPort) || PORT_IS_BEING_FLUSHED(pOutPort))) {
-      //Signaled from EmptyThisBuffer or FillThisBuffer or some thing else
+      //Signalled from EmptyThisBuffer or FillThisBuffer or some thing else
       DEBUG(DEB_LEV_FULL_SEQ, "Waiting for next input/output buffer\n");
       tsem_down(omx_base_filter_Private->bMgmtSem);
 
@@ -162,7 +161,7 @@ void* omx_base_filter_BufferMgmtFunction (void* param) {
       break;
     }
 
-    DEBUG(DEB_LEV_FULL_SEQ, "Waiting for input buffer semval=%d in %s\n",pInputSem->semval, __func__);
+    DEBUG(DEB_LEV_FULL_SEQ, "Waiting for input buffer semval=%d \n",pInputSem->semval);
     if(pInputSem->semval>0 && isInputBufferNeeded==OMX_TRUE ) {
       tsem_down(pInputSem);
       if(pInputQueue->nelem>0){
@@ -278,6 +277,6 @@ void* omx_base_filter_BufferMgmtFunction (void* param) {
       isInputBufferNeeded=OMX_TRUE;
     }
   }
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %p\n", __func__, openmaxStandComp);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s of component %x\n", __func__, (int)openmaxStandComp);
   return NULL;
 }

@@ -1,5 +1,5 @@
 Bellagio OpenMAX Integration Layer 1.1.2 project
-Release 0.9.3
+Release 0.9.2.1
 
 This is an Open Source implementation of the OpenMAX Integration Layer
 (IL) API ver. 1.1.2, specified by the Khronos group (see
@@ -14,7 +14,7 @@ CORE FUNCTIONALITIES
 - A component loader for static libraries for Linux
 - A simple resource manager
 - A framework of components and ports base classes for Bellagio Hierarchy
-- A draft support to content pipes
+- a draft support to content pipes
 
 AUDIO
 - OMX audio volume control
@@ -28,10 +28,6 @@ CLOCK
   and provide media clock to video sink and other component. It support
   fast forward and rewind.
 
-NEWS
-- support for dynamic loading of components
-- compilation compatible with Android
-
 =============================
 IMPORTANT NOTE
 =============================
@@ -40,18 +36,6 @@ are distributed from the 0.9.2 on as external packages maintained separately.
 If you need more details you can check the download page in the Bellagio web site:
 
 http://omxil.sourceforge.net/downloads.html
-
-=============================
-ENVIRONMENT VARIABLES
-=============================
-
-export PATH=$INSTALL_DIR/bin:$PATH
-export LD_LIBRARY_PATH=$INSTALL_DIR/lib:$LD_LIBRARY_PATH
-export BELLAGIO_SEARCH_PATH=$INSTALL_DIR/lib/bellagio/:$INSTALL_DIR/lib/extern_omxcomp/lib/:$INSTALL_DIR/lib/
-export PKG_CONFIG_PATH=$INSTALL_DIR/lib/pkgconfig/:/usr/local/lib/pkgconfig/:/usr/lib/pkgconfig/
-
-where $INSTALL_DIR is by default /usr/local or can be specified with configure with the following command option:
-./configure --prefix=$INSTALL_DIR
 
 =============================
  BUILD the bellagio library
@@ -132,16 +116,15 @@ http://omxil.sourceforge.net/downloads.html
 - To build RPM:
 
  make dist
- cp libomxil-bellagio-0.9.3.tar.gz $HOME/rpmbuild/SOURCES/
+ cp libomxil-bellagio-0.9.2.tar.gz $HOME/rpmbuild/SOURCES/
  rpmbuild -bb libomxil-bellagio.spec
  
 =============================
  BUILD DEB
 =============================
-To build the installable deb package with the Bellagio libraries run in the source directory:
+To build the installable deb package with the Bellagio libraries run:
+sudo checkinstall --pkgsource=/home/urlinigi/OpenMAX/sourceforge/omxil --install=no --maintainer=giulio.urlini@st.com --spec=/home/urlinigi/OpenMAX/sourceforge/omxil/libomxil-bellagio.spec --inspect
 
-sudo checkinstall --pkgsource=$(source_path) --install=no --maintainer=giulio.urlini@st.com --spec=$(source_path)/libomxil-bellagio.spec --inspect
-Note: the deb package will store the intallation path set by the last configure executed
 
 =============================
  SOURCE CODE PACKAGE
@@ -157,29 +140,15 @@ directory of the source code:
 
 dpkg-buildpackage -S
 
-=============================
-Android Support
-=============================
-Actually the Bellagio framework can be executed in Android Froyo 2.2 using the stagefright multimedia framework.
-Some makefiles and instructions are contained in the actual packet.
+
 
 =============================
  DITRIBUTIONS
 =============================
 This version has been tested on:
 
-- UBUNTU 10.10 and older
+- UBUNTU 9.10
 - Fedora Core 11
 
-================================
-UBUNTU Installation instructions
-================================
 
-In order to compile properly the bellagio framework in Ubuntu some packages
-should be added. These packages are not included in the base ubuntu installation.
-the packages to be installed with sudo apt-get install are:
-autoconf
-libtool
-g++
-
-Last modified: Jan 12, 2011
+Last modified: Dec 23, 2009

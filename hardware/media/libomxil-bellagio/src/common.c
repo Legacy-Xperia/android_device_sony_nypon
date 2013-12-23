@@ -3,7 +3,7 @@
 
   This file implements some useful common functionalities for handling the register files used in Bellagio
 
-  Copyright (C) 2007-2011 STMicroelectronics
+  Copyright (C) 2007-2009 STMicroelectronics
   Copyright (C) 2007-2009 Nokia Corporation and/or its subsidiary(-ies).
 
   This library is free software; you can redistribute it and/or modify it under
@@ -29,16 +29,9 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-#include "config.h"
 #include "common.h"
 
 #define REGISTRY_FILENAME ".omxregister"
-
-#ifdef ANDROID_COMPILATION
-#define TMP_DATA_DIRECTORY "/data/omx/"
-#else
-#define TMP_DATA_DIRECTORY "/tmp/"
-#endif
 
 /** @brief Get registry filename
  * This function returns the name of the registry file for the components loaded with the default component loader.
@@ -69,24 +62,22 @@ char* componentsRegistryGetFilename() {
     strcat(omxregistryfile, "/");
     strcat(omxregistryfile, REGISTRY_FILENAME);
   } else {
-    omxregistryfile  = malloc(strlen(TMP_DATA_DIRECTORY) + strlen(REGISTRY_FILENAME) + 2);
-    strcpy(omxregistryfile, TMP_DATA_DIRECTORY);
+    omxregistryfile  = malloc(strlen("/tmp/") + strlen(REGISTRY_FILENAME) + 2);
+    strcpy(omxregistryfile, "/tmp/");
     strcat(omxregistryfile, REGISTRY_FILENAME);
   }
   return omxregistryfile;
 }
 
-/* This function return the absolute path of the registry_name file or
- * directory depending by the environment variable set.
- * the variables considered in order are:
- * $XDG_DATA_HOME
- * $HOME
- * TMP_DATA_DIRECTORY (/tmp by default on Linux)
- * The function does not check for file/dir existence
- */
 char* loadersRegistryGetFilename(char* registry_name) {
 	char *omxregistryfile = NULL;
 	char *buffer;
+
+  buffer=getenv("OMX_BELLAGIO_LOADER_REGISTRY");
+  if(buffer!=NULL&&*buffer!='\0') {
+    omxregistryfile = strdup(buffer);
+    return omxregistryfile;
+  }
 
 	buffer=getenv("XDG_DATA_HOME");
 	if(buffer!=NULL&&*buffer!='\0') {
@@ -104,8 +95,8 @@ char* loadersRegistryGetFilename(char* registry_name) {
 		strcat(omxregistryfile, "/");
 		strcat(omxregistryfile, registry_name);
 	} else {
-		omxregistryfile  = malloc(strlen(TMP_DATA_DIRECTORY) + strlen(registry_name) + 2);
-		strcpy(omxregistryfile, TMP_DATA_DIRECTORY);
+		omxregistryfile  = malloc(strlen("/tmp/") + strlen(registry_name) + 2);
+		strcpy(omxregistryfile, "/tmp/");
 		strcat(omxregistryfile, registry_name);
 	}
 	return omxregistryfile;
@@ -156,18 +147,80 @@ int makedir (const char *newdir) {
 	}
   free(buffer);
   return 0;
-
 }
 
-int exists(const char* fname) {
-	FILE *file;
-	if ((file = fopen(fname, "r")))
-	{
-		fclose(file);
-		return 1;
-	}
-	return 0;
+
+/** This function adds an new element to a given list
+ * It returns 0 if component is added with no error
+ * It returns -1 otherwise
+ */
+int addComponentToList(HandleList** list, void* handle) {
+  HandleList *componentTemp;
+  HandleList *componentNext;
+
+  if (!*list) {
+    *list = malloc(sizeof(HandleList));
+    if (!*list) {
+      return -1;
+    }
+    (*list)->handle = handle;
+    (*list)->next = NULL;
+    return 0;
+  }
+  componentTemp = *list;
+  while(componentTemp->next) {
+    componentTemp = componentTemp->next;
+  }
+  componentNext = malloc(sizeof(HandleList));
+  if (!componentNext) {
+    return -1;
+  }
+  componentTemp->next = componentNext;
+  componentNext->next = NULL;
+  componentNext->handle = handle;
+  return 0;
 }
+
+/** This function removes the given element from the list
+ * It returns 0 if the component was removed
+ * It returns -1 if component was not found in the list
+ */
+int removeComponentFromList(HandleList** list, void* handle) {
+  HandleList* componentTemp;
+  HandleList* componentPrev;
+  int bFound = 0;
+
+  if (!*list) {
+    return -1;
+  }
+  componentTemp = *list;
+  componentPrev = *list;
+  while(componentTemp) {
+    if (componentTemp->handle == handle) {
+      if (componentTemp == *list) {
+        *list = (*list)->next;
+        free(componentTemp);
+      } else {
+        componentPrev->next = componentTemp->next;
+        free(componentTemp);
+      }
+      bFound = 1;
+      break;
+    } else {
+      if (componentTemp != *list) {
+        componentPrev = componentPrev->next;
+      }
+      componentTemp = componentTemp->next;
+    }
+  }
+  if(!bFound) {
+      return -1;
+  }
+  return 0;
+}
+
+
+
 
 #ifdef COMMON_TEST
 int main (int argc, char*argv[]) {

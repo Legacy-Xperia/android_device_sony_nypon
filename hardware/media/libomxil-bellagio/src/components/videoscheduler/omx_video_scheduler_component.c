@@ -26,6 +26,7 @@
 #include <omxcore.h>
 #include <omx_video_scheduler_component.h>
 
+#define VIDEO_SCHEDULER_COMP_ROLE "video.schduler"
 #define DEFAULT_WIDTH   352
 #define DEFAULT_HEIGHT  288
 #define CLOCKPORT_INDEX 2
@@ -43,8 +44,6 @@ OMX_ERRORTYPE omx_video_scheduler_component_Constructor(OMX_COMPONENTTYPE *openm
   omx_base_video_PortType       *inPort,*outPort;
   OMX_U32                                      i;
 
-
-	RM_RegisterComponent(VIDEO_SCHEDULER_COMP_NAME, MAX_VIDEOSCHED_COMPONENTS);
   if (!openmaxStandComp->pComponentPrivate) {
     DEBUG(DEB_LEV_FUNCTION_NAME, "In %s, allocating component\n", __func__);
     openmaxStandComp->pComponentPrivate = calloc(1, sizeof(omx_video_scheduler_component_PrivateType));
@@ -52,7 +51,7 @@ OMX_ERRORTYPE omx_video_scheduler_component_Constructor(OMX_COMPONENTTYPE *openm
       return OMX_ErrorInsufficientResources;
     }
   } else {
-    DEBUG(DEB_LEV_FUNCTION_NAME, "In %s, Error Component %p Already Allocated\n", __func__, openmaxStandComp->pComponentPrivate);
+    DEBUG(DEB_LEV_FUNCTION_NAME, "In %s, Error Component %x Already Allocated\n", __func__, (int)openmaxStandComp->pComponentPrivate);
   }
 
   omx_video_scheduler_component_Private        = openmaxStandComp->pComponentPrivate;
@@ -140,7 +139,7 @@ OMX_ERRORTYPE omx_video_scheduler_component_Destructor(OMX_COMPONENTTYPE *openma
   omx_video_scheduler_component_PrivateType*   omx_video_scheduler_component_Private = openmaxStandComp->pComponentPrivate;
   OMX_U32                                      i;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Destructor of video scheduler component is called\n");
 
   /* frees port/s */
   if (omx_video_scheduler_component_Private->ports) {
@@ -154,7 +153,6 @@ OMX_ERRORTYPE omx_video_scheduler_component_Destructor(OMX_COMPONENTTYPE *openma
   }
 
   omx_base_filter_Destructor(openmaxStandComp);
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s\n", __func__);
 
   return OMX_ErrorNone;
 }

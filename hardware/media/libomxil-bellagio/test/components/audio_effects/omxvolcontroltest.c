@@ -277,8 +277,8 @@ int main(int argc, char** argv) {
   /* Wait for commands to complete */
   tsem_down(appPriv->eventSem);
 
-  DEBUG(DEB_LEV_PARAMS, "Had buffers at:\n0x%p\n0x%p\n0x%p\n0x%p\n",
-                inBuffer1->pBuffer, inBuffer2->pBuffer, outBuffer1->pBuffer, outBuffer2->pBuffer);
+  DEBUG(DEB_LEV_PARAMS, "Had buffers at:\n0x%08x\n0x%08x\n0x%08x\n0x%08x\n",
+                (int)inBuffer1->pBuffer, (int)inBuffer2->pBuffer, (int)outBuffer1->pBuffer, (int)outBuffer2->pBuffer);
   DEBUG(DEB_LEV_PARAMS, "After switch to executing\n");
 
   data_read1 = read(fd, inBuffer1->pBuffer, BUFFER_IN_SIZE);
@@ -289,9 +289,9 @@ int main(int argc, char** argv) {
   inBuffer2->nFilledLen = data_read2;
   filesize -= data_read2;
 
-  DEBUG(DEB_LEV_PARAMS, "Empty first  buffer %p\n", inBuffer1);
+  DEBUG(DEB_LEV_PARAMS, "Empty first  buffer %x\n", (int)inBuffer1);
   err = OMX_EmptyThisBuffer(handle, inBuffer1);
-  DEBUG(DEB_LEV_PARAMS, "Empty second buffer %p\n", inBuffer2);
+  DEBUG(DEB_LEV_PARAMS, "Empty second buffer %x\n", (int)inBuffer2);
   err = OMX_EmptyThisBuffer(handle, inBuffer2);
 
   /** Schedule a couple of buffers to be filled on the output port
@@ -412,7 +412,7 @@ OMX_ERRORTYPE volcEmptyBufferDone(
     return OMX_ErrorNone;
   }
   if(!bEOS) {
-    DEBUG(DEB_LEV_FULL_SEQ, "Empty buffer %p\n", pBuffer);
+    DEBUG(DEB_LEV_FULL_SEQ, "Empty buffer %x\n", (int)pBuffer);
     err = OMX_EmptyThisBuffer(hComponent, pBuffer);
   }else {
     DEBUG(DEB_LEV_FULL_SEQ, "In %s Dropping Empty This buffer to Audio Dec\n", __func__);
@@ -429,8 +429,8 @@ OMX_ERRORTYPE volcFillBufferDone(
   OMX_ERRORTYPE err;
   int i;
 
-  DEBUG(DEB_LEV_FULL_SEQ, "Hi there, I am in the %s callback. Got buflen %i for buffer at 0x%p\n",
-                          __func__, (int)pBuffer->nFilledLen, pBuffer);
+  DEBUG(DEB_LEV_FULL_SEQ, "Hi there, I am in the %s callback. Got buflen %i for buffer at 0x%08x\n",
+                          __func__, (int)pBuffer->nFilledLen, (int)pBuffer);
 
   /* Output data to standard output */
   if(pBuffer != NULL) {

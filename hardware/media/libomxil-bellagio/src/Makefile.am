@@ -1,13 +1,12 @@
 # Build order is important
 # First base, then core, finally components
-
-SUBDIRS = base core_extensions . components dynamic_loader
+SUBDIRS = base core_extensions . components
 
 bin_PROGRAMS = omxregister-bellagio
 omxregister_bellagio_SOURCES = omxregister.c common.c common.h
 omxregister_bellagio_CFLAGS = -DOMXILCOMPONENTSPATH=\"$(plugindir)/\" \
 			      -I$(top_srcdir)/include
-omxregister_bellagio_LDFLAGS = -lomxil-bellagio -L$(builddir)
+omxregister_bellagio_LDFLAGS = -L$(builddir) -lomxil-bellagio
 
 lib_LTLIBRARIES = libomxil-bellagio.la
 libomxil_bellagio_la_SOURCES = component_loader.h \
@@ -26,7 +25,7 @@ libomxil_bellagio_la_SOURCES = component_loader.h \
 			       omx_reference_resource_manager.h
 
 libomxil_bellagio_la_CFLAGS = -I$(top_srcdir)/include -I$(srcdir)/base -I$(srcdir)/core_extensions \
-                              -DINSTALL_PATH_STR=\"$(plugindir)\" -DOMX_LOADERS_DIRNAME=\"$(libdir)/omxloaders\/\"
+                              -DINSTALL_PATH_STR=\"$(plugindir)\"
 libomxil_bellagio_la_LIBADD = base/libomxbase.la core_extensions/libomxcoreext.la -lpthread
 libomxil_bellagio_la_LDFLAGS = -version-info @SHARED_VERSION_INFO@
 
@@ -40,7 +39,6 @@ include_extra_HEADERS = $(srcdir)/omxcore.h \
 			$(srcdir)/tsemaphore.h \
 			$(srcdir)/omx_comp_debug_levels.h \
 			$(srcdir)/common.h \
-			$(srcdir)/omx_reference_resource_manager.h \
 			$(srcdir)/base/omx_base_component.h \
 			$(srcdir)/base/omx_base_port.h \
 			$(srcdir)/base/omx_base_audio_port.h \
@@ -53,6 +51,5 @@ include_extra_HEADERS = $(srcdir)/omxcore.h \
 			$(srcdir)/base/omx_base_image_port.h \
 			$(srcdir)/extension_struct.h \
 			$(srcdir)/base/OMXComponentRMExt.h \
-			$(srcdir)/core_extensions/OMXCoreRMExt.h \
-			$(top_srcdir)/test/components/common/user_debug_levels.h
+			$(srcdir)/core_extensions/OMXCoreRMExt.h
 

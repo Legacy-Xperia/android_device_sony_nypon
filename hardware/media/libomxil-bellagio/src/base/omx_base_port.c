@@ -54,7 +54,7 @@
 
 OMX_ERRORTYPE base_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,omx_base_PortType **openmaxStandPort,OMX_U32 nPortIndex, OMX_BOOL isInput) {
 
-	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for component %p\n", __func__, openmaxStandComp);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for component %x\n", __func__, (int)openmaxStandComp);
 
   // create ports, but only if the subclass hasn't done it
   if (!(*openmaxStandPort)) {
@@ -62,7 +62,7 @@ OMX_ERRORTYPE base_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,omx_base
   }
 
   if (!(*openmaxStandPort)) {
-		DEBUG(DEB_LEV_ERR, "Out of %s for component %p for a lack of resources\n", __func__, openmaxStandComp);
+		DEBUG(DEB_LEV_ERR, "Out of %s for component %x for a lack of resources\n", __func__, (int)openmaxStandComp);
 		return OMX_ErrorInsufficientResources;
   }
 
@@ -127,12 +127,12 @@ OMX_ERRORTYPE base_port_Constructor(OMX_COMPONENTTYPE *openmaxStandComp,omx_base
   pthread_mutex_init(&((*openmaxStandPort)->exitMutex), NULL);
 
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for component %p\n", __func__, openmaxStandComp);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for component %x\n", __func__, (int)openmaxStandComp);
   return OMX_ErrorNone;
 }
 
 OMX_ERRORTYPE base_port_Destructor(omx_base_PortType *openmaxStandPort){
-	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %p\n", __func__, openmaxStandPort);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %x\n", __func__, (int)openmaxStandPort);
 
 	if(openmaxStandPort->pAllocSem) {
 		pthread_mutex_lock(&openmaxStandPort->exitMutex);
@@ -165,7 +165,7 @@ OMX_ERRORTYPE base_port_Destructor(omx_base_PortType *openmaxStandPort){
 
 	free(openmaxStandPort);
 	openmaxStandPort = NULL;
-	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %p\n", __func__, openmaxStandPort);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %x\n", __func__, (int)openmaxStandPort);
 	return OMX_ErrorNone;
 }
 
@@ -178,7 +178,7 @@ OMX_ERRORTYPE base_port_FlushProcessingBuffers(omx_base_PortType *openmaxStandPo
   OMX_BUFFERHEADERTYPE* pBuffer;
   int errQue;
 
-	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %p\n", __func__, openmaxStandPort);
+	DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %x\n", __func__, (int)openmaxStandPort);
   omx_base_component_Private = (omx_base_component_PrivateType*)openmaxStandPort->standCompContainer->pComponentPrivate;
 
   if(openmaxStandPort->sPortParam.eDomain!=OMX_PortDomainOther) { /* clock buffers not used in the clients buffer managment function */
@@ -259,7 +259,7 @@ DEBUG(DEB_LEV_FUNCTION_NAME, "In %s flushed all the buffers under processing\n",
     (int)omx_base_component_Private->bMgmtSem->semval,
     omx_base_component_Private->name);
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out %s Port %p Index=%d\n", __func__, openmaxStandPort, (int)openmaxStandPort->sPortParam.nPortIndex);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out %s Port %x Index=%d\n", __func__, (int)openmaxStandPort, (int)openmaxStandPort->sPortParam.nPortIndex);
   return OMX_ErrorNone;
 }
 
@@ -274,7 +274,7 @@ OMX_ERRORTYPE base_port_DisablePort(omx_base_PortType *openmaxStandPort) {
   omx_base_component_PrivateType* omx_base_component_Private;
   OMX_ERRORTYPE err=OMX_ErrorNone;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s Port %p Index=%d\n", __func__, openmaxStandPort, (int)openmaxStandPort->sPortParam.nPortIndex);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s Port %x Index=%d\n", __func__, (int)openmaxStandPort, (int)openmaxStandPort->sPortParam.nPortIndex);
   omx_base_component_Private = (omx_base_component_PrivateType*)openmaxStandPort->standCompContainer->pComponentPrivate;
   if (! PORT_IS_ENABLED(openmaxStandPort)) {
     return OMX_ErrorNone;
@@ -329,9 +329,9 @@ OMX_ERRORTYPE base_port_EnablePort(omx_base_PortType *openmaxStandPort) {
   OMX_ERRORTYPE err=OMX_ErrorNone;
   OMX_U32 i;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %x\n", __func__, (int)openmaxStandPort);
   if (PORT_IS_ENABLED(openmaxStandPort)) {
-	  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %p\n", __func__, openmaxStandPort);
+	  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %x\n", __func__, (int)openmaxStandPort);
     return OMX_ErrorNone;
   }
   omx_base_component_Private = (omx_base_component_PrivateType*)openmaxStandPort->standCompContainer->pComponentPrivate;
@@ -368,7 +368,7 @@ OMX_ERRORTYPE base_port_EnablePort(omx_base_PortType *openmaxStandPort) {
 
   openmaxStandPort->bIsTransientToEnabled = OMX_FALSE;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %x\n", __func__, (int)openmaxStandPort);
   return OMX_ErrorNone;
 }
 
@@ -390,7 +390,7 @@ OMX_ERRORTYPE base_port_AllocateBuffer(
   unsigned int i;
   OMX_COMPONENTTYPE* omxComponent = openmaxStandPort->standCompContainer;
   omx_base_component_PrivateType* omx_base_component_Private = (omx_base_component_PrivateType*)omxComponent->pComponentPrivate;
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %x\n", __func__, (int)openmaxStandPort);
 
   if (nPortIndex != openmaxStandPort->sPortParam.nPortIndex) {
     return OMX_ErrorBadPortIndex;
@@ -443,11 +443,11 @@ OMX_ERRORTYPE base_port_AllocateBuffer(
         DEBUG(DEB_LEV_SIMPLE_SEQ, "In %s nPortIndex=%d\n",__func__,(int)nPortIndex);
         tsem_up(openmaxStandPort->pAllocSem);
       }
-      DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %p\n", __func__, openmaxStandPort);
+      DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %x\n", __func__, (int)openmaxStandPort);
       return OMX_ErrorNone;
     }
   }
-  DEBUG(DEB_LEV_ERR, "Out of %s for port %p. Error: no available buffers\n",__func__, openmaxStandPort);
+  DEBUG(DEB_LEV_ERR, "Out of %s for port %x. Error: no available buffers\n",__func__, (int)openmaxStandPort);
   return OMX_ErrorInsufficientResources;
 }
 
@@ -471,7 +471,7 @@ OMX_ERRORTYPE base_port_UseBuffer(
   OMX_BUFFERHEADERTYPE* returnBufferHeader;
   OMX_COMPONENTTYPE* omxComponent = openmaxStandPort->standCompContainer;
   omx_base_component_PrivateType* omx_base_component_Private = (omx_base_component_PrivateType*)omxComponent->pComponentPrivate;
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %x\n", __func__, (int)openmaxStandPort);
   if (nPortIndex != openmaxStandPort->sPortParam.nPortIndex) {
     return OMX_ErrorBadPortIndex;
   }
@@ -531,7 +531,7 @@ OMX_ERRORTYPE base_port_UseBuffer(
         openmaxStandPort->bIsFullOfBuffers = OMX_TRUE;
         tsem_up(openmaxStandPort->pAllocSem);
       }
-      DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %p\n", __func__, openmaxStandPort);
+      DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %x\n", __func__, (int)openmaxStandPort);
       return OMX_ErrorNone;
     }
   }
@@ -542,7 +542,7 @@ OMX_ERRORTYPE base_port_UseBuffer(
 /** @brief Called by the standard function.
  *
  * It frees the buffer header and in case also the buffer itself, if needed.
- * When all the buffers are done, the variable bIsEmptyOfBuffers is set to OMX_TRUE
+ * When all the bufers are done, the variable bIsEmptyOfBuffers is set to OMX_TRUE
  */
 OMX_ERRORTYPE base_port_FreeBuffer(
   omx_base_PortType *openmaxStandPort,
@@ -552,7 +552,7 @@ OMX_ERRORTYPE base_port_FreeBuffer(
   unsigned int i;
   OMX_COMPONENTTYPE* omxComponent = openmaxStandPort->standCompContainer;
   omx_base_component_PrivateType* omx_base_component_Private = (omx_base_component_PrivateType*)omxComponent->pComponentPrivate;
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %x\n", __func__, (int)openmaxStandPort);
 
   if (nPortIndex != openmaxStandPort->sPortParam.nPortIndex) {
     return OMX_ErrorBadPortIndex;
@@ -580,7 +580,7 @@ OMX_ERRORTYPE base_port_FreeBuffer(
       openmaxStandPort->bIsFullOfBuffers = OMX_FALSE;
       if (openmaxStandPort->bBufferStateAllocated[i] & BUFFER_ALLOCATED) {
         if(openmaxStandPort->pInternalBufferStorage[i]->pBuffer){
-          DEBUG(DEB_LEV_PARAMS, "In %s freeing %i pBuffer=%p\n",__func__, (int)i, openmaxStandPort->pInternalBufferStorage[i]->pBuffer);
+          DEBUG(DEB_LEV_PARAMS, "In %s freeing %i pBuffer=%x\n",__func__, (int)i, (int)openmaxStandPort->pInternalBufferStorage[i]->pBuffer);
           free(openmaxStandPort->pInternalBufferStorage[i]->pBuffer);
           openmaxStandPort->pInternalBufferStorage[i]->pBuffer=NULL;
         }
@@ -602,11 +602,11 @@ OMX_ERRORTYPE base_port_FreeBuffer(
         openmaxStandPort->bIsEmptyOfBuffers = OMX_TRUE;
         tsem_up(openmaxStandPort->pAllocSem);
       }
-      DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %p\n", __func__, openmaxStandPort);
+      DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %x\n", __func__, (int)openmaxStandPort);
       return OMX_ErrorNone;
     }
   }
-  DEBUG(DEB_LEV_ERR, "Out of %s for port %p with OMX_ErrorInsufficientResources\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_ERR, "Out of %s for port %x with OMX_ErrorInsufficientResources\n", __func__, (int)openmaxStandPort);
   return OMX_ErrorInsufficientResources;
 }
 
@@ -624,7 +624,7 @@ OMX_ERRORTYPE base_port_AllocateTunnelBuffer(
   OMX_PARAM_PORTDEFINITIONTYPE sPortDef;
   OMX_U32 nLocalBufferCountActual;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %x\n", __func__, (int)openmaxStandPort);
 
   if (nPortIndex != openmaxStandPort->sPortParam.nPortIndex) {
     DEBUG(DEB_LEV_ERR, "In %s: Bad Port Index\n", __func__);
@@ -712,7 +712,7 @@ OMX_ERRORTYPE base_port_AllocateTunnelBuffer(
       if(eError!=OMX_ErrorNone) {
         free(pBuffer);
         pBuffer = NULL;
-        DEBUG(DEB_LEV_ERR,"In %s Tunneled Component Couldn't Use Buffer err = %x \n",__func__,(int)eError);
+        DEBUG(DEB_LEV_ERR,"In %s Tunneled Component Couldn't Use Buffer %x \n",__func__,(int)eError);
         return eError;
       }
       openmaxStandPort->bBufferStateAllocated[i] = BUFFER_ALLOCATED;
@@ -734,7 +734,7 @@ OMX_ERRORTYPE base_port_AllocateTunnelBuffer(
       }
     }
   }
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %p. Allocated all the buffers\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %x. Allocated all the buffers\n", __func__, (int)openmaxStandPort);
   return OMX_ErrorNone;
 }
 
@@ -745,7 +745,7 @@ OMX_ERRORTYPE base_port_FreeTunnelBuffer(omx_base_PortType *openmaxStandPort,OMX
   omx_base_component_PrivateType* omx_base_component_Private = (omx_base_component_PrivateType*)omxComponent->pComponentPrivate;
   OMX_ERRORTYPE eError=OMX_ErrorNone;
   OMX_U32 numRetry=0;
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %x\n", __func__, (int)openmaxStandPort);
 
   if (nPortIndex != openmaxStandPort->sPortParam.nPortIndex) {
     DEBUG(DEB_LEV_ERR, "In %s: Bad Port Index\n", __func__);
@@ -805,7 +805,7 @@ OMX_ERRORTYPE base_port_FreeTunnelBuffer(omx_base_PortType *openmaxStandPort,OMX
       }
     }
   }
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %p Qelem=%d BSem=%d\n", __func__, openmaxStandPort,
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %x Qelem=%d BSem=%d\n", __func__, (int)openmaxStandPort,
 							  openmaxStandPort->pBufferQueue->nelem, openmaxStandPort->pBufferSem->semval);
   return OMX_ErrorNone;
 }
@@ -824,7 +824,7 @@ OMX_ERRORTYPE base_port_SendBufferFunction(
   OMX_U32 portIndex;
   OMX_COMPONENTTYPE* omxComponent = openmaxStandPort->standCompContainer;
   omx_base_component_PrivateType* omx_base_component_Private = (omx_base_component_PrivateType*)omxComponent->pComponentPrivate;
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %x\n", __func__, (int)openmaxStandPort);
 #if NO_GST_OMX_PATCH
   unsigned int i;
 #endif
@@ -908,7 +908,7 @@ OMX_ERRORTYPE base_port_SendBufferFunction(
     DEBUG(DEB_LEV_FULL_SEQ, "In %s \n", __func__);
     return OMX_ErrorIncorrectStateOperation;
   }
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %x\n", __func__, (int)openmaxStandPort);
   return OMX_ErrorNone;
 }
 
@@ -922,7 +922,7 @@ OMX_ERRORTYPE base_port_ReturnBufferFunction(omx_base_PortType* openmaxStandPort
   OMX_ERRORTYPE eError = OMX_ErrorNone;
   int errQue;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %x\n", __func__, (int)openmaxStandPort);
   if (PORT_IS_TUNNELED(openmaxStandPort) &&
     ! PORT_IS_BUFFER_SUPPLIER(openmaxStandPort)) {
     if (openmaxStandPort->sPortParam.eDir == OMX_DirInput) {
@@ -942,7 +942,8 @@ OMX_ERRORTYPE base_port_ReturnBufferFunction(omx_base_PortType* openmaxStandPort
         __func__, eError,omx_base_component_Private->name);
       }
     }
-  } else if (PORT_IS_TUNNELED_N_BUFFER_SUPPLIER(openmaxStandPort) &&
+  }
+  else if (PORT_IS_TUNNELED_N_BUFFER_SUPPLIER(openmaxStandPort) &&
             !PORT_IS_BEING_FLUSHED(openmaxStandPort)) {
     if (openmaxStandPort->sPortParam.eDir == OMX_DirInput) {
       eError = ((OMX_COMPONENTTYPE*)(openmaxStandPort->hTunneledComponent))->FillThisBuffer(openmaxStandPort->hTunneledComponent, pBuffer);
@@ -977,12 +978,13 @@ OMX_ERRORTYPE base_port_ReturnBufferFunction(omx_base_PortType* openmaxStandPort
         tsem_up(pSem);
       }
     }
-  } else if (!PORT_IS_TUNNELED(openmaxStandPort)){
-	  (*(openmaxStandPort->BufferProcessedCallback))(
-			  openmaxStandPort->standCompContainer,
-			  omx_base_component_Private->callbackData,
-			  pBuffer);
-  } else {
+  }else if (! PORT_IS_TUNNELED(openmaxStandPort)){
+    (*(openmaxStandPort->BufferProcessedCallback))(
+      openmaxStandPort->standCompContainer,
+      omx_base_component_Private->callbackData,
+      pBuffer);
+  }
+  else {
       errQue = queue(pQueue, pBuffer);
       if (errQue) {
     	  /* /TODO the queue is full. This can be handled in a fine way with
@@ -994,7 +996,7 @@ OMX_ERRORTYPE base_port_ReturnBufferFunction(omx_base_PortType* openmaxStandPort
     openmaxStandPort->nNumBufferFlushed++;
   }
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %x\n", __func__, (int)openmaxStandPort);
   return OMX_ErrorNone;
 }
 
@@ -1004,7 +1006,7 @@ OMX_ERRORTYPE base_port_ComponentTunnelRequest(omx_base_PortType* openmaxStandPo
   OMX_PARAM_PORTDEFINITIONTYPE param;
   OMX_PARAM_BUFFERSUPPLIERTYPE pSupplier;
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "In %s for port %x\n", __func__, (int)openmaxStandPort);
   if (pTunnelSetup == NULL || hTunneledComp == 0) {
     /* cancel previous tunnel */
     openmaxStandPort->hTunneledComponent = 0;
@@ -1052,7 +1054,7 @@ OMX_ERRORTYPE base_port_ComponentTunnelRequest(omx_base_PortType* openmaxStandPo
       DEBUG(DEB_LEV_ERR,"In %s Tunneled Buffer Supplier error=0x%08x Line=%d\n",__func__,err,__LINE__);
       return OMX_ErrorPortsNotCompatible;
     } else {
-      DEBUG(DEB_LEV_FULL_SEQ,"Tunneled Port eBufferSupplier=%x\n", pSupplier.eBufferSupplier);
+      DEBUG(DEB_LEV_FULL_SEQ,"Tunneled Port eBufferSupplier=%x\n",pSupplier.eBufferSupplier);
     }
 
     // store the current callbacks, if defined
@@ -1092,6 +1094,8 @@ OMX_ERRORTYPE base_port_ComponentTunnelRequest(omx_base_PortType* openmaxStandPo
         pTunnelSetup->eSupplier = OMX_BufferSupplyInput;
         openmaxStandPort->nTunnelFlags |= TUNNEL_IS_SUPPLIER;
         openmaxStandPort->eBufferSupplier=OMX_BufferSupplyInput;
+      } else if (pTunnelSetup->eSupplier == OMX_BufferSupplyOutput) {
+	openmaxStandPort->eBufferSupplier=OMX_BufferSupplyOutput;
       }
     }
     openmaxStandPort->nTunnelFlags |= TUNNEL_ESTABLISHED;
@@ -1166,6 +1170,6 @@ OMX_ERRORTYPE base_port_ComponentTunnelRequest(omx_base_PortType* openmaxStandPo
     openmaxStandPort->eBufferSupplier=OMX_BufferSupplyOutput;
   }
 
-  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %p\n", __func__, openmaxStandPort);
+  DEBUG(DEB_LEV_FUNCTION_NAME, "Out of %s for port %x\n", __func__, (int)openmaxStandPort);
   return OMX_ErrorNone;
 }

@@ -3,7 +3,7 @@
 
   ST specific component loader for local components.
 
-  Copyright (C) 2007-2010  STMicroelectronics
+  Copyright (C) 2007-2009  STMicroelectronics
   Copyright (C) 2007-2009 Nokia Corporation and/or its subsidiary(-ies).
 
   This library is free software; you can redistribute it and/or modify it under
@@ -34,6 +34,10 @@
 #include <errno.h>
 #include <assert.h>
 
+#ifdef WRAP_OMX_COMPONENTS
+#include <OMX_Wrapper.h>
+#endif
+
 #include "common.h"
 #include "st_static_component_loader.h"
 #include "omx_reference_resource_manager.h"
@@ -49,6 +53,11 @@ void *handleLibList[100];
 /** Current number of handles already allocated by this loader
  */
 OMX_U32 numLib=0;
+
+/** The list of component handles created by this loader
+ */
+static HandleList* componentHandleList = NULL;
+
 
 /** @brief The initialization of the ST specific component loader.
  *
@@ -77,76 +86,76 @@ OMX_ERRORTYPE BOSA_ST_InitComponentLoader(BOSA_COMPONENTLOADER *loader) {
   char* line = NULL;
   char *libname;
   int num_of_comp=0;
+  int read;
   stLoaderComponentType** templateList;
   stLoaderComponentType** stComponentsTemp;
   void* handle;
+  size_t len;
   int (*fptr)(stLoaderComponentType **stComponents);
   int i;
+  int index;
   int listindex;
   char *registry_filename;
-  int index_readline = 0;
 
   DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
 
   registry_filename = componentsRegistryGetFilename();
   omxregistryfp = fopen(registry_filename, "r");
   if (omxregistryfp == NULL){
-    DEBUG(DEB_LEV_ERR, "Cannot open OpenMAX registry file %s\n", registry_filename);
-    return ENOENT;
+    DEBUG(DEB_LEV_ERR, "ST Static Component Loader : Cannot open OpenMAX registry file %s\n", registry_filename);
+    free(registry_filename);
+    return OMX_ErrorInsufficientResources;
   }
   free(registry_filename);
   libname = malloc(OMX_MAX_STRINGNAME_SIZE * 2);
+  if(NULL == libname) {
+    return OMX_ErrorInsufficientResources;
+  }
 
   templateList = malloc(sizeof (stLoaderComponentType*));
+  if(NULL == templateList) {
+    free(libname);
+    return OMX_ErrorInsufficientResources;
+  }
   templateList[0] = NULL;
-  line = malloc(MAX_LINE_LENGTH);
+
   fseek(omxregistryfp, 0, 0);
   listindex = 0;
-
-  while(1) {
-	  index_readline = 0;
-	  while(index_readline < MAX_LINE_LENGTH) {
-		  *(line+index_readline) = fgetc(omxregistryfp);
-		  if ((*(line+index_readline) == '\n') || (*(line+index_readline) == '\0')) {
-			  break;
-		  }
-		  index_readline++;
-	  }
-	  *(line+index_readline) = '\0';
-	  if ((index_readline >= MAX_LINE_LENGTH) || (index_readline == 0)) {
-		  break;
-	  }
-	  if ((*line == ' ') && (*(line+1) == '=')) {
-		  // not a library line. skip
-		  continue;
-	  }
-	  strcpy(libname, line);
-	  DEBUG(DEB_LEV_FULL_SEQ, "libname: >%s<\n",libname);
-	  if((handle = dlopen(libname, RTLD_NOW)) == NULL) {
-		  DEBUG(DEB_LEV_ERR, "could not load %s: %s\n", libname, dlerror());
-	  } else {
-		  handleLibList[numLib]=handle;
-		  numLib++;
-		  if ((fptr = dlsym(handle, "omx_component_library_Setup")) == NULL) {
-			  DEBUG(DEB_LEV_ERR, "the library %s is not compatible with ST static component loader - %s\n", libname, dlerror());
-		  } else {
-			  num_of_comp = (int)(*fptr)(NULL);
-			  templateList = realloc(templateList, (listindex + num_of_comp + 1) * sizeof (stLoaderComponentType*));
-			  templateList[listindex + num_of_comp] = NULL;
-			  stComponentsTemp = calloc(num_of_comp,sizeof(stLoaderComponentType*));
-			  for (i = 0; i<num_of_comp; i++) {
-				  stComponentsTemp[i] = calloc(1,sizeof(stLoaderComponentType));
-			  }
-			  (*fptr)(stComponentsTemp);
-			  for (i = 0; i<num_of_comp; i++) {
-				  templateList[listindex + i] = stComponentsTemp[i];
-				  DEBUG(DEB_LEV_FULL_SEQ, "In %s comp name[%d]=%s\n",__func__,listindex + i,templateList[listindex + i]->name);
-			  }
-			  free(stComponentsTemp);
-			  stComponentsTemp = NULL;
-			  listindex+= i;
-		  }
-	  }
+  while((read = getline(&line, &len, omxregistryfp)) != -1) {
+    if ((*line == ' ') && (*(line+1) == '=')) {
+      // not a library line. skip
+      continue;
+    }
+    index = 0;
+    while (*(line+index)!= '\n') index++;
+    *(line+index) = 0;
+    strcpy(libname, line);
+    DEBUG(DEB_LEV_FULL_SEQ, "libname: %s\n",libname);
+    if((handle = dlopen(libname, RTLD_NOW)) == NULL) {
+      DEBUG(DEB_LEV_ERR, "could not load %s: %s\n", libname, dlerror());
+    } else {
+      handleLibList[numLib]=handle;
+      numLib++;
+      if ((fptr = dlsym(handle, "omx_component_library_Setup")) == NULL) {
+        DEBUG(DEB_LEV_ERR, "the library %s is not compatible with ST static component loader - %s\n", libname, dlerror());
+      } else {
+        num_of_comp = (int)(*fptr)(NULL);
+        templateList = realloc(templateList, (listindex + num_of_comp + 1) * sizeof (stLoaderComponentType*));
+        templateList[listindex + num_of_comp] = NULL;
+        stComponentsTemp = calloc(num_of_comp,sizeof(stLoaderComponentType*));
+        for (i = 0; i<num_of_comp; i++) {
+          stComponentsTemp[i] = calloc(1,sizeof(stLoaderComponentType));
+        }
+        (*fptr)(stComponentsTemp);
+        for (i = 0; i<num_of_comp; i++) {
+          templateList[listindex + i] = stComponentsTemp[i];
+          DEBUG(DEB_LEV_FULL_SEQ, "In %s comp name[%d]=%s\n",__func__,listindex + i,templateList[listindex + i]->name);
+        }
+        free(stComponentsTemp);
+        stComponentsTemp = NULL;
+        listindex+= i;
+      }
+    }
   }
   if(line) {
     free(line);
@@ -249,7 +258,6 @@ OMX_ERRORTYPE BOSA_ST_CreateComponent(
   OMX_ERRORTYPE eError = OMX_ErrorNone;
   stLoaderComponentType** templateList;
   OMX_COMPONENTTYPE *openmaxStandComp;
-  omx_base_component_PrivateType * priv;
 
   DEBUG(DEB_LEV_FUNCTION_NAME, "In %s\n", __func__);
   templateList = (stLoaderComponentType**)loader->loaderPrivate;
@@ -294,8 +302,9 @@ OMX_ERRORTYPE BOSA_ST_CreateComponent(
   if (eError != OMX_ErrorNone) {
     if (eError == OMX_ErrorInsufficientResources) {
       *pHandle = openmaxStandComp;
-      priv = (omx_base_component_PrivateType *) openmaxStandComp->pComponentPrivate;
-      priv->loader = loader;
+      if (addComponentToList(&componentHandleList, *pHandle)) {
+          return OMX_ErrorInsufficientResources;
+      }
       return OMX_ErrorInsufficientResources;
     }
     DEBUG(DEB_LEV_ERR, "Error during component construction\n");
@@ -304,10 +313,19 @@ OMX_ERRORTYPE BOSA_ST_CreateComponent(
     openmaxStandComp = NULL;
     return OMX_ErrorComponentNotFound;
   }
-  priv = (omx_base_component_PrivateType *) openmaxStandComp->pComponentPrivate;
-  priv->loader = loader;
 
+#ifdef WRAP_OMX_COMPONENTS
+  *pHandle = OMX_Wrapper_create(openmaxStandComp, cComponentName);
+  if (*pHandle == NULL) {
+      DEBUG(DEB_LEV_ERR, "Error during component wrapping\n");
+      return OMX_ErrorInsufficientResources;
+  }
+#else
   *pHandle = openmaxStandComp;
+#endif
+  if (addComponentToList(&componentHandleList, *pHandle)) {
+      return OMX_ErrorInsufficientResources;
+  }
   ((OMX_COMPONENTTYPE*)*pHandle)->SetCallbacks(*pHandle, pCallBacks, pAppData);
 
   DEBUG(DEB_LEV_FULL_SEQ, "Template %s found returning from OMX_GetHandle\n", cComponentName);
@@ -319,15 +337,17 @@ OMX_ERRORTYPE BOSA_ST_DestroyComponent(
   BOSA_COMPONENTLOADER *loader,
   OMX_HANDLETYPE hComponent) {
   OMX_ERRORTYPE err = OMX_ErrorNone;
-  omx_base_component_PrivateType * priv = (omx_base_component_PrivateType *) ((OMX_COMPONENTTYPE*)hComponent)->pComponentPrivate;
 
   /* check if this component was actually loaded from this loader */
-  if (priv->loader != loader) {
+  if (removeComponentFromList(&componentHandleList, hComponent) == -1) {
     return OMX_ErrorComponentNotFound;
   }
 
   err = ((OMX_COMPONENTTYPE*)hComponent)->ComponentDeInit(hComponent);
 
+#ifdef WRAP_OMX_COMPONENTS
+  OMX_Wrapper_destroy((OMX_COMPONENTTYPE*)hComponent);
+#endif
   free((OMX_COMPONENTTYPE*)hComponent);
   hComponent = NULL;
 
