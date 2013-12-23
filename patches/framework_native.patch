@@ -13,7 +13,6 @@
 #       modified:   opengl/libs/EGL/egl_entries.in
 #       modified:   services/surfaceflinger/Android.mk
 #       modified:   services/surfaceflinger/DisplayDevice.cpp
-#       modified:   services/surfaceflinger/DisplayHardware/HWComposer.cpp
 #       modified:   services/surfaceflinger/SurfaceFlinger.cpp
 diff --git a/frameworks/native/include/binder/MemoryBase.h b/frameworks/native/include/binder/MemoryBase.h
 index 463e26d..286e0d3 100644
@@ -131,7 +130,7 @@ index 7f8cde6..bca366f 100644
  {
      friend class Flattenable<GraphicBuffer>;
 diff --git a/frameworks/native/include/ui/PixelFormat.h b/frameworks/native/include/ui/PixelFormat.h
-index 19228c4..5734838 100644
+index 79a29bc..3c636eb 100644
 --- a/frameworks/native/include/ui/PixelFormat.h
 +++ b/frameworks/native/include/ui/PixelFormat.h
 @@ -63,6 +63,13 @@ enum {
@@ -230,7 +229,7 @@ index 5c82330..105c5df 100644
  }; // namespace android
  
 diff --git a/frameworks/native/libs/gui/Android.mk b/frameworks/native/libs/gui/Android.mk
-index b42fa63..7f9ede5 100644
+index 7957981..7803580 100644
 --- a/frameworks/native/libs/gui/Android.mk
 +++ b/frameworks/native/libs/gui/Android.mk
 @@ -39,6 +39,12 @@ LOCAL_SHARED_LIBRARIES := \
@@ -444,7 +443,7 @@ index 7ee3081..a122283 100644
  }; // namespace android
 +
 diff --git a/frameworks/native/libs/ui/PixelFormat.cpp b/frameworks/native/libs/ui/PixelFormat.cpp
-index 0595315..5e5951e 100644
+index 6517c8c..9e9b479 100644
 --- a/frameworks/native/libs/ui/PixelFormat.cpp
 +++ b/frameworks/native/libs/ui/PixelFormat.cpp
 @@ -88,10 +88,26 @@ status_t getPixelFormatInfo(PixelFormat format, PixelFormatInfo* info)
@@ -545,11 +544,11 @@ index 70d0e52..138f41e 100644
  
  EGL_ENTRY(EGLBoolean, eglHibernateProcessIMG, void)
 diff --git a/frameworks/native/services/surfaceflinger/Android.mk b/frameworks/native/services/surfaceflinger/Android.mk
-index 7b7a49b..51c2700 100644
+index e33daa2..a1af387 100644
 --- a/frameworks/native/services/surfaceflinger/Android.mk
 +++ b/frameworks/native/services/surfaceflinger/Android.mk
-@@ -48,6 +48,10 @@ ifeq ($(TARGET_DISABLE_TRIPLE_BUFFERING),true)
- 	LOCAL_CFLAGS += -DTARGET_DISABLE_TRIPLE_BUFFERING
+@@ -52,6 +52,10 @@ ifeq ($(TARGET_FORCE_HWC_FOR_VIRTUAL_DISPLAYS),true)
+     LOCAL_CFLAGS += -DFORCE_HWC_COPY_FOR_VIRTUAL_DISPLAYS
  endif
  
 +ifeq ($(BOARD_EGL_NEEDS_LEGACY_FB),true)
@@ -586,25 +585,11 @@ index 5fa513c..69af894 100644
  
      int format;
      window->query(window, NATIVE_WINDOW_FORMAT, &format);
-diff --git a/frameworks/native/services/surfaceflinger/DisplayHardware/HWComposer.cpp b/frameworks/native/services/surfaceflinger/DisplayHardware/HWComposer.cpp
-index f9e619c..fc8a0d1 100644
---- a/frameworks/native/services/surfaceflinger/DisplayHardware/HWComposer.cpp
-+++ b/frameworks/native/services/surfaceflinger/DisplayHardware/HWComposer.cpp
-@@ -628,7 +628,8 @@ void HWComposer::eventControl(int disp, int event, int enabled) {
-             break;
-         case EVENT_ORIENTATION:
-             // Orientation event
--            err = mHwc->eventControl(mHwc, disp, event, enabled);
-+            if (hwcHasApiVersion(mHwc, HWC_DEVICE_API_VERSION_1_0))
-+                err = mHwc->eventControl(mHwc, disp, event, enabled);
-             break;
-         default:
-             ALOGW("eventControl got unexpected event %d (disp=%d en=%d)",
 diff --git a/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp b/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp
-index 529461e..7ae858e 100644
+index 67b715c..e737185 100644
 --- a/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp
 +++ b/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp
-@@ -2771,6 +2771,7 @@ status_t SurfaceFlinger::onTransact(
+@@ -2778,6 +2778,7 @@ status_t SurfaceFlinger::onTransact(
              const int pid = ipc->getCallingPid();
              const int uid = ipc->getCallingUid();
              if ((uid != AID_GRAPHICS) &&
@@ -612,7 +597,7 @@ index 529461e..7ae858e 100644
                      !PermissionCache::checkPermission(sAccessSurfaceFlinger, pid, uid)) {
                  ALOGE("Permission Denial: "
                          "can't access SurfaceFlinger pid=%d, uid=%d", pid, uid);
-@@ -2908,6 +2909,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
+@@ -2915,6 +2916,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
      uint32_t code;
      Parcel const* data;
      Parcel* reply;
@@ -622,7 +607,7 @@ index 529461e..7ae858e 100644
  
      enum {
          MSG_API_CALL,
-@@ -2920,6 +2924,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
+@@ -2927,6 +2931,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
       */
      virtual status_t transact(uint32_t code,
              const Parcel& data, Parcel* reply, uint32_t flags) {
@@ -632,7 +617,7 @@ index 529461e..7ae858e 100644
          this->code = code;
          this->data = &data;
          this->reply = reply;
-@@ -2932,6 +2939,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
+@@ -2939,6 +2946,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
              looper->sendMessage(this, Message(MSG_API_CALL));
              barrier.wait();
          }

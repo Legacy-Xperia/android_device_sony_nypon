@@ -1,0 +1,1515 @@
+#       modified:   core/java/android/provider/Settings.java
+#       modified:   core/res/AndroidManifest.xml
+#       modified:   core/res/res/values/cm_strings.xml
+#       modified:   core/res/res/values/symbols.xml
+#       modified:   media/jni/Android.mk
+#       modified:   policy/src/com/android/internal/policy/impl/GlobalActions.java
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#       core/res/res/drawable-hdpi/ic_lock_screen_record.png
+#       core/res/res/drawable-mdpi/ic_lock_screen_record.png
+#       core/res/res/drawable-xhdpi/ic_lock_screen_record.png
+#       core/res/res/drawable-xxhdpi/ic_lock_screen_record.png
+#       media/java/android/media/screenrecorder/
+#       media/jni/screenrecorder/
+#===========================================================
+#       modified:   res/values/cm_arrays.xml
+#       modified:   res/values/cm_strings.xml
+#       modified:   res/xml/display_settings.xml
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#       res/xml/screen_recorder_settings.xml
+#       src/com/android/settings/chameleonos/
+diff --git a/frameworks/base/core/java/android/provider/Settings.java b/frameworks/base/core/java/android/provider/Settings.java
+index 0f3f733..3d53dfc 100644
+--- a/frameworks/base/core/java/android/provider/Settings.java
++++ b/frameworks/base/core/java/android/provider/Settings.java
+@@ -2724,6 +2724,18 @@ public final class Settings {
+         public static final String EGG_MODE = "egg_mode";
+ 
+         /**
++         * Width and height of output vide expressed in WxH
++         * @hide
++         */
++        public static final String SCREEN_RECORDER_OUTPUT_DIMENSIONS = "screen_recorder_output_dimensions";
++
++        /**
++         * Screen recorder framerate in bits per second
++         * @hide
++         */
++        public static final String SCREEN_RECORDER_BITRATE = "screen_recorder_bitrate";
++
++        /**
+          * Quick Settings Panel Tiles to Use
+          *
+          * @hide
+@@ -3097,6 +3109,12 @@ public final class Settings {
+         public static final String POWER_MENU_PROFILES_ENABLED = "power_menu_profiles_enabled";
+ 
+         /**
++         * Whether power menu screen record is enabled
++         * @hide
++         */
++        public static final String POWER_MENU_SCREENRECORD_ENABLED = "power_menu_screenrecord_enabled";
++
++        /**
+          * Enable Stylus Gestures
+          *
+          * @hide
+diff --git a/frameworks/base/core/res/AndroidManifest.xml b/frameworks/base/core/res/AndroidManifest.xml
+index 19986eb..84f8220 100644
+--- a/frameworks/base/core/res/AndroidManifest.xml
++++ b/frameworks/base/core/res/AndroidManifest.xml
+@@ -2530,6 +2530,13 @@
+         android:description="@string/permdesc_accessNetworkConditions"
+         android:protectionLevel="signature|system" />
+ 
++    <!-- Allows an application to record the screen.
++         @hide This is not a third-party API (intended for system apps). -->
++    <permission android:name="android.permission.RECORD_SCREEN"
++        android:label="@string/permlab_recordScreen"
++        android:description="@string/permdesc_recordScreen"
++        android:protectionLevel="signature|system" />
++
+     <!-- The system process is explicitly the only one allowed to launch the
+          confirmation UI for full backup/restore -->
+     <uses-permission android:name="android.permission.CONFIRM_FULL_BACKUP"/>
+diff --git a/frameworks/base/core/res/res/values/cm_strings.xml b/frameworks/base/core/res/res/values/cm_strings.xml
+index dc81f06..9a13a76 100644
+--- a/frameworks/base/core/res/res/values/cm_strings.xml
++++ b/frameworks/base/core/res/res/values/cm_strings.xml
+@@ -99,6 +99,9 @@
+     <!-- Label for item that reboots the device in phone options dialog -->
+     <string name="global_action_reboot">Reboot</string>
+ 
++    <!-- label for screen record item in phone options dialog -->
++    <string name="global_action_screen_record">Screen record</string>
++
+     <!-- Label for item that opens the profile choosing dialog -->
+     <string name="global_action_choose_profile">Profile</string>
+ 
+@@ -186,4 +189,17 @@
+     <string name="perf_profile_bal">Balanced</string>
+     <string name="perf_profile_perf">Performance</string>
+ 
++    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
++    <string name="permlab_interceptSmsSent">intercept outgoing SMS</string>
++    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
++    <string name="permdesc_interceptSmsSent">Allows the app to
++        intercept an outgoing SMS.
++        Malicious apps may use this to prevent outgoing SMS messages.</string>
++
++    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
++    <string name="permlab_recordScreen">Record content being displayed</string>
++    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
++    <string name="permdesc_recordScreen">Allows the app to
++        record the users screen.</string>
++
+ </resources>
+diff --git a/frameworks/base/core/res/res/values/symbols.xml b/frameworks/base/core/res/res/values/symbols.xml
+index 499d110..4ea8179 100644
+--- a/frameworks/base/core/res/res/values/symbols.xml
++++ b/frameworks/base/core/res/res/values/symbols.xml
+@@ -1791,6 +1791,7 @@
+ 
+   <!-- Power menu -->
+   <java-symbol type="string" name="global_action_screenshot" />
++  <java-symbol type="string" name="global_action_screen_record" />
+   <java-symbol type="string" name="global_action_choose_profile" />
+   <java-symbol type="string" name="global_action_reboot" />
+   <java-symbol type="string" name="global_actions_toggle_expanded_desktop_mode" />
+@@ -1802,6 +1803,7 @@
+   <java-symbol type="array" name="shutdown_reboot_options" />
+   <java-symbol type="array" name="shutdown_reboot_actions" />
+   <java-symbol type="drawable" name="ic_lock_screenshot" />
++  <java-symbol type="drawable" name="ic_lock_screen_record" />
+   <java-symbol type="drawable" name="ic_lock_reboot" />
+   <java-symbol type="drawable" name="ic_lock_profile" />
+ 
+diff --git a/frameworks/base/media/jni/Android.mk b/frameworks/base/media/jni/Android.mk
+index 2fb316d..6807633 100644
+--- a/frameworks/base/media/jni/Android.mk
++++ b/frameworks/base/media/jni/Android.mk
+@@ -85,4 +85,5 @@ include $(BUILD_SHARED_LIBRARY)
+ 
+ # build libsoundpool.so
+ # build libaudioeffect_jni.so
++# build libscreenrecorder.so
+ include $(call all-makefiles-under,$(LOCAL_PATH))
+diff --git a/frameworks/base/policy/src/com/android/internal/policy/impl/GlobalActions.java b/frameworks/base/policy/src/com/android/internal/policy/impl/GlobalActions.java
+index 8a1f0f0..c09e208 100644
+--- a/frameworks/base/policy/src/com/android/internal/policy/impl/GlobalActions.java
++++ b/frameworks/base/policy/src/com/android/internal/policy/impl/GlobalActions.java
+@@ -37,6 +37,7 @@ import android.content.IntentFilter;
+ import android.content.pm.UserInfo;
+ import android.database.ContentObserver;
+ import android.graphics.drawable.Drawable;
++import android.Manifest;
+ import android.media.AudioManager;
+ import android.net.ConnectivityManager;
+ import android.os.Bundle;
+@@ -347,7 +348,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
+         // next: screenshot
+         // only shown if enabled, disabled by default
+         boolean showScreenshot = Settings.System.getIntForUser(cr,
+-                Settings.System.POWER_MENU_SCREENSHOT_ENABLED, 0, UserHandle.USER_CURRENT) == 1;
++                Settings.System.POWER_MENU_SCREENSHOT_ENABLED, 1, UserHandle.USER_CURRENT) == 1;
+         if (showScreenshot) {
+             mItems.add(
+                 new SinglePressAction(R.drawable.ic_lock_screenshot, R.string.global_action_screenshot) {
+@@ -365,6 +366,27 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
+                 });
+         }
+ 
++        // next: screenrecord
++        // only shown if enabled, disabled by default
++        boolean showScreenrecord = Settings.System.getIntForUser(cr,
++                Settings.System.POWER_MENU_SCREENRECORD_ENABLED, 0, UserHandle.USER_CURRENT) == 1;
++        if (showScreenrecord) {
++            mItems.add(
++                new SinglePressAction(R.drawable.ic_lock_screen_record, R.string.global_action_screen_record) {
++                    public void onPress() {
++                        toggleScreenRecord();
++                    }
++
++                    public boolean showDuringKeyguard() {
++                        return true;
++                    }
++
++                    public boolean showBeforeProvisioning() {
++                        return true;
++                    }
++                });
++        }
++
+         // next: airplane mode
+         boolean showAirplaneMode = Settings.System.getIntForUser(cr,
+                 Settings.System.POWER_MENU_AIRPLANE_ENABLED, 1, UserHandle.USER_CURRENT) == 1;
+@@ -424,7 +446,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
+ 
+         // next: optionally add a list of users to switch to
+         boolean showUsers = Settings.System.getIntForUser(cr,
+-                Settings.System.POWER_MENU_USER_ENABLED, 0, UserHandle.USER_CURRENT) == 1;
++                Settings.System.POWER_MENU_USER_ENABLED, 1, UserHandle.USER_CURRENT) == 1;
+         if (showUsers) {
+             addUsersToMenu(mItems);
+         }
+@@ -630,6 +652,11 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
+         }
+     }
+ 
++    private void toggleScreenRecord() {
++        final Intent recordIntent = new Intent("org.chameleonos.action.NOTIFY_RECORD_SERVICE");
++        mContext.sendBroadcast(recordIntent, Manifest.permission.RECORD_SCREEN);
++    }
++
+     private void prepareDialog() {
+         refreshSilentMode();
+         mAirplaneModeOn.updateState(mAirplaneState);
+diff --git a/frameworks/base/core/res/res/drawable-hdpi/ic_lock_screen_record.png b/frameworks/base/core/res/res/drawable-hdpi/ic_lock_screen_record.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..62592444038feb6e14658af90caf5f3d4b298a9a
+GIT binary patch
+literal 1069
+zcmV+|1k(G7P)<h;3K|Lk000e1NJLTq001xm001xu1^@s6R|5Hm000B@Nkl<ZXx{CZ
+zJ*Zqo6vuyOcN2|1h$c!R!HA|X2!1z$ofe9PjTRcT5Vf%oteycsih#z#Iu=%b#6qH-
+zDA=SCH6$QGB#9u1#(>6%F^TWJ-TSlfT%D}D`|j?0d3nMf81CGeduIOsGiT16xiFQf
+zOl2xlS%So%M)lthBFgtDbc_h=zKHmb?s*eM3<WVrr<`|`ZmS`=P7bmbxCYn=Sd0+^
+zfJPJWL;9nM-bjmNY32KNb)R}hJ)PyOx>KD|+iFXVtfNLTRx~K|=|w&NL<EZZgKAG*
+zP`g?0sdN4<$J7l8yav-M2#r%pBm6^b(iP~aHz!!t1L`B{mFi}7m-=%O`KAV)`t9Y~
+zq!W!*vsMqM<=@Nqo7Bg0Ro1JU)Dvo@K3%xN8g;k&t9nxXr9nB_S5B$V*Df_KftI>0
+zef_7xl}b6GUZLKb@1Ga?uVh=-!BX`-2emEa^Qlo-J0qgg*6iPtZSMo~8Hvb9^g8ei
+za1^*&odM1O&jJ<j8t^GF$PKC-zgzTIz$L(+zz*O^;Bny1aR~sd%jfs%7NA#vujPh_
+zm{U(Dp;iL89GC<4Cb?=zm^Mo*&y}9K4LA<mp5I+MY6TVxQzpnC^V?ou-$8X<0&We^
+zjT%^gNm5lrR9RQu1snmk6vmB737CLq)ei7bE^RH}0WSh~1KV?=1>pW-;#LAX?@TDh
+zZ|D0Hz;D28u3S}MbCNwkv9vAVt%%s6-U!^4lkEpK1MepAwW;%V`gIgQDm60o2(^{&
+za!2m1t!b<%bQ?*NldcUssvZLF0S*E`051WDfvbQu34T3rSplH*bJR|{%qI0i;EOZ@
+zeH*>;>D6fxRTIc9Y3**2)I|ZZ0!{)4fIIvAx04p$sLle<75i!JQVzP#7^~AxkTImc
+z2h8LiIF-I^;T8`AZvY!I9CrppC&#h=Vg$MqxLmJKFEXsYkU`*B&S|l7<w|vPKb>7H
+z<!?eDiisw@TXZAh58&l2<75L1#o;zFf$?uh5$Duzf$M<1>X|y6_8G+it7{Ryug&)3
+zOWnldNR`>+EU*u_bs5IoQ-|P{AW(1i4}jZ%2h!Sg6l#wMljRMs2b=>w0*(v=f1wD}
+z2h!IO@zoOV0-aIdn;vA7{3tLYy2~)uqGMbL0?TKK2ABF(O<=ilp~fz|+6Yub;`RTA
+zK%)!AYIdR47zE;C?WZQG#3#TzMb6)UXaVf*%TzBq0fFB$4&Rr59}W!w*amjyrRHcJ
+zVy*@P74TWs=Yfy&cgdg>cqZGv%tUTQS7Fre^#HEVG<aL)>BCa){lKfh{9;G{ipsdw
+noajgFRHibOsZ3=mOOU?+e~Kz}z9UsX00000NkvXXu0mjfO+ESd
+
+literal 0
+HcmV?d00001
+
+diff --git a/frameworks/base/core/res/res/drawable-mdpi/ic_lock_screen_record.png b/frameworks/base/core/res/res/drawable-mdpi/ic_lock_screen_record.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..fcb312a9a0dd7ba900c3ad4101b9d48241f4b46c
+GIT binary patch
+literal 707
+zcmV;!0zCbRP)<h;3K|Lk000e1NJLTq001BW001Be1^@s6b9#F80007tNkl<ZSi|j?
+zyK7WY5XOIVb~g#WK*S;<zB&a9MNzPbAcCf`NFx%E_`psOE78Kn#zxRWi4a5(!Oqe$
+z_y-7zVk{IQf$c0rT{X#P;T#=z@7?TXlgbQSIQN|I%*_4H%$&KfBLBNse368i<*@-W
+zGb90+naRh0aCu*;fxr6x+0!Cfi6oPh!u*;ru0(u(+KKBcbu>j!-Ae&U(p5=wz-RrI
+zn?Oxc)g4UEph-$)k7JUgv>*dcJCYu`(FsXMCEfD($$(AWo_A!U%z>Ju{ch}pq#;SS
+zC5=eh?eixce^^pxrxUprVyiU>CFLNy42%G$fDZvX44efTW;QD63-AJX3RL5_gyS_}
+z7T5`#2DSioGy9pr)dDis0k3@%z`QHl1H1=z`1~qh+{_*pvFS0@4-5gX+<{ti<`tde
+z4`39S1nL2EA2<RuBn|pppPy@d`rP;!@CLXJRLbI_$bmUv0J!5U>;u*V7l6Hvc@XHf
+zTq8V#c1d~(OaOyGBYbsB8dTc^?HS-W@D|t(Yzyc6F(@=Mo0GH&xC<Nu`usyGVNb^l
+zL@zf2hk(sN(SVtq3)q^Zi@=OKoQ<Xeo$7=EwOLow`ZqIcNO}fr&5Q($fKR}IG6t$W
+z+#gfGJxMn_x@j^VW2ztc4t({j>d66xx^M+poy%<r);zPGm|4BK5>|V-NvF;1d>3Un
+z6_w#$9GGn`s|(0{xZ0P*0dl|4RRA^N(*jw*BG$W-)MaKEODsjkD!?@G*dtuwju>7}
+z2eP5MUz<~2-E#M{0k{M_UzVoSqcZ_(fpOrV-{rZuRDgHDn3>IV)M$3uE>YC66y<X#
+p-SA===p@(_8rYQ|n-%F<egU{OpnN~yoZA2Z002ovPDHLkV1mb+J%#`P
+
+literal 0
+HcmV?d00001
+
+diff --git a/frameworks/base/core/res/res/drawable-xhdpi/ic_lock_screen_record.png b/frameworks/base/core/res/res/drawable-xhdpi/ic_lock_screen_record.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..6b10b938e13a3df4a2ad6de411110d168c7e70ff
+GIT binary patch
+literal 1640
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/frameworks/base/core/res/res/drawable-xxhdpi/ic_lock_screen_record.png b/frameworks/base/core/res/res/drawable-xxhdpi/ic_lock_screen_record.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..4fc5b952f8d8add867f599dc6d75f9e957c0cc85
+GIT binary patch
+literal 2816
+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
+MFhLtvqA+p)0}Bg8IRF3v
+
+literal 0
+HcmV?d00001
+
+diff --git a/frameworks/base/media/java/android/media/screenrecorder/ScreenRecorder.java b/frameworks/base/media/java/android/media/screenrecorder/ScreenRecorder.java
+new file mode 100644
+index 0000000..81bd7ba
+--- /dev/null
++++ b/frameworks/base/media/java/android/media/screenrecorder/ScreenRecorder.java
+@@ -0,0 +1,152 @@
++/*
++ * Copyright (C) 2013 The ChameleonOS Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.media.screenrecorder;
++
++import android.util.Log;
++import android.view.Surface;
++
++import java.lang.IllegalArgumentException;
++
++/**
++ * {@hide}
++ */
++public class ScreenRecorder {
++    static {
++        System.loadLibrary("screenrecorder");
++    }
++
++    private static final String TAG = "ScreenRecorder";
++    private static ScreenRecorder sScreenRecorder = null;
++
++    private static ScreenRecorderCallbacks sCallbacks;
++
++    public static final int STATE_UNINITIALIZED = 0;
++    public static final int STATE_IDLE = 1;
++    public static final int STATE_RECORDING = 2;
++
++    private static int sState = STATE_UNINITIALIZED;
++
++    private ScreenRecorder() {
++    }
++
++    /**
++     * There can be only one!
++     * @return
++     */
++    public static ScreenRecorder getInstance() {
++        if (sScreenRecorder == null) {
++            sScreenRecorder = new ScreenRecorder();
++        }
++        return sScreenRecorder;
++    }
++
++    /**
++     * Initialize the screen recorder.
++     * @param orientation The display orientation to record, can be one of the following:
++     *                    Surface.ROTATION_0
++     *                    Surface.ROTATION_90
++     *                    Surface.ROTATION_180
++     *                    Surface.ROTATION_270
++     * @param width Width of the video output.
++     * @param height Height of the video output.
++     * @param bitRate Bitrate to record at, default is 4000000.
++     * @param timeLimitSec Maximum time to record for.  Maximum allowed is 300 seconds (5 minutes).
++     */
++    public void init(int rotation, int width, int height, int bitRate, int timeLimitSec) {
++        if (sState == STATE_RECORDING) {
++            throw new IllegalStateException("ScreenRecorder is currently recording.");
++        }
++        if (rotation != Surface.ROTATION_0 && rotation != Surface.ROTATION_90
++                && rotation != Surface.ROTATION_180 && rotation != Surface.ROTATION_270) {
++            throw new IllegalArgumentException("Invalid rotation: " + rotation);
++        }
++        if (width <= 0) {
++            throw new IllegalArgumentException("Invalid width: " + width);
++        }
++        if (height <= 0) {
++            throw new IllegalArgumentException("Invalid height: " + height);
++        }
++        native_init(rotation, width, height, bitRate, timeLimitSec);
++        sState = STATE_IDLE;
++    }
++
++    /**
++     * Start recording the display to the specified file.
++     * @param fileName Filename including path to save video to.
++     * @return True if video recording is able to start.
++     */
++    public boolean start(String fileName) {
++        if (sState != STATE_IDLE) {
++            throw new IllegalStateException("ScreenRecorder is not idle.");
++        }
++        boolean result = native_start(fileName);
++        if (result) sState = STATE_RECORDING;
++        return result;
++    }
++
++    /**
++     * Stop recording video.  Call this to stop recording before the specified time is up.
++     */
++    public void stop() {
++        if (sState != STATE_RECORDING) {
++            throw new IllegalStateException("ScreenRecorder is not recording.");
++        }
++        native_stop();
++        sState = STATE_IDLE;
++    }
++
++    /**
++     * Get the current state of the screen recorder.
++     * @return The current state
++     */
++    public int getState() {
++        return sState;
++    }
++
++    /**
++     * Register to recieve callbacks from the screen recorder.
++     * @param callbacks
++     */
++    public void setScreenRecorderCallbacks(ScreenRecorderCallbacks callbacks) {
++        sCallbacks = callbacks;
++    }
++
++    // callbacks from libscreenrecorder
++    private void onRecordingStarted() {
++        if (sCallbacks != null) sCallbacks.onRecordingStarted();
++    }
++
++    private void onRecordingFinished() {
++        if (sCallbacks != null) sCallbacks.onRecordingFinished();
++    }
++
++    private void onError(int error, String message) {
++        if (sCallbacks != null) sCallbacks.onRecordingError(message);
++    }
++
++    public interface ScreenRecorderCallbacks {
++        public void onRecordingStarted();
++        public void onRecordingFinished();
++        public void onRecordingError(String error);
++    }
++
++    private static native void native_init(int rotation, int width, int height, int bitRate, int timeLimitSec);
++    private static native boolean native_start(String fileName);
++    private static native void native_stop();
++
++}
++
+diff --git a/frameworks/base/media/jni/screenrecorder/Android.mk b/frameworks/base/media/jni/screenrecorder/Android.mk
+new file mode 100644
+index 0000000..3e1f567
+--- /dev/null
++++ b/frameworks/base/media/jni/screenrecorder/Android.mk
+@@ -0,0 +1,31 @@
++LOCAL_PATH:= $(call my-dir)
++include $(CLEAR_VARS)
++
++LOCAL_SRC_FILES:= \
++    android_media_ScreenRecorder_ScreenRecorderImpl.cpp
++
++LOCAL_SHARED_LIBRARIES := \
++    libandroid_runtime \
++    libnativehelper \
++    libstagefright \
++    libmedia \
++    libutils \
++    libbinder \
++    libstagefright_foundation \
++    libjpeg \
++    libgui \
++    libcutils \
++    liblog
++
++LOCAL_C_INCLUDES := \
++    frameworks/av/media/libstagefright \
++    frameworks/av/media/libstagefright/include \
++    $(TOP)/frameworks/native/include/media/openmax \
++    external/jpeg
++
++LOCAL_CFLAGS += -Wno-multichar -pthread
++
++LOCAL_MODULE:= libscreenrecorder
++
++include $(BUILD_SHARED_LIBRARY)
++
+diff --git a/frameworks/base/media/jni/screenrecorder/android_media_ScreenRecorder_ScreenRecorderImpl.cpp b/frameworks/base/media/jni/screenrecorder/android_media_ScreenRecorder_ScreenRecorderImpl.cpp
+new file mode 100644
+index 0000000..1da99f3
+--- /dev/null
++++ b/frameworks/base/media/jni/screenrecorder/android_media_ScreenRecorder_ScreenRecorderImpl.cpp
+@@ -0,0 +1,712 @@
++/*
++ * Copyright 2013 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#define LOG_TAG "ScreenRecord"
++//#define LOG_NDEBUG 0
++#include <utils/Log.h>
++
++#include <nativehelper/jni.h>
++#include <nativehelper/JNIHelp.h>
++#include <android_runtime/AndroidRuntime.h>
++
++#include <binder/IPCThreadState.h>
++#include <utils/Errors.h>
++#include <utils/Thread.h>
++#include <utils/Timers.h>
++
++#include <gui/Surface.h>
++#include <gui/SurfaceComposerClient.h>
++#include <gui/ISurfaceComposer.h>
++#include <ui/DisplayInfo.h>
++#include <media/openmax/OMX_IVCommon.h>
++#include <media/stagefright/foundation/ABuffer.h>
++#include <media/stagefright/foundation/ADebug.h>
++#include <media/stagefright/foundation/AMessage.h>
++#include <media/stagefright/MediaCodec.h>
++#include <media/stagefright/MediaErrors.h>
++#include <media/stagefright/MediaMuxer.h>
++#include <media/ICrypto.h>
++
++#include <stdlib.h>
++#include <unistd.h>
++#include <string.h>
++#include <stdio.h>
++#include <fcntl.h>
++#include <pthread.h>
++#include <signal.h>
++#include <getopt.h>
++#include <sys/wait.h>
++
++using namespace android;
++
++static jclass class_SoundRecorder;
++static jmethodID   method_onRecordingStarted;
++static jmethodID   method_onRecordingFinished;
++static jmethodID   method_onError;
++static JavaVM* gVM;
++
++static const char* const kClassPathName = "android/media/screenrecorder/ScreenRecorder";
++
++static const uint32_t kMinBitRate = 100000;         // 0.1Mbps
++static const uint32_t kMaxBitRate = 100 * 1000000;  // 100Mbps
++static const uint32_t kMaxTimeLimitSec = 300;       // 5 minutes
++static const uint32_t kFallbackWidth = 1280;        // 720p
++static const uint32_t kFallbackHeight = 720;
++
++static bool gVerbose = false;               // chatty on stdout
++static uint32_t gOrientation = DISPLAY_ORIENTATION_0;    // rotaiton of display
++static bool gSizeSpecified = false;         // was size explicitly requested?
++static uint32_t gVideoWidth = 0;            // default width+height
++static uint32_t gVideoHeight = 0;
++static uint32_t gBitRate = 4000000;         // 4Mbps
++static uint32_t gTimeLimitSec = kMaxTimeLimitSec;
++static char gFileName[256];
++
++// Set by signal handler to stop recording.
++static bool gStopRequested;
++
++// Previous signal handler state, restored after first hit.
++static struct sigaction gOrigSigactionINT;
++static struct sigaction gOrigSigactionHUP;
++
++void jni_onRecordingStarted(void) {
++    JNIEnv* env;
++    int status;
++    status = gVM->AttachCurrentThread(&env, NULL);
++    if(status < 0) {
++        ALOGE("Unable to attach current thread.");
++        return;
++    }
++
++    env->CallStaticVoidMethod(class_SoundRecorder, method_onRecordingStarted);
++    gVM->DetachCurrentThread();
++}
++
++void jni_onRecordingFinished(void) {
++    JNIEnv* env;
++    int status;
++    status = gVM->AttachCurrentThread(&env, NULL);
++    if(status < 0) {
++        ALOGE("Unable to attach current thread.");
++        return;
++    }
++
++    env->CallStaticVoidMethod(class_SoundRecorder, method_onRecordingFinished);
++    gVM->DetachCurrentThread();
++}
++
++void jni_onError(int error, const char* message) {
++    JNIEnv* env;
++    int status;
++    status = gVM->AttachCurrentThread(&env, NULL);
++    if(status < 0) {
++        ALOGE("Unable to attach current thread.");
++        return;
++    }
++
++    env->CallStaticVoidMethod(class_SoundRecorder, method_onError,
++            error, env->NewStringUTF(message));
++    gVM->DetachCurrentThread();
++}
++
++/*
++ * Returns "true" if the device is rotated 90 degrees.
++ */
++static bool isDeviceRotated(int orientation) {
++    return orientation != DISPLAY_ORIENTATION_0 &&
++            orientation != DISPLAY_ORIENTATION_180;
++}
++
++/*
++ * Configures and starts the MediaCodec encoder.  Obtains an input surface
++ * from the codec.
++ */
++static status_t prepareEncoder(float displayFps, sp<MediaCodec>* pCodec,
++        sp<IGraphicBufferProducer>* pBufferProducer) {
++    status_t err;
++
++    if (gVerbose) {
++        printf("Configuring recorder for %dx%d video at %.2fMbps\n",
++                gVideoWidth, gVideoHeight, gBitRate / 1000000.0);
++    }
++
++    sp<AMessage> format = new AMessage;
++    format->setInt32("width", gVideoWidth);
++    format->setInt32("height", gVideoHeight);
++    format->setString("mime", "video/avc");
++    format->setInt32("color-format", OMX_COLOR_FormatAndroidOpaque);
++    format->setInt32("bitrate", gBitRate);
++    format->setFloat("frame-rate", displayFps);
++    format->setInt32("i-frame-interval", 10);
++
++    sp<ALooper> looper = new ALooper;
++    looper->setName("screenrecord_looper");
++    looper->start();
++    ALOGV("Creating codec");
++    sp<MediaCodec> codec = MediaCodec::CreateByType(looper, "video/avc", true);
++    if (codec == NULL) {
++        fprintf(stderr, "ERROR: unable to create video/avc codec instance\n");
++        return UNKNOWN_ERROR;
++    }
++    err = codec->configure(format, NULL, NULL,
++            MediaCodec::CONFIGURE_FLAG_ENCODE);
++    if (err != NO_ERROR) {
++        codec->release();
++        codec.clear();
++
++        fprintf(stderr, "ERROR: unable to configure codec (err=%d)\n", err);
++        return err;
++    }
++
++    ALOGV("Creating buffer producer");
++    sp<IGraphicBufferProducer> bufferProducer;
++    err = codec->createInputSurface(&bufferProducer);
++    if (err != NO_ERROR) {
++        codec->release();
++        codec.clear();
++
++        fprintf(stderr,
++            "ERROR: unable to create encoder input surface (err=%d)\n", err);
++        return err;
++    }
++
++    ALOGV("Starting codec");
++    err = codec->start();
++    if (err != NO_ERROR) {
++        codec->release();
++        codec.clear();
++
++        fprintf(stderr, "ERROR: unable to start codec (err=%d)\n", err);
++        return err;
++    }
++
++    ALOGV("Codec prepared");
++    *pCodec = codec;
++    *pBufferProducer = bufferProducer;
++    return 0;
++}
++
++/*
++ * Configures the virtual display.  When this completes, virtual display
++ * frames will start being sent to the encoder's surface.
++ */
++static status_t prepareVirtualDisplay(const DisplayInfo& mainDpyInfo,
++        const sp<IGraphicBufferProducer>& bufferProducer,
++        sp<IBinder>* pDisplayHandle) {
++    status_t err;
++
++    // Set the region of the layer stack we're interested in, which in our
++    // case is "all of it".  If the app is rotated (so that the width of the
++    // app is based on the height of the display), reverse width/height.
++    bool deviceRotated = isDeviceRotated(mainDpyInfo.orientation);
++    uint32_t sourceWidth, sourceHeight;
++    if (!deviceRotated) {
++        sourceWidth = mainDpyInfo.w;
++        sourceHeight = mainDpyInfo.h;
++    } else {
++        ALOGV("using rotated width/height");
++        sourceHeight = mainDpyInfo.w;
++        sourceWidth = mainDpyInfo.h;
++    }
++    Rect layerStackRect(sourceWidth, sourceHeight);
++
++    // We need to preserve the aspect ratio of the display.
++    float displayAspect = (float) sourceHeight / (float) sourceWidth;
++
++
++    // Set the way we map the output onto the display surface (which will
++    // be e.g. 1280x720 for a 720p video).  The rect is interpreted
++    // post-rotation, so if the display is rotated 90 degrees we need to
++    // "pre-rotate" it by flipping width/height, so that the orientation
++    // adjustment changes it back.
++    //
++    // We might want to encode a portrait display as landscape to use more
++    // of the screen real estate.  (If players respect a 90-degree rotation
++    // hint, we can essentially get a 720x1280 video instead of 1280x720.)
++    // In that case, we swap the configured video width/height and then
++    // supply a rotation value to the display projection.
++    uint32_t videoWidth, videoHeight;
++    uint32_t outWidth, outHeight;
++    if (gOrientation == DISPLAY_ORIENTATION_0 || gOrientation == DISPLAY_ORIENTATION_180) {
++        videoWidth = gVideoWidth;
++        videoHeight = gVideoHeight;
++    } else {
++        videoWidth = gVideoHeight;
++        videoHeight = gVideoWidth;
++    }
++    if (videoHeight > (uint32_t)(videoWidth * displayAspect)) {
++        // limited by narrow width; reduce height
++        outWidth = videoWidth;
++        outHeight = (uint32_t)(videoWidth * displayAspect);
++    } else {
++        // limited by short height; restrict width
++        outHeight = videoHeight;
++        outWidth = (uint32_t)(videoHeight / displayAspect);
++    }
++    uint32_t offX, offY;
++    offX = (videoWidth - outWidth) / 2;
++    offY = (videoHeight - outHeight) / 2;
++    Rect displayRect(offX, offY, offX + outWidth, offY + outHeight);
++
++    if (gVerbose) {
++        if (gOrientation == DISPLAY_ORIENTATION_0 || gOrientation == DISPLAY_ORIENTATION_180) {
++            printf("Rotated content area is %ux%u at offset x=%d y=%d\n",
++                    outHeight, outWidth, offY, offX);
++        } else {
++            printf("Content area is %ux%u at offset x=%d y=%d\n",
++                    outWidth, outHeight, offX, offY);
++        }
++    }
++
++
++    sp<IBinder> dpy = SurfaceComposerClient::createDisplay(
++            String8("ScreenRecorder"), false /* secure */);
++
++    SurfaceComposerClient::openGlobalTransaction();
++    SurfaceComposerClient::setDisplaySurface(dpy, bufferProducer);
++    SurfaceComposerClient::setDisplayProjection(dpy,
++            gOrientation,
++            layerStackRect, displayRect);
++    SurfaceComposerClient::setDisplayLayerStack(dpy, 0);    // default stack
++    SurfaceComposerClient::closeGlobalTransaction();
++
++    *pDisplayHandle = dpy;
++
++    return NO_ERROR;
++}
++
++/*
++ * Runs the MediaCodec encoder, sending the output to the MediaMuxer.  The
++ * input frames are coming from the virtual display as fast as SurfaceFlinger
++ * wants to send them.
++ *
++ * The muxer must *not* have been started before calling.
++ */
++static status_t runEncoder(const sp<MediaCodec>& encoder,
++        const sp<MediaMuxer>& muxer) {
++    static int kTimeout = 250000;   // be responsive on signal
++    status_t err;
++    ssize_t trackIdx = -1;
++    uint32_t debugNumFrames = 0;
++    int64_t startWhenNsec = systemTime(CLOCK_MONOTONIC);
++    int64_t endWhenNsec = startWhenNsec + seconds_to_nanoseconds(gTimeLimitSec);
++
++    Vector<sp<ABuffer> > buffers;
++    err = encoder->getOutputBuffers(&buffers);
++    if (err != NO_ERROR) {
++        fprintf(stderr, "Unable to get output buffers (err=%d)\n", err);
++        return err;
++    }
++
++    // This is set by the signal handler.
++    gStopRequested = false;
++
++    jni_onRecordingStarted();
++    // Run until we're signaled.
++    while (!gStopRequested) {
++        size_t bufIndex, offset, size;
++        int64_t ptsUsec;
++        uint32_t flags;
++
++        if (systemTime(CLOCK_MONOTONIC) > endWhenNsec) {
++            if (gVerbose) {
++                printf("Time limit reached\n");
++            }
++            break;
++        }
++
++        ALOGV("Calling dequeueOutputBuffer");
++        err = encoder->dequeueOutputBuffer(&bufIndex, &offset, &size, &ptsUsec,
++                &flags, kTimeout);
++        ALOGV("dequeueOutputBuffer returned %d", err);
++        switch (err) {
++        case NO_ERROR:
++            // got a buffer
++            if ((flags & MediaCodec::BUFFER_FLAG_CODECCONFIG) != 0) {
++                // ignore this -- we passed the CSD into MediaMuxer when
++                // we got the format change notification
++                ALOGV("Got codec config buffer (%u bytes); ignoring", size);
++                size = 0;
++            }
++            if (size != 0) {
++                ALOGV("Got data in buffer %d, size=%d, pts=%lld",
++                        bufIndex, size, ptsUsec);
++                CHECK(trackIdx != -1);
++
++                // If the virtual display isn't providing us with timestamps,
++                // use the current time.
++                if (ptsUsec == 0) {
++                    ptsUsec = systemTime(SYSTEM_TIME_MONOTONIC) / 1000;
++                }
++
++                // The MediaMuxer docs are unclear, but it appears that we
++                // need to pass either the full set of BufferInfo flags, or
++                // (flags & BUFFER_FLAG_SYNCFRAME).
++                err = muxer->writeSampleData(buffers[bufIndex], trackIdx,
++                        ptsUsec, flags);
++                if (err != NO_ERROR) {
++                    fprintf(stderr, "Failed writing data to muxer (err=%d)\n",
++                            err);
++                    return err;
++                }
++                debugNumFrames++;
++            }
++            err = encoder->releaseOutputBuffer(bufIndex);
++            if (err != NO_ERROR) {
++                fprintf(stderr, "Unable to release output buffer (err=%d)\n",
++                        err);
++                return err;
++            }
++            if ((flags & MediaCodec::BUFFER_FLAG_EOS) != 0) {
++                // Not expecting EOS from SurfaceFlinger.  Go with it.
++                ALOGD("Received end-of-stream");
++                gStopRequested = false;
++            }
++            break;
++        case -EAGAIN:                       // INFO_TRY_AGAIN_LATER
++            ALOGV("Got -EAGAIN, looping");
++            break;
++        case INFO_FORMAT_CHANGED:           // INFO_OUTPUT_FORMAT_CHANGED
++            {
++                // format includes CSD, which we must provide to muxer
++                ALOGV("Encoder format changed");
++                sp<AMessage> newFormat;
++                encoder->getOutputFormat(&newFormat);
++                trackIdx = muxer->addTrack(newFormat);
++                ALOGV("Starting muxer");
++                err = muxer->start();
++                if (err != NO_ERROR) {
++                    fprintf(stderr, "Unable to start muxer (err=%d)\n", err);
++                    return err;
++                }
++            }
++            break;
++        case INFO_OUTPUT_BUFFERS_CHANGED:   // INFO_OUTPUT_BUFFERS_CHANGED
++            // not expected for an encoder; handle it anyway
++            ALOGV("Encoder buffers changed");
++            err = encoder->getOutputBuffers(&buffers);
++            if (err != NO_ERROR) {
++                fprintf(stderr,
++                        "Unable to get new output buffers (err=%d)\n", err);
++                return err;
++            }
++            break;
++        case INVALID_OPERATION:
++            fprintf(stderr, "Request for encoder buffer failed\n");
++            return err;
++        default:
++            fprintf(stderr,
++                    "Got weird result %d from dequeueOutputBuffer\n", err);
++            return err;
++        }
++    }
++
++    ALOGV("Encoder stopping (req=%d)", gStopRequested);
++    if (gVerbose) {
++        printf("Encoder stopping; recorded %u frames in %lld seconds\n",
++                debugNumFrames,
++                nanoseconds_to_seconds(systemTime(CLOCK_MONOTONIC) - startWhenNsec));
++    }
++    return NO_ERROR;
++}
++
++/*
++ * Main "do work" method.
++ *
++ * Configures codec, muxer, and virtual display, then starts moving bits
++ * around.
++ */
++static status_t recordScreen(const char* fileName) {
++    status_t err;
++
++    // Start Binder thread pool.  MediaCodec needs to be able to receive
++    // messages from mediaserver.
++    sp<ProcessState> self = ProcessState::self();
++    self->startThreadPool();
++
++    // Get main display parameters.
++    sp<IBinder> mainDpy = SurfaceComposerClient::getBuiltInDisplay(
++            ISurfaceComposer::eDisplayIdMain);
++    DisplayInfo mainDpyInfo;
++    err = SurfaceComposerClient::getDisplayInfo(mainDpy, &mainDpyInfo);
++    if (err != NO_ERROR) {
++        fprintf(stderr, "ERROR: unable to get display characteristics\n");
++        return err;
++    }
++    if (gVerbose) {
++        printf("Main display is %dx%d @%.2ffps (orientation=%u)\n",
++                mainDpyInfo.w, mainDpyInfo.h, mainDpyInfo.fps,
++                mainDpyInfo.orientation);
++    }
++
++    bool rotated = isDeviceRotated(mainDpyInfo.orientation);
++    if (gVideoWidth == 0) {
++        gVideoWidth = rotated ? mainDpyInfo.h : mainDpyInfo.w;
++    }
++    if (gVideoHeight == 0) {
++        gVideoHeight = rotated ? mainDpyInfo.w : mainDpyInfo.h;
++    }
++
++    // Configure and start the encoder.
++    sp<MediaCodec> encoder;
++    sp<IGraphicBufferProducer> bufferProducer;
++    err = prepareEncoder(mainDpyInfo.fps, &encoder, &bufferProducer);
++
++    if (err != NO_ERROR && !gSizeSpecified) {
++        // fallback is defined for landscape; swap if we're in portrait
++        bool needSwap = gVideoWidth < gVideoHeight;
++        uint32_t newWidth = needSwap ? kFallbackHeight : kFallbackWidth;
++        uint32_t newHeight = needSwap ? kFallbackWidth : kFallbackHeight;
++        if (gVideoWidth != newWidth && gVideoHeight != newHeight) {
++            ALOGV("Retrying with 720p");
++            fprintf(stderr, "WARNING: failed at %dx%d, retrying at %dx%d\n",
++                    gVideoWidth, gVideoHeight, newWidth, newHeight);
++            gVideoWidth = newWidth;
++            gVideoHeight = newHeight;
++            err = prepareEncoder(mainDpyInfo.fps, &encoder, &bufferProducer);
++        }
++    }
++    if (err != NO_ERROR) {
++        return err;
++    }
++
++    // Configure virtual display.
++    sp<IBinder> dpy;
++    err = prepareVirtualDisplay(mainDpyInfo, bufferProducer, &dpy);
++    if (err != NO_ERROR) {
++        encoder->release();
++        encoder.clear();
++
++        return err;
++    }
++
++    // Configure, but do not start, muxer.
++    sp<MediaMuxer> muxer = new MediaMuxer(fileName,
++            MediaMuxer::OUTPUT_FORMAT_MPEG_4);
++    if (gOrientation == DISPLAY_ORIENTATION_90) {
++        muxer->setOrientationHint(270);
++    }
++    else if (gOrientation == DISPLAY_ORIENTATION_180) {
++        muxer->setOrientationHint(180);
++    }
++    else if (gOrientation == DISPLAY_ORIENTATION_270) {
++        muxer->setOrientationHint(90);
++    }
++
++    // Main encoder loop.
++    err = runEncoder(encoder, muxer);
++    if (err != NO_ERROR) {
++        encoder->release();
++        encoder.clear();
++
++        return err;
++    }
++
++    if (gVerbose) {
++        printf("Stopping encoder and muxer\n");
++    }
++
++    // Shut everything down, starting with the producer side.
++    bufferProducer = NULL;
++    SurfaceComposerClient::destroyDisplay(dpy);
++
++    encoder->stop();
++    muxer->stop();
++    encoder->release();
++
++    return 0;
++}
++
++/*
++ * Sends a broadcast to the media scanner to tell it about the new video.
++ *
++ * This is optional, but nice to have.
++ */
++static status_t notifyMediaScanner(const char* fileName) {
++    pid_t pid = fork();
++    if (pid < 0) {
++        int err = errno;
++        ALOGW("fork() failed: %s", strerror(err));
++        return -err;
++    } else if (pid > 0) {
++        // parent; wait for the child, mostly to make the verbose-mode output
++        // look right, but also to check for and log failures
++        int status;
++        pid_t actualPid = TEMP_FAILURE_RETRY(waitpid(pid, &status, 0));
++        if (actualPid != pid) {
++            ALOGW("waitpid() returned %d (errno=%d)", actualPid, errno);
++        } else if (status != 0) {
++            ALOGW("'am broadcast' exited with status=%d", status);
++        } else {
++            ALOGV("'am broadcast' exited successfully");
++        }
++    } else {
++        const char* kCommand = "/system/bin/am";
++
++        // child; we're single-threaded, so okay to alloc
++        String8 fileUrl("file://");
++        fileUrl.append(fileName);
++        const char* const argv[] = {
++                kCommand,
++                "broadcast",
++                "-a",
++                "android.intent.action.MEDIA_SCANNER_SCAN_FILE",
++                "-d",
++                fileUrl.string(),
++                NULL
++        };
++        if (gVerbose) {
++            printf("Executing:");
++            for (int i = 0; argv[i] != NULL; i++) {
++                printf(" %s", argv[i]);
++            }
++            putchar('\n');
++        } else {
++            // non-verbose, suppress 'am' output
++            ALOGV("closing stdout/stderr in child");
++            int fd = open("/dev/null", O_WRONLY);
++            if (fd >= 0) {
++                dup2(fd, STDOUT_FILENO);
++                dup2(fd, STDERR_FILENO);
++                close(fd);
++            }
++        }
++        execv(kCommand, const_cast<char* const*>(argv));
++        ALOGE("execv(%s) failed: %s\n", kCommand, strerror(errno));
++        exit(1);
++    }
++    return NO_ERROR;
++}
++
++void *record(void *ptr) {
++    status_t err = recordScreen(gFileName);
++    if (err == NO_ERROR) {
++        // Try to notify the media scanner.  Not fatal if this fails.
++        notifyMediaScanner(gFileName);
++        jni_onRecordingFinished();
++    } else {
++        jni_onError(err, "Screen recording failed.");
++    }
++    ALOGD(err == NO_ERROR ? "success" : "failed");
++
++    return 0;
++}
++
++static void
++android_media_ScreenRecorder_native_init(JNIEnv *env, jobject thiz, jint orientation,
++        jint videoWidth, jint videoHeight, jint bitRate, jint timeLimitSec) {
++    gOrientation = (uint32_t) orientation;
++    gSizeSpecified = (videoWidth != 0 && videoHeight != 0);
++    if (gSizeSpecified) {
++        gVideoWidth = (uint32_t) videoWidth;
++        gVideoHeight = (uint32_t) videoHeight;
++    }
++    if (bitRate > 0) {
++        gBitRate = (uint32_t) bitRate;
++    }
++    if ((uint32_t)timeLimitSec > 0 && (uint32_t)timeLimitSec < kMaxTimeLimitSec) {
++        gTimeLimitSec = (uint32_t)timeLimitSec;
++    }
++}
++
++static jboolean
++android_media_ScreenRecorder_native_start(JNIEnv *env, jobject thiz, jstring fileName) {
++    // MediaMuxer tries to create the file in the constructor, but we don't
++    // learn about the failure until muxer.start(), which returns a generic
++    // error code without logging anything.  We attempt to create the file
++    // now for better diagnostics.
++    const char* fname = env->GetStringUTFChars(fileName, 0);
++    if (NULL == fname) return 0;
++
++    // copy the filename to gFileName and release the string
++    strcpy(gFileName, fname);
++    env->ReleaseStringUTFChars(fileName, fname);
++    int fd = open(gFileName, O_CREAT | O_RDWR, 0644);
++    if (fd < 0) {
++        fprintf(stderr, "Unable to open '%s': %s\n", gFileName, strerror(errno));
++        return 0;
++    }
++    close(fd);
++
++    pthread_t recordThread;
++    pthread_create( &recordThread, NULL, record, NULL);
++
++    return 1;
++}
++
++static void
++android_media_ScreenRecorder_native_stop(JNIEnv *env, jobject thiz) {
++    gStopRequested = true;
++}
++
++static JNINativeMethod gMethods[] = {
++    { "native_init",    "(IIIII)V", (void*)android_media_ScreenRecorder_native_init },
++    { "native_start",   "(Ljava/lang/String;)Z", (void*)android_media_ScreenRecorder_native_start },
++    { "native_stop",    "()V", (void*)android_media_ScreenRecorder_native_stop },
++};
++
++int register_android_media_ScreenRecorder(JNIEnv *env) {
++    return AndroidRuntime::registerNativeMethods(env, kClassPathName, gMethods, NELEM(gMethods));
++}
++
++jint JNI_OnLoad(JavaVM* vm, void* reserved) {
++
++    JNIEnv* env = NULL;
++    jint result = -1;
++
++    if (vm->GetEnv((void**) &env, JNI_VERSION_1_4) != JNI_OK) {
++        ALOGE("ERROR: GetEnv failed\n");
++        goto bail;
++    }
++    assert(env != NULL);
++
++    gVM = vm;
++    if (register_android_media_ScreenRecorder(env) < 0) {
++        ALOGE("ERROR: ScreenRecorder native registration failed\n");
++        goto bail;
++    }
++
++    class_SoundRecorder = env->FindClass("android/media/screenrecorder/ScreenRecorder");
++
++    method_onRecordingStarted = env->GetMethodID(class_SoundRecorder, "onRecordingStarted", "()V");
++    if (method_onRecordingStarted == NULL)
++    {
++        ALOGE("Can't find ScreenRecorder.onRecordingStarted()");
++        goto bail;
++    }
++
++    method_onRecordingFinished = env->GetMethodID(class_SoundRecorder, "onRecordingFinished", "()V");
++    if (method_onRecordingStarted == NULL)
++    {
++        ALOGE("Can't find ScreenRecorder.onRecordingStarted()");
++        goto bail;
++    }
++
++    method_onError = env->GetMethodID(class_SoundRecorder, "onError", "(ILjava/lang/String;)V");
++    if (method_onRecordingStarted == NULL)
++    {
++        ALOGE("Can't find ScreenRecorder.onRecordingStarted()");
++        goto bail;
++    }
++
++    /* success -- return valid version number */
++    result = JNI_VERSION_1_4;
++
++bail:
++    return result;
++}
++
++
+diff --git a/packages/apps/Settings/res/values/cm_arrays.xml b/packages/apps/Settings/res/values/cm_arrays.xml
+index 3b9bda1..d0746d5 100644
+--- a/packages/apps/Settings/res/values/cm_arrays.xml
++++ b/packages/apps/Settings/res/values/cm_arrays.xml
+@@ -308,4 +308,45 @@
+         <item>100</item>
+         <item>200</item>
+     </string-array>
++
++    <!-- Screen recorder video sizes -->
++    <string-array name="screen_recorder_video_sizes">
++        <item>@string/screen_recorder_size_240x400</item>
++        <item>@string/screen_recorder_size_360x640</item>
++        <item>@string/screen_recorder_size_480x800</item>
++        <item>@string/screen_recorder_size_480x854</item>
++        <item>@string/screen_recorder_size_540x960</item>
++        <item>@string/screen_recorder_size_600x1024</item>
++        <item>@string/screen_recorder_size_720x1280</item>
++    </string-array>
++
++    <!-- Screen recorder bitrates -->
++    <string-array name="screen_recorder_bitrate_entries">
++        <item>@string/screen_recorder_bitrate_title_100000</item>
++        <item>@string/screen_recorder_bitrate_title_250000</item>
++        <item>@string/screen_recorder_bitrate_title_500000</item>
++        <item>@string/screen_recorder_bitrate_title_1000000</item>
++        <item>@string/screen_recorder_bitrate_title_2000000</item>
++        <item>@string/screen_recorder_bitrate_title_3000000</item>
++        <item>@string/screen_recorder_bitrate_title_4000000</item>
++        <item>@string/screen_recorder_bitrate_title_5000000</item>
++        <item>@string/screen_recorder_bitrate_title_10000000</item>
++        <item>@string/screen_recorder_bitrate_title_20000000</item>
++        <item>@string/screen_recorder_bitrate_title_50000000</item>
++        <item>@string/screen_recorder_bitrate_title_100000000</item>
++    </string-array>
++    <string-array name="screen_recorder_bitrate_values">
++        <item>@string/screen_recorder_bitrate_100000</item>
++        <item>@string/screen_recorder_bitrate_250000</item>
++        <item>@string/screen_recorder_bitrate_500000</item>
++        <item>@string/screen_recorder_bitrate_1000000</item>
++        <item>@string/screen_recorder_bitrate_2000000</item>
++        <item>@string/screen_recorder_bitrate_3000000</item>
++        <item>@string/screen_recorder_bitrate_4000000</item>
++        <item>@string/screen_recorder_bitrate_5000000</item>
++        <item>@string/screen_recorder_bitrate_10000000</item>
++        <item>@string/screen_recorder_bitrate_20000000</item>
++        <item>@string/screen_recorder_bitrate_50000000</item>
++        <item>@string/screen_recorder_bitrate_100000000</item>
++    </string-array>
+ </resources>
+diff --git a/packages/apps/Settings/res/values/cm_strings.xml b/packages/apps/Settings/res/values/cm_strings.xml
+index da7eaf5..2741d6a 100644
+--- a/packages/apps/Settings/res/values/cm_strings.xml
++++ b/packages/apps/Settings/res/values/cm_strings.xml
+@@ -631,4 +631,43 @@ equiring confirmation</string>
+     <string name="power_notifications_ringtone_title">Notification sound</string>
+     <!-- Sound settings, charging sounds label for ringtone == none -->
+     <string name="power_notifications_ringtone_silent">Silent</string>
++
++    <!-- Screen recorder -->
++    <string name="screen_recorder_title">Screen recorder</string>
++    <string name="screen_recorder_summary">Adjust screen recorder settings</string>
++    <string name="screen_recorder_video_dimensions_title">Video size</string>
++    <string name="screen_recorder_video_bitrate_title">Bitrate</string>
++    <!-- video sizes -->
++    <string name="screen_recorder_size_240x400">240x400</string>
++    <string name="screen_recorder_size_360x640">360x640</string>
++    <string name="screen_recorder_size_480x800">480x800</string>
++    <string name="screen_recorder_size_480x854">480x854</string>
++    <string name="screen_recorder_size_540x960">540x960</string>
++    <string name="screen_recorder_size_600x1024">600x1024</string>
++    <string name="screen_recorder_size_720x1280">720x1280</string>
++    <!-- frame rates -->
++    <string name="screen_recorder_bitrate_title_100000">100 kB/s</string>
++    <string name="screen_recorder_bitrate_title_250000">250 kB/s</string>
++    <string name="screen_recorder_bitrate_title_500000">500 kB/s</string>
++    <string name="screen_recorder_bitrate_title_1000000">1 MB/s</string>
++    <string name="screen_recorder_bitrate_title_2000000">2 MB/s</string>
++    <string name="screen_recorder_bitrate_title_3000000">3 MB/s</string>
++    <string name="screen_recorder_bitrate_title_4000000">4 MB/s</string>
++    <string name="screen_recorder_bitrate_title_5000000">5 MB/s</string>
++    <string name="screen_recorder_bitrate_title_10000000">10 MB/s</string>
++    <string name="screen_recorder_bitrate_title_20000000">20 MB/s</string>
++    <string name="screen_recorder_bitrate_title_50000000">50 MB/s</string>
++    <string name="screen_recorder_bitrate_title_100000000">100 MB/s</string>
++    <string name="screen_recorder_bitrate_100000">100000</string>
++    <string name="screen_recorder_bitrate_250000">250000</string>
++    <string name="screen_recorder_bitrate_500000">500000</string>
++    <string name="screen_recorder_bitrate_1000000">1000000</string>
++    <string name="screen_recorder_bitrate_2000000">2000000</string>
++    <string name="screen_recorder_bitrate_3000000">3000000</string>
++    <string name="screen_recorder_bitrate_4000000">4000000</string>
++    <string name="screen_recorder_bitrate_5000000">5000000</string>
++    <string name="screen_recorder_bitrate_10000000">10000000</string>
++    <string name="screen_recorder_bitrate_20000000">20000000</string>
++    <string name="screen_recorder_bitrate_50000000">50000000</string>
++    <string name="screen_recorder_bitrate_100000000">100000000</string>
+ </resources>
+diff --git a/packages/apps/Settings/res/xml/display_settings.xml b/packages/apps/Settings/res/xml/display_settings.xml
+index 240f64a..9c613ba 100644
+--- a/packages/apps/Settings/res/xml/display_settings.xml
++++ b/packages/apps/Settings/res/xml/display_settings.xml
+@@ -27,6 +27,11 @@
+                 android:title="@string/wallpaper_settings_title"
+                 android:fragment="com.android.settings.WallpaperTypeSettings" />
+ 
++        <PreferenceScreen
++                android:key="screen_recorder"
++                android:title="@string/screen_recorder_title"
++                android:fragment="com.android.settings.chameleonos.ScreenRecorderSettings" />
++
+         <CheckBoxPreference
+             android:key="accelerometer"
+             android:title="@string/accelerometer_title"/>
+diff --git a/packages/apps/Settings/res/xml/screen_recorder_settings.xml b/packages/apps/Settings/res/xml/screen_recorder_settings.xml
+new file mode 100644
+index 0000000..879c603
+--- /dev/null
++++ b/packages/apps/Settings/res/xml/screen_recorder_settings.xml
+@@ -0,0 +1,20 @@
++<?xml version="1.0" encoding="utf-8"?>
++
++<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
++        android:title="@string/screen_recorder_title">
++
++    <ListPreference
++        android:key="screen_recorder_size"
++        android:title="@string/screen_recorder_video_dimensions_title"
++        android:entries="@array/screen_recorder_video_sizes"
++        android:entryValues="@array/screen_recorder_video_sizes"
++        android:defaultValue="720x1280" />
++
++    <ListPreference
++        android:key="screen_recorder_bitrate"
++        android:title="@string/screen_recorder_video_bitrate_title"
++        android:entries="@array/screen_recorder_bitrate_entries"
++        android:entryValues="@array/screen_recorder_bitrate_values"
++        android:defaultValue="4000000" />
++
++</PreferenceScreen>
+diff --git a/packages/apps/Settings/src/com/android/settings/chameleonos/ScreenRecorderSettings.java b/packages/apps/Settings/src/com/android/settings/chameleonos/ScreenRecorderSettings.java
+new file mode 100644
+index 0000000..2c6bf86
+--- /dev/null
++++ b/packages/apps/Settings/src/com/android/settings/chameleonos/ScreenRecorderSettings.java
+@@ -0,0 +1,86 @@
++/*
++ * Copyright (C) 2013 The ChameleonOS Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.chameleonos;
++
++import android.content.ContentResolver;
++import android.os.Bundle;
++import android.preference.ListPreference;
++import android.preference.Preference;
++import android.provider.Settings;
++import android.text.TextUtils;
++import com.android.settings.R;
++import com.android.settings.SettingsPreferenceFragment;
++
++public class ScreenRecorderSettings extends SettingsPreferenceFragment implements
++        Preference.OnPreferenceChangeListener {
++
++    private static final String KEY_VIDEO_SIZE = "screen_recorder_size";
++    private static final String KEY_VIDEO_BITRATE = "screen_recorder_bitrate";
++
++    private ListPreference mVideoSizePref;
++    private ListPreference mVideoBitratePref;
++
++    @Override
++    public void onCreate(Bundle icicle) {
++        super.onCreate(icicle);
++        addPreferencesFromResource(R.xml.screen_recorder_settings);
++
++        final ContentResolver resolver = getContentResolver();
++        mVideoSizePref = (ListPreference) findPreference(KEY_VIDEO_SIZE);
++        mVideoSizePref.setOnPreferenceChangeListener(this);
++        String size = Settings.System.getString(resolver,
++                Settings.System.SCREEN_RECORDER_OUTPUT_DIMENSIONS);
++        updateVideoSizePreference(size);
++
++        mVideoBitratePref = (ListPreference) findPreference(KEY_VIDEO_BITRATE);
++        mVideoBitratePref.setOnPreferenceChangeListener(this);
++        String rate= Settings.System.getString(resolver,
++                Settings.System.SCREEN_RECORDER_BITRATE);
++        updateVideoBitratePreference(rate);
++    }
++
++    @Override
++    public boolean onPreferenceChange(Preference preference, Object o) {
++        if (preference == mVideoSizePref) {
++            updateVideoSizePreference((String) o);
++            return true;
++        } else if (preference == mVideoBitratePref) {
++            updateVideoBitratePreference((String) o);
++            return true;
++        }
++        return false;
++    }
++
++    private void updateVideoSizePreference(String value) {
++        if (TextUtils.isEmpty(value)) value = getString(R.string.screen_recorder_size_720x1280);
++        mVideoSizePref.setSummary(mVideoSizePref
++                .getEntries()[mVideoSizePref.findIndexOfValue(value)]);
++        Settings.System.putString(getContentResolver(),
++                Settings.System.SCREEN_RECORDER_OUTPUT_DIMENSIONS,
++                value);
++    }
++
++    private void updateVideoBitratePreference(String value) {
++        if (TextUtils.isEmpty(value)) value = getString(R.string.screen_recorder_bitrate_4000000);
++        mVideoBitratePref.setSummary(mVideoBitratePref
++                .getEntries()[mVideoBitratePref.findIndexOfValue(value)]);
++        Settings.System.putInt(getContentResolver(),
++                Settings.System.SCREEN_RECORDER_BITRATE,
++                Integer.valueOf(value));
++    }
++}
++

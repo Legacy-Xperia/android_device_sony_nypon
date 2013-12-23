@@ -1,7 +1,8 @@
 #       modified:   include/hardware/audio_policy.h
 #       modified:   include/hardware/fb.h
 #       modified:   include/hardware/hwcomposer.h
-index bfaef3b..5ae6356 100644
+diff --git a/hardware/libhardware/include/hardware/audio_policy.h b/hardware/libhardware/include/hardware/audio_policy.h
+index bfaef3b..d5c6b08 100644
 --- a/hardware/libhardware/include/hardware/audio_policy.h
 +++ b/hardware/libhardware/include/hardware/audio_policy.h
 @@ -159,7 +159,12 @@ struct audio_policy {
@@ -116,10 +117,10 @@ index 135e4aa..f6ba0b6 100644
  
  } framebuffer_device_t;
 diff --git a/hardware/libhardware/include/hardware/hwcomposer.h b/hardware/libhardware/include/hardware/hwcomposer.h
-index 726023c..656f86d 100644
+index 061c21d..ca975c5 100644
 --- a/hardware/libhardware/include/hardware/hwcomposer.h
 +++ b/hardware/libhardware/include/hardware/hwcomposer.h
-@@ -436,6 +436,20 @@ typedef struct hwc_module {
+@@ -450,6 +450,20 @@ typedef struct hwc_module {
      struct hw_module_t common;
  } hwc_module_t;
  
@@ -140,7 +141,7 @@ index 726023c..656f86d 100644
  typedef struct hwc_composer_device_1 {
      struct hw_device_t common;
  
-@@ -624,6 +638,18 @@ typedef struct hwc_composer_device_1 {
+@@ -638,6 +652,18 @@ typedef struct hwc_composer_device_1 {
       */
      void* reserved_proc[4];
  

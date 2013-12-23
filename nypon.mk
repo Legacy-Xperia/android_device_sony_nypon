@@ -117,6 +117,10 @@ PRODUCT_PACKAGES += \
     ciptool \
     bccmd
 
+# bt profile test (apk)
+#PRODUCT_PACKAGES += \
+#    BluetoothProfileTests
+
 # libaudioparameter
 PRODUCT_PACKAGES += \
     libaudioparameter
@@ -125,12 +129,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     lights.montblanc
 
-# bluedroid, a2dp, BluetoothExt
-PRODUCT_PACKAGES += \
-    bluetooth.default \
-    audio.a2dp.default \
-    BluetoothExt
-	
 # Misc
 PRODUCT_PACKAGES += \
     com.android.future.usb.accessory

@@ -8,7 +8,7 @@ import /init.environ.rc
 import /init.usb.rc
 import /init.${ro.hardware}.rc
 import /init.trace.rc
-import /init.carrier.rc
+#import /init.carrier.rc
 
 on early-init
     # Set init and its forked children's oom_adj.
@@ -219,6 +219,7 @@ on post-fs-data
     mkdir /data/misc/bluetoothd 0770 bluetooth bluetooth
     mkdir /data/misc/adb 02750 system shell
     mkdir /data/misc/audit 02750 audit system
+    mkdir /data/misc/bluedroid 0770 bluetooth net_bt_stack
     mkdir /data/misc/bluetooth 0770 system system
     mkdir /data/misc/keystore 0700 keystore keystore
     mkdir /data/misc/keychain 0771 system system
@@ -537,7 +538,7 @@ service drm /system/bin/drmserver
 service media /system/bin/mediaserver
     class main
     user media
-    group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc mediadrm
+    group system audio camera inet net_bt net_bt_admin net_bw_acct drmrpc input sdcard_rw shell mediadrm
     ioprio rt 4
 
 service bootanim /system/bin/bootanimation
