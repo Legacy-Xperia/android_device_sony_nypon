@@ -265,7 +265,11 @@ PRODUCT_PACKAGES += \
     Tag \
     com.android.nfc_extras
 
-
+# New wifi firmwares (Thanks munjeni and 95A31)
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/prebuilt/system/etc/firmware/sdd_sagrad_1091_1098.bin:system/etc/firmware/sdd_sagrad_1091_1098.bin \
+    $(LOCAL_PATH)/prebuilt/system/etc/firmware/wsm_22.bin:system/etc/firmware/wsm_22.bin \
+    $(LOCAL_PATH)/prebuilt/system/etc/firmware/LICENCE.cw1200:system/etc/firmware/LICENCE.cw1200
 
 # Device specific sysmon_monitor conf
 PRODUCT_COPY_FILES += \
