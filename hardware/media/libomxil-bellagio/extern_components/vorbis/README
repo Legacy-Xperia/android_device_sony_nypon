@@ -1,0 +1,14 @@
+The libvorbis based OpenMAX vorbis decoder component.
+
+To compile the component execute:
+
+autoreconf -i -f
+./configure --prefix=$INSTALL_DIR_PATH
+make
+make install
+
+Hints for Ubuntu:
+The packages needed for this component are not installed by default.
+They can be added with the following commands:
+
+sudo apt-get install libvorbis-dev

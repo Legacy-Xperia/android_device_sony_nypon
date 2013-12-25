@@ -1,0 +1,17 @@
+The X Video component is a video display OpenMAX component that uses the Xlib
+for the visualization.
+To compile the component execute:
+
+autoreconf -i -f
+./configure --prefix=$INSTALL_DIR_PATH
+make
+make install
+
+
+
+Hints for Ubuntu:
+The packages needed for this component are not installed by default.
+They can be added with the following commands:
+
+sudo apt-get install libx11-dev
+sudo apt-get install libxv-dev

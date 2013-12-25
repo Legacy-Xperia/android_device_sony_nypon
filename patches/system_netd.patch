@@ -1,0 +1,21 @@
+#       modified:   Android.mk
+diff --git a/system/netd/Android.mk b/system/netd/Android.mk
+index 1f7ceea..9067bf2 100644
+--- a/system/netd/Android.mk
++++ b/system/netd/Android.mk
+@@ -40,11 +40,15 @@ LOCAL_SHARED_LIBRARIES := libstlport libsysutils liblog libcutils libnetutils \
+                           libcrypto libhardware_legacy libmdnssd libdl \
+                           liblogwrap
+ 
++ifeq ($(BOARD_TI_SOFTAP),true)
++  LOCAL_SRC_FILES += SoftapControllerTI.cpp
++else
+ ifdef USES_TI_MAC80211
+   LOCAL_SRC_FILES += SoftapControllerTI.cpp
+ else
+   LOCAL_SRC_FILES += SoftapController.cpp
+ endif
++endif
+ 
+ ifneq ($(BOARD_HOSTAPD_DRIVER),)
+   LOCAL_CFLAGS += -DHAVE_HOSTAPD

@@ -1,0 +1,4 @@
+This package contains a default component that can be used as a template for the production of
+independent components that are using Bellagio library.
+The build structure is based on autotools and in this default version compiles and install a
+volume control component

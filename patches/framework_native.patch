@@ -1,0 +1,545 @@
+#       modified:   include/binder/MemoryBase.h
+#       modified:   include/gui/GLConsumer.h
+#       modified:   include/media/openmax/OMX_IVCommon.h
+#       modified:   include/ui/GraphicBuffer.h
+#       modified:   include/ui/PixelFormat.h
+#       modified:   include/ui/Region.h
+#       modified:   libs/binder/MemoryBase.cpp
+#       modified:   libs/gui/Android.mk
+#       modified:   libs/gui/GLConsumer.cpp
+#       modified:   libs/ui/PixelFormat.cpp
+#       modified:   opengl/include/EGL/eglext.h
+#       modified:   opengl/libs/EGL/eglApi.cpp
+#       modified:   opengl/libs/EGL/egl_entries.in
+#       modified:   services/surfaceflinger/SurfaceFlinger.cpp
+diff --git a/frameworks/native/include/binder/MemoryBase.h b/frameworks/native/include/binder/MemoryBase.h
+index 463e26d..286e0d3 100644
+--- a/frameworks/native/include/binder/MemoryBase.h
++++ b/frameworks/native/include/binder/MemoryBase.h
+@@ -34,6 +34,10 @@ public:
+     virtual ~MemoryBase();
+     virtual sp<IMemoryHeap> getMemory(ssize_t* offset, size_t* size) const;
+ 
++#ifdef STE_HARDWARE
++    virtual sp<IMemoryHeap> getMemory(long* offset, unsigned int* size) const;
++#endif
++
+ protected:
+     size_t getSize() const { return mSize; }
+     ssize_t getOffset() const { return mOffset; }
+diff --git a/frameworks/native/include/gui/GLConsumer.h b/frameworks/native/include/gui/GLConsumer.h
+index f0a75dc..6cf4922 100644
+--- a/frameworks/native/include/gui/GLConsumer.h
++++ b/frameworks/native/include/gui/GLConsumer.h
+@@ -32,6 +32,11 @@
+ #include <utils/Vector.h>
+ #include <utils/threads.h>
+ 
++#ifdef STE_HARDWARE  
++#include <hardware/copybit.h>
++#include <gui/IGraphicBufferAlloc.h>
++#endif
++
+ #define ANDROID_GRAPHICS_SURFACETEXTURE_JNI_ID "mSurfaceTexture"
+ #define ANDROID_GRAPHICS_FRAMEAVAILABLELISTENER_JNI_ID \
+                                          "mFrameAvailableListener"
+@@ -59,6 +64,9 @@ class String8;
+  */
+ class GLConsumer : public ConsumerBase {
+ public:
++#ifdef STE_HARDWARE
++    enum { NUM_BLIT_BUFFER_SLOTS = 2 };
++#endif
+     typedef ConsumerBase::FrameAvailableListener FrameAvailableListener;
+ 
+     // GLConsumer constructs a new GLConsumer object. tex indicates the
+@@ -272,6 +280,14 @@ private:
+     EGLImageKHR createImage(EGLDisplay dpy,
+             const sp<GraphicBuffer>& graphicBuffer);
+ 
++#ifdef STE_HARDWARE
++    // returns TRUE if buffer needs color format conversion
++    bool conversionIsNeeded(const sp<GraphicBuffer>& graphicBuffer);
++
++    // converts buffer to a suitable color format
++    status_t convert(sp<GraphicBuffer> &srcBuf, sp<GraphicBuffer> &dstBuf);
++#endif
++
+     // freeBufferLocked frees up the given buffer slot.  If the slot has been
+     // initialized this will release the reference to the GraphicBuffer in that
+     // slot and destroy the EGLImage in that slot.  Otherwise it has no effect.
+@@ -389,6 +405,18 @@ private:
+     // attachToContext is called.
+     EGLDisplay mEglDisplay;
+ 
++#ifdef STE_HARDWARE
++    // mBlitEngine is the handle to the copybit device which will be used in
++    // case color transform is needed before the EGL image is created.
++    copybit_device_t* mBlitEngine;
++
++    // mGraphicBufferAlloc is the connection to SurfaceFlinger that is used to
++    // allocate new GraphicBuffer objects.
++    sp<IGraphicBufferAlloc> mGraphicBufferAlloc;
++    sp<GraphicBuffer> mBlitSlots[NUM_BLIT_BUFFER_SLOTS];
++    int mNextBlitSlot;
++#endif
++
+     // mEglContext is the OpenGL ES context with which this GLConsumer is
+     // currently associated.  It is initialized to EGL_NO_CONTEXT and gets set
+     // to the current GL context when updateTexImage is called for the first
+diff --git a/frameworks/native/include/media/openmax/OMX_IVCommon.h b/frameworks/native/include/media/openmax/OMX_IVCommon.h
+index 85bf00d..db4a5e5 100644
+--- a/frameworks/native/include/media/openmax/OMX_IVCommon.h
++++ b/frameworks/native/include/media/openmax/OMX_IVCommon.h
+@@ -158,6 +158,7 @@ typedef enum OMX_COLOR_FORMATTYPE {
+      * */
+     OMX_COLOR_FormatAndroidOpaque = 0x7F000789,
+     OMX_TI_COLOR_FormatYUV420PackedSemiPlanar = 0x7F000100,
++    OMX_STE_COLOR_FormatYUV420PackedSemiPlanarMB = 0x7FA00000,
+     OMX_QCOM_COLOR_FormatYVU420SemiPlanar = 0x7FA30C00,
+     OMX_QCOM_COLOR_FormatYUV420PackedSemiPlanar64x32Tile2m8ka = 0x7FA30C03,
+     OMX_SEC_COLOR_FormatNV12Tiled = 0x7FC00002,
+diff --git a/frameworks/native/include/ui/GraphicBuffer.h b/frameworks/native/include/ui/GraphicBuffer.h
+index a4b9b99..2db7c8f 100644
+--- a/frameworks/native/include/ui/GraphicBuffer.h
++++ b/frameworks/native/include/ui/GraphicBuffer.h
+@@ -38,7 +38,12 @@ class GraphicBufferMapper;
+ // ===========================================================================
+ 
+ class GraphicBuffer
+-    : public ANativeObjectBase< ANativeWindowBuffer, GraphicBuffer, RefBase >,
++    : public ANativeObjectBase< ANativeWindowBuffer, GraphicBuffer,
++#ifdef STE_HARDWARE
++    LightRefBase<GraphicBuffer> >,
++#else
++    RefBase >,
++#endif
+       public Flattenable
+ {
+ public:
+diff --git a/frameworks/native/include/ui/PixelFormat.h b/frameworks/native/include/ui/PixelFormat.h
+index 9f3e267..d89790d 100644
+--- a/frameworks/native/include/ui/PixelFormat.h
++++ b/frameworks/native/include/ui/PixelFormat.h
+@@ -64,6 +64,14 @@ enum {
+     PIXEL_FORMAT_RGBA_5551   = HAL_PIXEL_FORMAT_RGBA_5551,  // 16-bit ARGB
+     PIXEL_FORMAT_RGBA_4444   = HAL_PIXEL_FORMAT_RGBA_4444,  // 16-bit ARGB
+     PIXEL_FORMAT_A_8         = 8,                           // 8-bit A
++
++#ifdef STE_HARDWARE
++    // Added Support for YUV42XMBN,
++    // Required for Copybit CC acceleration
++    PIXEL_FORMAT_YCBCR42XMBN = HAL_PIXEL_FORMAT_YCBCR42XMBN,
++    PIXEL_FORMAT_YCbCr_420_SP = HAL_PIXEL_FORMAT_YCbCr_420_SP,
++    PIXEL_FORMAT_YCbCr_420_P = HAL_PIXEL_FORMAT_YCbCr_420_P,
++#endif
+ };
+ 
+ typedef int32_t PixelFormat;
+diff --git a/frameworks/native/include/ui/Region.h b/frameworks/native/include/ui/Region.h
+index ce91f3b..e2abfde 100644
+--- a/frameworks/native/include/ui/Region.h
++++ b/frameworks/native/include/ui/Region.h
+@@ -25,6 +25,10 @@
+ #include <ui/Rect.h>
+ #include <utils/Flattenable.h>
+ 
++#ifdef STE_HARDWARE
++#include <hardware/copybit.h>
++#endif
++
+ namespace android {
+ // ---------------------------------------------------------------------------
+ 
+@@ -210,6 +214,28 @@ Region& Region::operator -= (const Region& rhs) {
+ Region& Region::operator += (const Point& pt) {
+     return translateSelf(pt.x, pt.y);
+ }
++
++#ifdef STE_HARDWARE
++// ---------------------------------------------------------------------------
++
++struct region_iterator : public copybit_region_t {
++    region_iterator(const Region& region)
++        : b(region.begin()), e(region.end()) {
++        this->next = iterate;
++    }
++private:
++    static int iterate(copybit_region_t const * self, copybit_rect_t* rect) {
++        region_iterator const* me = static_cast<region_iterator const*>(self);
++        if (me->b != me->e) {
++            *reinterpret_cast<Rect*>(rect) = *me->b++;
++            return 1;
++        }
++        return 0;
++    }
++    mutable Region::const_iterator b;
++    Region::const_iterator const e;
++};
++#endif
+ // ---------------------------------------------------------------------------
+ }; // namespace android
+ 
+diff --git a/frameworks/native/libs/binder/MemoryBase.cpp b/frameworks/native/libs/binder/MemoryBase.cpp
+index 5c82330..611cfa7 100644
+--- a/frameworks/native/libs/binder/MemoryBase.cpp
++++ b/frameworks/native/libs/binder/MemoryBase.cpp
+@@ -26,6 +26,10 @@ namespace android {
+ 
+ // ---------------------------------------------------------------------------
+ 
++#ifdef STE_HARDWARE  
++extern "C" void _ZN7android10MemoryBaseC2ERKNS_2spINS_11IMemoryHeapEEElj() __attribute__((alias("_ZN7android10MemoryBaseC1ERKNS_2spINS_11IMemoryHeapEEElj")));
++#endif
++
+ MemoryBase::MemoryBase(const sp<IMemoryHeap>& heap,
+         ssize_t offset, size_t size)
+     : mSize(size), mOffset(offset), mHeap(heap)
+@@ -43,6 +47,21 @@ MemoryBase::~MemoryBase()
+ {
+ }
+ 
++#ifdef STE_HARDWARE
++sp<IMemoryHeap> android::MemoryBase::getMemory(long* offset, unsigned int* size) const
++{
++    ssize_t offset_o;
++    size_t size_o;
++    sp<IMemoryHeap> res;
++
++    res = getMemory(&offset_o, & size_o);
++    *offset = offset_o;
++    *size = size_o;
++
++    return res;
++}
++#endif
++
+ // ---------------------------------------------------------------------------
+ }; // namespace android
+ 
+diff --git a/frameworks/native/libs/gui/Android.mk b/frameworks/native/libs/gui/Android.mk
+index 5bc759e..8c2cb51 100644
+--- a/frameworks/native/libs/gui/Android.mk
++++ b/frameworks/native/libs/gui/Android.mk
+@@ -38,6 +38,12 @@ LOCAL_SHARED_LIBRARIES := \
+ 	libutils \
+ 	liblog
+ 
++#ifdef STE_HARDWARE
++LOCAL_SHARED_LIBRARIES += \
++	libhardware \
++	libhardware_legacy
++#endif
++
+ # Executed only on QCOM BSPs
+ ifeq ($(TARGET_USES_QCOM_BSP),true)
+ ifneq ($(TARGET_QCOM_DISPLAY_VARIANT),)
+diff --git a/frameworks/native/libs/gui/GLConsumer.cpp b/frameworks/native/libs/gui/GLConsumer.cpp
+index bec0f90..4510326 100644
+--- a/frameworks/native/libs/gui/GLConsumer.cpp
++++ b/frameworks/native/libs/gui/GLConsumer.cpp
+@@ -94,13 +94,32 @@ GLConsumer::GLConsumer(GLuint tex, bool allowSynchronousMode,
+     mEglDisplay(EGL_NO_DISPLAY),
+     mEglContext(EGL_NO_CONTEXT),
+     mCurrentTexture(BufferQueue::INVALID_BUFFER_SLOT),
++#ifdef STE_HARDWARE
++    mNextBlitSlot(0),
++#endif
+     mAttached(true)
+ {
++#ifdef STE_HARDWARE
++    sp<ISurfaceComposer> composer(ComposerService::getComposerService());
++    mGraphicBufferAlloc = composer->createGraphicBufferAlloc();
++    if (mGraphicBufferAlloc == 0) {
++        ST_LOGE("createGraphicBufferAlloc() failed in SurfaceTexture()");
++    }
++#endif
+     ST_LOGV("GLConsumer");
+ 
+     memcpy(mCurrentTransformMatrix, mtxIdentity,
+             sizeof(mCurrentTransformMatrix));
+ 
++#ifdef STE_HARDWARE
++    hw_module_t const* module;
++    mBlitEngine = 0;
++    if (hw_get_module(COPYBIT_HARDWARE_MODULE_ID, &module) == 0) {
++        copybit_open(module, &mBlitEngine);
++    }
++    ALOGE_IF(!mBlitEngine, "\nCannot open copybit mBlitEngine=%p", mBlitEngine);
++#endif
++
+     mBufferQueue->setConsumerUsageBits(DEFAULT_USAGE_FLAGS);
+ }
+ 
+@@ -222,6 +241,59 @@ status_t GLConsumer::releaseAndUpdateLocked(const BufferQueue::BufferItem& item)
+     // means the buffer was previously acquired), if we destroyed the
+     // EGLImage when detaching from a context but the buffer has not been
+     // re-allocated.
++#ifdef STE_HARDWARE
++    sp<GraphicBuffer> textureBuffer;
++    if (conversionIsNeeded(mSlots[buf].mGraphicBuffer)) {
++        /* deallocate image each time .... */
++        if (mEglSlots[buf].mEglImage != EGL_NO_IMAGE_KHR) {
++            eglDestroyImageKHR(mEglDisplay, mEglSlots[buf].mEglImage);
++            mEglSlots[buf].mEglImage = EGL_NO_IMAGE_KHR;
++        }
++        /* test if source and convert buffer size are ok */
++        if (mSlots[buf].mGraphicBuffer != NULL && mBlitSlots[mNextBlitSlot] != NULL) {
++            sp<GraphicBuffer> &srcBuf = mSlots[buf].mGraphicBuffer;
++            sp<GraphicBuffer> &dstBuf = mBlitSlots[mNextBlitSlot];
++            if (srcBuf->getWidth() != dstBuf->getWidth() || srcBuf->getHeight() != dstBuf->getHeight()) {
++                mBlitSlots[mNextBlitSlot] = NULL;
++            }
++        }
++        /* allocate convert buffer if needed */
++        if (mBlitSlots[mNextBlitSlot] == NULL) {
++            sp<GraphicBuffer> &srcBuf = mSlots[buf].mGraphicBuffer;
++            status_t res = 0;
++            sp<GraphicBuffer> dstBuf(mGraphicBufferAlloc->createGraphicBuffer(srcBuf->getWidth(),
++                                                                              srcBuf->getHeight(),
++                                                                              PIXEL_FORMAT_RGBA_8888,
++                                                                              srcBuf->getUsage(),
++                                                                              &res));
++            if (dstBuf == 0) {
++                ST_LOGE("updateTexImage: SurfaceComposer::createGraphicBuffer failed");
++                return NO_MEMORY;
++            }
++            if (res != NO_ERROR) {
++                ST_LOGW("updateTexImage: SurfaceComposer::createGraphicBuffer error=%#04x", res);
++            }
++            mBlitSlots[mNextBlitSlot] = dstBuf;
++        }
++        /* allocate image */
++        EGLImageKHR image = createImage(mEglDisplay, mBlitSlots[mNextBlitSlot]);
++        if (image == EGL_NO_IMAGE_KHR) {
++            ST_LOGW("releaseAndUpdate: unable to createImage on display=%p slot=%d", mEglDisplay, buf);
++            return UNKNOWN_ERROR;
++        }
++        mEglSlots[buf].mEglImage = image;
++        /* convert buffer */
++        if (convert(mSlots[buf].mGraphicBuffer, mBlitSlots[mNextBlitSlot]) != OK) {
++            ALOGE("updateTexImage: convert failed");
++            return UNKNOWN_ERROR;
++        }
++        textureBuffer = mBlitSlots[mNextBlitSlot];
++        mNextBlitSlot = (mNextBlitSlot + 1) % NUM_BLIT_BUFFER_SLOTS;
++    } else {
++        textureBuffer = mSlots[buf].mGraphicBuffer;
++    }
++#endif
++
+     if (mEglSlots[buf].mEglImage == EGL_NO_IMAGE_KHR) {
+         EGLImageKHR image = createImage(mEglDisplay, mSlots[buf].mGraphicBuffer);
+         if (image == EGL_NO_IMAGE_KHR) {
+@@ -260,7 +332,11 @@ status_t GLConsumer::releaseAndUpdateLocked(const BufferQueue::BufferItem& item)
+ 
+     // Update the GLConsumer state.
+     mCurrentTexture = buf;
++#ifndef STE_HARDWARE
+     mCurrentTextureBuf = mSlots[buf].mGraphicBuffer;
++#else
++    mCurrentTextureBuf = textureBuffer;
++#endif
+     mCurrentCrop = item.mCrop;
+     mCurrentTransform = item.mTransform;
+     mCurrentScalingMode = item.mScalingMode;
+@@ -901,6 +977,54 @@ void GLConsumer::dumpLocked(String8& result, const char* prefix,
+     ConsumerBase::dumpLocked(result, prefix, buffer, size);
+ }
+ 
++#ifdef STE_HARDWARE
++bool GLConsumer::conversionIsNeeded(const sp<GraphicBuffer>& graphicBuffer) {
++    int fmt = graphicBuffer->getPixelFormat();
++    return (fmt == PIXEL_FORMAT_YCBCR42XMBN) || (fmt == PIXEL_FORMAT_YCbCr_420_P);
++}
++
++status_t GLConsumer::convert(sp<GraphicBuffer> &srcBuf, sp<GraphicBuffer> &dstBuf) {
++    copybit_image_t dstImg;
++    dstImg.w = dstBuf->getWidth();
++    dstImg.h = dstBuf->getHeight();
++    dstImg.format = dstBuf->getPixelFormat();
++    dstImg.handle = (native_handle_t*) dstBuf->getNativeBuffer()->handle;
++
++    copybit_image_t srcImg;
++    srcImg.w = srcBuf->getWidth();
++    srcImg.h = srcBuf->getHeight();
++    srcImg.format = srcBuf->getPixelFormat();
++    srcImg.base = NULL;
++    srcImg.handle = (native_handle_t*) srcBuf->getNativeBuffer()->handle;
++
++    copybit_rect_t dstCrop;
++    dstCrop.l = 0;
++    dstCrop.t = 0;
++    dstCrop.r = dstBuf->getWidth();
++    dstCrop.b = dstBuf->getHeight();
++
++    copybit_rect_t srcCrop;
++    srcCrop.l = 0;
++    srcCrop.t = 0;
++    srcCrop.r = srcBuf->getWidth();
++    srcCrop.b = srcBuf->getHeight();
++
++    region_iterator clip(Region(Rect(dstCrop.r, dstCrop.b)));
++    mBlitEngine->set_parameter(mBlitEngine, COPYBIT_TRANSFORM, 0);
++    mBlitEngine->set_parameter(mBlitEngine, COPYBIT_PLANE_ALPHA, 0xFF);
++    mBlitEngine->set_parameter(mBlitEngine, COPYBIT_DITHER, COPYBIT_ENABLE);
++
++    int err = mBlitEngine->stretch(
++            mBlitEngine, &dstImg, &srcImg, &dstCrop, &srcCrop, &clip);
++    if (err != 0) {
++        ALOGE("\nError: Blit stretch operation failed (err:%d)\n", err);
++        /* return ok to not block decoding. But why this error ? */
++        return OK;
++    }
++    return OK;
++}
++#endif
++
+ static void mtxMul(float out[16], const float a[16], const float b[16]) {
+     out[0] = a[0]*b[0] + a[4]*b[1] + a[8]*b[2] + a[12]*b[3];
+     out[1] = a[1]*b[0] + a[5]*b[1] + a[9]*b[2] + a[13]*b[3];
+@@ -924,3 +1048,4 @@ static void mtxMul(float out[16], const float a[16], const float b[16]) {
+ }
+ 
+ }; // namespace android
++
+diff --git a/frameworks/native/libs/ui/PixelFormat.cpp b/frameworks/native/libs/ui/PixelFormat.cpp
+index 3ced41d..e4d27f5 100644
+--- a/frameworks/native/libs/ui/PixelFormat.cpp
++++ b/frameworks/native/libs/ui/PixelFormat.cpp
+@@ -100,11 +100,31 @@ status_t getPixelFormatInfo(PixelFormat format, PixelFormatInfo* info)
+     // YUV format from the HAL are handled here
+     switch (format) {
+     case HAL_PIXEL_FORMAT_YCbCr_422_SP:
++#ifdef STE_HARDWARE
++    case HAL_PIXEL_FORMAT_YCrCb_422_SP:
++    case HAL_PIXEL_FORMAT_YCbCr_422_P:
++    case HAL_PIXEL_FORMAT_YCrCb_422_P:
++#endif
+     case HAL_PIXEL_FORMAT_YCbCr_422_I:
++#ifdef STE_HARDWARE
++    case HAL_PIXEL_FORMAT_CbYCrY_422_I:
++#endif
+         info->bitsPerPixel = 16;
+         goto done;
++#ifdef STE_HARDWARE
++    case HAL_PIXEL_FORMAT_YCbCr_420_SP:
++#endif
+     case HAL_PIXEL_FORMAT_YCrCb_420_SP:
+     case HAL_PIXEL_FORMAT_YV12:
++#ifdef STE_HARDWARE
++    case HAL_PIXEL_FORMAT_YCbCr_420_SP_TILED:
++    case HAL_PIXEL_FORMAT_YCrCb_420_SP_TILED:
++    case HAL_PIXEL_FORMAT_YCbCr_420_P:
++    case HAL_PIXEL_FORMAT_YCrCb_420_P:
++    case HAL_PIXEL_FORMAT_YCbCr_420_I:
++    case HAL_PIXEL_FORMAT_CbYCrY_420_I:
++    case HAL_PIXEL_FORMAT_YCBCR42XMBN:
++#endif
+         info->bitsPerPixel = 12;
+      done:
+         info->format = format;
+diff --git a/frameworks/native/opengl/include/EGL/eglext.h b/frameworks/native/opengl/include/EGL/eglext.h
+index 6c505ed..8e100ad 100644
+--- a/frameworks/native/opengl/include/EGL/eglext.h
++++ b/frameworks/native/opengl/include/EGL/eglext.h
+@@ -313,6 +313,7 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYSURFACEPOINTERANGLEPROC) (EGLDisplay
+ #endif
+ 
+ #if KHRONOS_SUPPORT_INT64   /* EGLuint64NV requires 64-bit uint support */
++#ifndef STE_HARDWARE
+ #ifndef EGL_NV_system_time
+ #define EGL_NV_system_time 1
+ typedef khronos_utime_nanoseconds_t EGLuint64NV;
+@@ -324,6 +325,7 @@ typedef EGLuint64NV (EGLAPIENTRYP PFNEGLGETSYSTEMTIMEFREQUENCYNVPROC) (void);
+ typedef EGLuint64NV (EGLAPIENTRYP PFNEGLGETSYSTEMTIMENVPROC) (void);
+ #endif
+ #endif
++#endif
+ 
+ #if KHRONOS_SUPPORT_INT64 /* EGLuint64KHR requires 64-bit uint support */
+ #ifndef EGL_KHR_stream
+diff --git a/frameworks/native/opengl/libs/EGL/eglApi.cpp b/frameworks/native/opengl/libs/EGL/eglApi.cpp
+index a243b32..595972c 100644
+--- a/frameworks/native/opengl/libs/EGL/eglApi.cpp
++++ b/frameworks/native/opengl/libs/EGL/eglApi.cpp
+@@ -124,13 +124,13 @@ static const extention_map_t sExtensionMap[] = {
+             (__eglMustCastToProperFunctionPointerType)&eglSignalSyncKHR },
+     { "eglGetSyncAttribKHR",
+             (__eglMustCastToProperFunctionPointerType)&eglGetSyncAttribKHR },
+-
++#ifndef STE_HARDWARE
+     // EGL_NV_system_time
+     { "eglGetSystemTimeFrequencyNV",
+             (__eglMustCastToProperFunctionPointerType)&eglGetSystemTimeFrequencyNV },
+     { "eglGetSystemTimeNV",
+             (__eglMustCastToProperFunctionPointerType)&eglGetSystemTimeNV },
+-
++#endif
+     // EGL_KHR_wait_sync
+     { "eglWaitSyncKHR",
+             (__eglMustCastToProperFunctionPointerType)&eglWaitSyncKHR },
+@@ -1449,6 +1449,7 @@ EGLBoolean eglPresentationTimeANDROID(EGLDisplay dpy, EGLSurface surface,
+ // ----------------------------------------------------------------------------
+ // NVIDIA extensions
+ // ----------------------------------------------------------------------------
++#ifndef STE_HARDWARE
+ EGLuint64NV eglGetSystemTimeFrequencyNV()
+ {
+     clearError();
+@@ -1484,3 +1485,4 @@ EGLuint64NV eglGetSystemTimeNV()
+ 
+     return setErrorQuiet(EGL_BAD_DISPLAY, 0);
+ }
++#endif
+diff --git a/frameworks/native/opengl/libs/EGL/egl_entries.in b/frameworks/native/opengl/libs/EGL/egl_entries.in
+index 70d0e52..138f41e 100644
+--- a/frameworks/native/opengl/libs/EGL/egl_entries.in
++++ b/frameworks/native/opengl/libs/EGL/egl_entries.in
+@@ -82,10 +82,10 @@ EGL_ENTRY(EGLClientBuffer, eglGetRenderBufferANDROID, EGLDisplay, EGLSurface)
+ EGL_ENTRY(EGLint, eglDupNativeFenceFDANDROID, EGLDisplay, EGLSyncKHR)
+ 
+ /* NVIDIA extensions */
+-
++#ifndef STE_HARDWARE
+ EGL_ENTRY(EGLuint64NV, eglGetSystemTimeFrequencyNV, void)
+ EGL_ENTRY(EGLuint64NV, eglGetSystemTimeNV, void)
+-
++#endif
+ /* IMG extensions */
+ 
+ EGL_ENTRY(EGLBoolean, eglHibernateProcessIMG, void)
+diff --git a/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp b/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp
+index cfa5443..83fada2 100644
+--- a/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp
++++ b/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp
+@@ -2760,6 +2760,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
+     uint32_t code;
+     Parcel const* data;
+     Parcel* reply;
++#ifdef STE_HARDWARE
++    Mutex mLock;
++#endif
+ 
+     enum {
+         MSG_API_CALL,
+@@ -2772,6 +2775,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
+      */
+     virtual status_t transact(uint32_t code,
+             const Parcel& data, Parcel* reply, uint32_t flags) {
++#ifdef STE_HARDWARE
++        mLock.lock();
++#endif
+         this->code = code;
+         this->data = &data;
+         this->reply = reply;
+@@ -2784,6 +2790,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
+             looper->sendMessage(this, Message(MSG_API_CALL));
+             barrier.wait();
+         }
++#ifdef STE_HARDWARE
++        mLock.unlock();
++#endif
+         return NO_ERROR;
+     }
+ 
