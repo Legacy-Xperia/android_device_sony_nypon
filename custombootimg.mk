@@ -7,8 +7,6 @@ $(INSTALLED_BOOTIMAGE_TARGET): $(PRODUCT_OUT)/kernel $(recovery_ramdisk) $(INSTA
 	$(hide) mkdir -p $(PRODUCT_OUT)/combinedroot/
 	$(hide) cp -R $(PRODUCT_OUT)/root/* $(PRODUCT_OUT)/combinedroot/
 	$(hide) cp -R $(PRODUCT_OUT)/../../../../device/sony/$(TARGET_DEVICE)/config/root/default.prop $(PRODUCT_OUT)/combinedroot/
-	$(hide) cp -R $(PRODUCT_OUT)/../../../../device/sony/$(TARGET_DEVICE)/config/root/init.environ.rc $(PRODUCT_OUT)/combinedroot/
-        $(hide) cp -R $(PRODUCT_OUT)/../../../../device/sony/$(TARGET_DEVICE)/recovery/init.rc $(PRODUCT_OUT)/recovery/root/
 	$(hide) sed -i 's/18D1/0FCE/g' $(PRODUCT_OUT)/recovery/root/init.rc
 	$(hide) sed -i 's/D001/617E/g' $(PRODUCT_OUT)/recovery/root/init.rc
 	$(hide) $(MKBOOTFS) $(PRODUCT_OUT)/recovery/root > $(PRODUCT_OUT)/recoveryforkexec.cpio
