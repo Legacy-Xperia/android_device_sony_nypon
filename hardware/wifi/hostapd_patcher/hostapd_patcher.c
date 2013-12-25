@@ -84,7 +84,7 @@ int main(void) {
 
 	if ((pFileOut = fopen(HOSTAPD_CONF_NEW, "w")) == NULL) {
 		ALOGE("Fail to open %s for writing! I must exit now!\n", HOSTAPD_CONF_NEW);
-		goto done;
+		goto close_opened;
 	}
 
 	// skip to the SSID size atag and read a size of the SSID string
@@ -196,8 +196,10 @@ free_done:
 		free(passBuffer);
 
 fail_done:
-	fclose(pFile);
 	fclose(pFileOut);
+
+close_opened:
+	fclose(pFile);
 
 done:
 	return 0;
