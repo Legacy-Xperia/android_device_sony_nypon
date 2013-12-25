@@ -1,0 +1,194 @@
+diff --git a/Android.mk b/Android.mk
+index 043b58b..94324c3 100755
+--- a/Android.mk
++++ b/Android.mk
+@@ -38,6 +38,9 @@ LOCAL_SHARED_LIBRARIES := \
+ 	libril \
+ 	libnetutils
+ 
++LOCAL_STATIC_LIBRARIES := \
++	libstlport_static
++
+ # For asprinf
+ LOCAL_CFLAGS := -D_GNU_SOURCE
+ 
+@@ -45,7 +48,10 @@ LOCAL_C_INCLUDES := \
+ 	$(KERNEL_HEADERS) \
+ 	$(TOP)/hardware/ril/libril/ \
+ 	$(TOP)/system/core/libnetutils/ \
+-	$(TOP)/external/astl/include/
++	$(TOP)/system/core/include/netutils \
++	$(TOP)/external/astl/include/ \
++	$(TOP)/external/stlport/stlport/ \
++	$(TOP)/bionic/
+ 
+ # Disable prelink, or add to build/core/prelink-linux-arm.map
+ LOCAL_PRELINK_MODULE := false
+@@ -67,7 +73,7 @@ ifneq ($(EXTERNAL_MODEM_CONTROL_MODULE_DISABLED),)
+ LOCAL_CFLAGS += -DEXTERNAL_MODEM_CONTROL_MODULE_DISABLED
+ else
+ LOCAL_C_INCLUDES += \
+-	$(TOP)/external/dbus/
++	$(LOCAL_PATH)/../../../../device/sony/$(TARGET_DEVICE)/hardware
+ 
+ LOCAL_SHARED_LIBRARIES += \
+ 	libdbus
+diff --git a/atchannel.h b/atchannel.h
+index 56fffa0..4ac0534 100644
+--- a/atchannel.h
++++ b/atchannel.h
+@@ -30,6 +30,8 @@ extern "C" {
+ 
+ #include <telephony/ril.h>
+ 
++#include "missing_defines.h"
++
+ /* Define AT_DEBUG to send AT traffic to "/tmp/radio-at.log" */
+ #define AT_DEBUG  0
+ 
+diff --git a/fcp_parser.c b/fcp_parser.c
+index 3067f94..4b7e4dc 100644
+--- a/fcp_parser.c
++++ b/fcp_parser.c
+@@ -32,6 +32,8 @@
+ #include "fcp_parser.h"
+ #include "misc.h"
+ 
++#include "missing_defines.h"
++
+ int fcp_to_ts_51011(/*in*/ const char *stream, /*in*/ size_t len,
+         /*out*/ struct ts_51011_921_resp *out)
+ {
+diff --git a/misc.c b/misc.c
+index 37b6c47..161a6c7 100644
+--- a/misc.c
++++ b/misc.c
+@@ -32,6 +32,8 @@
+ #define LOG_TAG "RILV"
+ #include <utils/Log.h>
+ 
++#include "missing_defines.h"
++
+ /** Returns 1 if line starts with prefix, 0 if it does not. */
+ int strStartsWith(const char *line, const char *prefix)
+ {
+diff --git a/u300-ril-manager.c b/u300-ril-manager.c
+index c4ef018..47d4b59 100644
+--- a/u300-ril-manager.c
++++ b/u300-ril-manager.c
+@@ -40,6 +40,8 @@
+ #define LOG_TAG "RILV"
+ #include <utils/Log.h>
+ 
++#include "missing_defines.h"
++
+ typedef struct managerArgs {
+     int channels;
+     RILRequestGroup *parsedGroups[RIL_MAX_NR_OF_CHANNELS];
+diff --git a/u300-ril-network.c b/u300-ril-network.c
+index 8f7862f..c97c10d 100644
+--- a/u300-ril-network.c
++++ b/u300-ril-network.c
+@@ -1003,7 +1003,7 @@ void requestSetPreferredNetworkType(void *data, size_t datalen,
+     int rat;
+     int arg;
+     char *cmd = NULL;
+-    RIL_Errno errno = RIL_E_GENERIC_FAILURE;
++    RIL_Errno errnor = RIL_E_GENERIC_FAILURE;
+ 
+     rat = ((int *) data)[0];
+ 
+@@ -1018,7 +1018,7 @@ void requestSetPreferredNetworkType(void *data, size_t datalen,
+         arg = 6;
+         break;
+     default:
+-        errno = RIL_E_MODE_NOT_SUPPORTED;
++        errnor = RIL_E_MODE_NOT_SUPPORTED;
+         goto error;
+     }
+ 
+@@ -1036,7 +1036,7 @@ finally:
+     return;
+ 
+ error:
+-    RIL_onRequestComplete(t, errno, NULL, 0);
++    RIL_onRequestComplete(t, errnor, NULL, 0);
+     goto finally;
+ }
+ 
+diff --git a/u300-ril-pdp.c b/u300-ril-pdp.c
+index a0b03ad..0140524 100644
+--- a/u300-ril-pdp.c
++++ b/u300-ril-pdp.c
+@@ -37,7 +37,7 @@
+ #include <linux/sockios.h>
+ #include <linux/route.h>
+ #include <cutils/properties.h>
+-#include <ifc_utils.h>
++#include <ifc.h>
+ 
+ #include <telephony/ril.h>
+ 
+@@ -50,6 +50,8 @@
+ #define LOG_TAG "RILV"
+ #include <utils/Log.h>
+ 
++#include "missing_defines.h"
++
+ /* This should have been exported by ifc_utils.h */
+ void ifc_close(void);
+ 
+diff --git a/u300-ril-requestdatahandler.c b/u300-ril-requestdatahandler.c
+index bcf1896..2973416 100644
+--- a/u300-ril-requestdatahandler.c
++++ b/u300-ril-requestdatahandler.c
+@@ -30,6 +30,8 @@
+ #define LOG_TAG "RILV"
+ #include <utils/Log.h>
+ 
++#include "missing_defines.h"
++
+ /* Handler functions. The names are because we cheat by including
+  * ril_commands.h from rild. In here we generate local allocations
+  * of the data representations, as well as free:ing them after
+diff --git a/missing_defines.h b/missing_defines.h
+new file mode 100644
+index 0000000..c80c838
+--- /dev/null
++++ b/missing_defines.h
+@@ -0,0 +1,35 @@
++#ifndef MISSING_DEFINES_H
++#define MISSING_DEFINES_H 1
++
++#include <sys/cdefs.h>
++#include <arpa/inet.h>
++
++#define LOGE ALOGE
++#define LOGI ALOGI
++#define LOGD ALOGD
++#define LOGW ALOGW
++
++#define RIL_LastDataCallActivateFailCause RIL_DataCallFailCause
++
++extern int ifc_set_mask(const char *name, in_addr_t mask);
++
++#if RIL_VERSION >= 6
++#define RIL_REQUEST_REGISTRATION_STATE RIL_REQUEST_VOICE_REGISTRATION_STATE
++#define RIL_REQUEST_GPRS_REGISTRATION_STATE RIL_REQUEST_DATA_REGISTRATION_STATE
++#define RIL_UNSOL_RESPONSE_NETWORK_STATE_CHANGED RIL_UNSOL_RESPONSE_VOICE_NETWORK_STATE_CHANGED
++#define RIL_CardStatus RIL_CardStatus_v6
++#define RIL_SignalStrength RIL_SignalStrength_v6
++#define RIL_Data_Call_Response RIL_Data_Call_Response_v4
++#define RIL_SIM_IO RIL_SIM_IO_v6
++#endif
++
++#define dispatchDataCall dummyDispatch
++#define responseSetupDataCall dummyResponse
++#define responseCellInfoList dummyResponse
++#define dispatchVoiceRadioTech dummyDispatch
++#define responseStringsNetworks dummyResponse
++#define dispatchCdmaSubscriptionSource dummyDispatch
++#define dispatchSetInitialAttachApn dummyDispatch
++#define dispatchImsSms dummyDispatch
++
++#endif
