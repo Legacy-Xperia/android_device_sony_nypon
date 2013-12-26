@@ -2,7 +2,7 @@ android_device_sony_nypon
 =========================
 
 
-Copyright (C) 2013 The Unofficial CyanogenMod Project For Sony Xperia P [Percy Gahlot]
+Copyright (C) 2013 The Unofficial PAC-man Project For Sony Xperia P [Percy Gahlot]
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,9 +21,9 @@ LINK FOR BUILDS:- https://sites.google.com/site/androdevlinux/xperia-p/xperia-p-
 
 Getting Started :
 
-    mkdir cm-10.2
-    cd cm-10.2
-    repo init -u git://github.com/Legacy-Xperia/manifest.git -b cm-10.2
+    mkdir pac-4.3
+    cd pac-4.3
+    repo init -u git://github.com/Legacy-Xperia/manifest.git -b pac-4.3
     repo sync -j16
 
 
