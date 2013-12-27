@@ -21,8 +21,14 @@
      for different hardware and product builds. -->
 <resources>
 
-   <string-array name="pref_camera_flashmode_entryvalues" translatable="false">
+    <!-- The camera removes the focus modes by default when touch-to-focus
+         exists. Use this option to change that behavior -->
+    <bool name="wantsFocusModes">true</bool>
+
+    <string-array name="pref_camera_flashmode_entryvalues" translatable="false">
         <item>off</item>
         <item>auto</item>
         <item>torch</item>
-    </string-array></resources>
+    </string-array>
+
+</resources>
