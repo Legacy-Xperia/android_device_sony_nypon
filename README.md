@@ -74,7 +74,7 @@ You are ready to build :
     . build/envsetup.sh
     brunch cm_nypon-userdebug
 
-Credits:- Munjeni , Joise87 , 95A31 , Gava97 ,FXP Team , CyanogenMod , Sony , Devswift1 and Paul.L for early help in cm-10.1 and Users ;)
+Credits:- Munjeni , Joise87 , 95A31 , Gava97 ,Andrewasth ,areshinakya ,FXP Team , CyanogenMod , Sony , Devswift1 and Paul.L for early help in cm-10.1 and Users ;)
 
 
 ENJOY! 
