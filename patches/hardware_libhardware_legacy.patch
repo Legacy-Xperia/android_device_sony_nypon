@@ -5,6 +5,7 @@
 #       modified:   include/hardware_legacy/AudioPolicyInterface.h
 #       modified:   include/hardware_legacy/AudioPolicyManagerBase.h
 #       modified:   include/hardware_legacy/AudioSystemLegacy.h
+#       modified:   wifi/wifi.c
 diff --git a/hardware/libhardware_legacy/audio/AudioPolicyCompatClient.cpp b/hardware/libhardware_legacy/audio/AudioPolicyCompatClient.cpp
 index bb0059c..8db9d5d 100644
 --- a/hardware/libhardware_legacy/audio/AudioPolicyCompatClient.cpp
@@ -60,7 +61,7 @@ index d468126..6647782 100644
      virtual status_t moveEffects(int session,
                                   audio_io_handle_t srcOutput,
 diff --git a/hardware/libhardware_legacy/audio/AudioPolicyManagerBase.cpp b/hardware/libhardware_legacy/audio/AudioPolicyManagerBase.cpp
-index 434e12f..55151de 100644
+index 8b03c9e..f446b76 100644
 --- a/hardware/libhardware_legacy/audio/AudioPolicyManagerBase.cpp
 +++ b/hardware/libhardware_legacy/audio/AudioPolicyManagerBase.cpp
 @@ -871,7 +871,12 @@ audio_io_handle_t AudioPolicyManagerBase::getInput(int inputSource,
@@ -90,7 +91,7 @@ index 434e12f..55151de 100644
      // only accept input with the exact requested set of parameters
      if (input == 0 ||
 diff --git a/hardware/libhardware_legacy/audio/audio_policy_hal.cpp b/hardware/libhardware_legacy/audio/audio_policy_hal.cpp
-index 52c0a24..3181aa4 100644
+index ceeabf6..5168fb2 100644
 --- a/hardware/libhardware_legacy/audio/audio_policy_hal.cpp
 +++ b/hardware/libhardware_legacy/audio/audio_policy_hal.cpp
 @@ -175,11 +175,20 @@ static audio_io_handle_t ap_get_input(struct audio_policy *pol, audio_source_t i
@@ -166,7 +167,7 @@ index 1223435..47fe462 100644
          // indicates to the audio policy manager that the input starts being used.
          virtual status_t startInput(audio_io_handle_t input);
 diff --git a/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h b/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h
-index 5904af2..fe40839 100644
+index 5904af2..4e02a43 100644
 --- a/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h
 +++ b/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h
 @@ -377,6 +377,20 @@ public:
@@ -174,7 +175,7 @@ index 5904af2..fe40839 100644
      };
  
 +#ifdef STE_AUDIO
-+// AUDIO_INPUT_CLIENT_ID_BASE provide a means to refer to client Id´s not explicitly defined in the enum audio_input_clients
++// AUDIO_INPUT_CLIENT_ID_BASE provide a means to refer to client Id/s not explicitly defined in the enum audio_input_clients
 +#define AUDIO_INPUT_CLIENT_ID_BASE AUDIO_INPUT_CLIENT_ID1
 +
 +    enum audio_input_clients {
@@ -190,3 +191,23 @@ index 5904af2..fe40839 100644
      //
      // AudioPolicyService interface
      //
+diff --git a/hardware/libhardware_legacy/wifi/wifi.c b/hardware/libhardware_legacy/wifi/wifi.c
+index dacef5e..ca3320a 100644
+--- a/hardware/libhardware_legacy/wifi/wifi.c
++++ b/hardware/libhardware_legacy/wifi/wifi.c
+@@ -491,6 +491,7 @@ int update_ctrl_interface(const char *config_file) {
+                 memmove(iptr + mlen, iptr + ilen + 1, nread - (iptr + ilen + 1 - pbuf));
+                 memset(iptr, '\n', mlen);
+                 memcpy(iptr, ifc, strlen(ifc));
++#if 0
+                 destfd = TEMP_FAILURE_RETRY(open(config_file, O_RDWR, 0660));
+                 if (destfd < 0) {
+                     ALOGE("Cannot update \"%s\": %s", config_file, strerror(errno));
+@@ -499,6 +500,7 @@ int update_ctrl_interface(const char *config_file) {
+                 }
+                 TEMP_FAILURE_RETRY(write(destfd, pbuf, nread + mlen - ilen -1));
+                 close(destfd);
++#endif
+             }
+         }
+     }

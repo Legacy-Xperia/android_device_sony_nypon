@@ -1,0 +1,24 @@
+diff --git a/src/org/codeaurora/bluetooth/map/BluetoothMasService.java b/src/org/codeaurora/bluetooth/map/BluetoothMasService.java
+index 7d81432..fa37a0d 100755
+--- a/packages/apps/BluetoothExt/src/org/codeaurora/bluetooth/map/BluetoothMasService.java
++++ b/packages/apps/BluetoothExt/src/org/codeaurora/bluetooth/map/BluetoothMasService.java
+@@ -189,7 +189,7 @@ public class BluetoothMasService extends Service {
+     private boolean mHasStarted = false;
+     private int mStartId = -1;
+ 
+-    private boolean mIsEmailEnabled = true;
++    private boolean mIsEmailEnabled = false;
+ 
+     /**
+      * The flag indicating MAP request has been notified.
+@@ -799,8 +799,8 @@ public class BluetoothMasService extends Service {
+                 if (!initSocketOK) {
+                     synchronized (this) {
+                         try {
+-                            if (VERBOSE) Log.v(TAG, "wait 3 seconds");
+-                            Thread.sleep(3000);
++                            if (VERBOSE) Log.v(TAG, "wait 1 seconds");
++                            Thread.sleep(1000);
+                         } catch (InterruptedException e) {
+                             Log.e(TAG, "socketAcceptThread thread was interrupted (3)");
+                             mInterrupted = true;

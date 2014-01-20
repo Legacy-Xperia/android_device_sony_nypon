@@ -2,7 +2,7 @@
 #       modified:   include/hardware/fb.h
 #       modified:   include/hardware/hwcomposer.h
 diff --git a/hardware/libhardware/include/hardware/audio_policy.h b/hardware/libhardware/include/hardware/audio_policy.h
-index 67d3030..91d6387 100644
+index 26abac2..fc71afd 100644
 --- a/hardware/libhardware/include/hardware/audio_policy.h
 +++ b/hardware/libhardware/include/hardware/audio_policy.h
 @@ -183,7 +183,12 @@ struct audio_policy {
@@ -18,7 +18,7 @@ index 67d3030..91d6387 100644
  
      /* indicates to the audio policy manager that the input starts being used */
      int (*start_input)(struct audio_policy *pol, audio_io_handle_t input);
-@@ -347,10 +352,19 @@ struct audio_policy_service_ops {
+@@ -349,10 +354,19 @@ struct audio_policy_service_ops {
                                      uint32_t *pSamplingRate,
                                      audio_format_t *pFormat,
                                      audio_channel_mask_t *pChannelMask,
@@ -38,7 +38,7 @@ index 67d3030..91d6387 100644
  
      /* */
      /* misc control functions */
-@@ -449,7 +463,12 @@ struct audio_policy_service_ops {
+@@ -451,7 +465,12 @@ struct audio_policy_service_ops {
                                      audio_devices_t *pDevices,
                                      uint32_t *pSamplingRate,
                                      audio_format_t *pFormat,

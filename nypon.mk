@@ -82,45 +82,39 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libglib
 
-# Hcidump
-PRODUCT_PACKAGES += \
-    hcidump
-
 # Libasound
 PRODUCT_PACKAGES += \
     libasound
 
 # Bluez
 PRODUCT_PACKAGES += \
-    sap \
-    libsap_pts \
+    libbtio \
+    libbluetooth
+
+# Bluez 5.13 daemon, android hal and haltest
+  PRODUCT_PACKAGES += \
     bluetoothd \
-    hstest \
-    l2test \
-    rctest \
-    scotest \
-    agent \
-    attest \
-    avtest \
-    bdaddr \
-    lmptest \
-    sdptest \
-    hidpts \
-    avinfo \
+    bluetooth.default \
+    audio.a2dp.default \
+    haltest
+
+# Bluez 5.13 tools
+  PRODUCT_PACKAGES += \
+    hciattach \
     hciconfig \
     hcitool \
+    hcidump \
+    rfcomm \
+    rctest \
+    l2test \
     l2ping \
-    hciattach \
-    rfcomm
+    sdptool \
+    ciptool \
+    bccmd
 
-# BT A2DP
-PRODUCT_PACKAGES += \
-    libasound_module_ctl_bluetooth \
-    libasound_module_pcm_bluetooth
-
-# libbt-vendor
-PRODUCT_PACKAGES += \
-    libbt-vendor
+# Bluez 5.13 btmon
+#PRODUCT_PACKAGES += \
+#    btmon
 
 # light package
 PRODUCT_PACKAGES += \
@@ -146,6 +140,12 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libtinyalsa \
     audio.usb.default
+
+# New wifi firmwares
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/prebuilt/system/etc/firmware/sdd_sagrad_1091_1098.bin:system/etc/firmware/sdd_sagrad_1091_1098.bin \
+    $(LOCAL_PATH)/prebuilt/system/etc/firmware/wsm_22.bin:system/etc/firmware/wsm_22.bin \
+    $(LOCAL_PATH)/prebuilt/system/etc/firmware/LICENCE.cw1200:system/etc/firmware/LICENCE.cw1200
 
 # We have enough storage space to hold precise GC data
 PRODUCT_TAGS += dalvik.gc.type-precise

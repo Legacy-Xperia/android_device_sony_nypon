@@ -2,6 +2,7 @@ app/HdmiService.apk
 bin/admsrv
 bin/at_core
 bin/blue-up.sh
+bin/batcap
 bin/cg2900-channel_init.sh
 bin/chargemon
 bin/cops_cmd

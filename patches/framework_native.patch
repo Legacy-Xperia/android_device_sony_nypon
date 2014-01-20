@@ -28,7 +28,7 @@ index 463e26d..286e0d3 100644
      size_t getSize() const { return mSize; }
      ssize_t getOffset() const { return mOffset; }
 diff --git a/frameworks/native/include/gui/GLConsumer.h b/frameworks/native/include/gui/GLConsumer.h
-index f0a75dc..6cf4922 100644
+index f0a75dc..4f9b760 100644
 --- a/frameworks/native/include/gui/GLConsumer.h
 +++ b/frameworks/native/include/gui/GLConsumer.h
 @@ -32,6 +32,11 @@
@@ -53,7 +53,18 @@ index f0a75dc..6cf4922 100644
      typedef ConsumerBase::FrameAvailableListener FrameAvailableListener;
  
      // GLConsumer constructs a new GLConsumer object. tex indicates the
-@@ -272,6 +280,14 @@ private:
+@@ -88,7 +96,9 @@ public:
+     GLConsumer(GLuint tex, bool allowSynchronousMode = true,
+             GLenum texTarget = GL_TEXTURE_EXTERNAL_OES, bool useFenceSync = true,
+             const sp<BufferQueue> &bufferQueue = 0);
+-
++#ifdef STE_HARDWARE
++    virtual ~GLConsumer();
++#endif
+     // updateTexImage acquires the most recently queued buffer, and sets the
+     // image contents of the target texture to it.
+     //
+@@ -272,6 +282,14 @@ private:
      EGLImageKHR createImage(EGLDisplay dpy,
              const sp<GraphicBuffer>& graphicBuffer);
  
@@ -68,7 +79,7 @@ index f0a75dc..6cf4922 100644
      // freeBufferLocked frees up the given buffer slot.  If the slot has been
      // initialized this will release the reference to the GraphicBuffer in that
      // slot and destroy the EGLImage in that slot.  Otherwise it has no effect.
-@@ -389,6 +405,18 @@ private:
+@@ -389,6 +407,18 @@ private:
      // attachToContext is called.
      EGLDisplay mEglDisplay;
  
@@ -235,7 +246,7 @@ index 5bc759e..8c2cb51 100644
  ifeq ($(TARGET_USES_QCOM_BSP),true)
  ifneq ($(TARGET_QCOM_DISPLAY_VARIANT),)
 diff --git a/frameworks/native/libs/gui/GLConsumer.cpp b/frameworks/native/libs/gui/GLConsumer.cpp
-index bec0f90..4510326 100644
+index bec0f90..b5e8661 100644
 --- a/frameworks/native/libs/gui/GLConsumer.cpp
 +++ b/frameworks/native/libs/gui/GLConsumer.cpp
 @@ -94,13 +94,32 @@ GLConsumer::GLConsumer(GLuint tex, bool allowSynchronousMode,
@@ -271,7 +282,24 @@ index bec0f90..4510326 100644
      mBufferQueue->setConsumerUsageBits(DEFAULT_USAGE_FLAGS);
  }
  
-@@ -222,6 +241,59 @@ status_t GLConsumer::releaseAndUpdateLocked(const BufferQueue::BufferItem& item)
+@@ -109,6 +128,16 @@ status_t GLConsumer::setDefaultMaxBufferCount(int bufferCount) {
+     return mBufferQueue->setDefaultMaxBufferCount(bufferCount);
+ }
+ 
++#ifdef STE_HARDWARE
++GLConsumer::~GLConsumer() {
++    ST_LOGV("~GLConsumer");
++    abandon();
++
++    if (mBlitEngine) {
++        copybit_close(mBlitEngine);
++    }
++#endif
++}
+ 
+ status_t GLConsumer::setDefaultBufferSize(uint32_t w, uint32_t h)
+ {
+@@ -222,6 +251,59 @@ status_t GLConsumer::releaseAndUpdateLocked(const BufferQueue::BufferItem& item)
      // means the buffer was previously acquired), if we destroyed the
      // EGLImage when detaching from a context but the buffer has not been
      // re-allocated.
@@ -331,7 +359,7 @@ index bec0f90..4510326 100644
      if (mEglSlots[buf].mEglImage == EGL_NO_IMAGE_KHR) {
          EGLImageKHR image = createImage(mEglDisplay, mSlots[buf].mGraphicBuffer);
          if (image == EGL_NO_IMAGE_KHR) {
-@@ -260,7 +332,11 @@ status_t GLConsumer::releaseAndUpdateLocked(const BufferQueue::BufferItem& item)
+@@ -260,7 +342,11 @@ status_t GLConsumer::releaseAndUpdateLocked(const BufferQueue::BufferItem& item)
  
      // Update the GLConsumer state.
      mCurrentTexture = buf;
@@ -343,7 +371,7 @@ index bec0f90..4510326 100644
      mCurrentCrop = item.mCrop;
      mCurrentTransform = item.mTransform;
      mCurrentScalingMode = item.mScalingMode;
-@@ -901,6 +977,54 @@ void GLConsumer::dumpLocked(String8& result, const char* prefix,
+@@ -901,6 +987,54 @@ void GLConsumer::dumpLocked(String8& result, const char* prefix,
      ConsumerBase::dumpLocked(result, prefix, buffer, size);
  }
  
@@ -398,7 +426,7 @@ index bec0f90..4510326 100644
  static void mtxMul(float out[16], const float a[16], const float b[16]) {
      out[0] = a[0]*b[0] + a[4]*b[1] + a[8]*b[2] + a[12]*b[3];
      out[1] = a[1]*b[0] + a[5]*b[1] + a[9]*b[2] + a[13]*b[3];
-@@ -924,3 +1048,4 @@ static void mtxMul(float out[16], const float a[16], const float b[16]) {
+@@ -924,3 +1058,4 @@ static void mtxMul(float out[16], const float a[16], const float b[16]) {
  }
  
  }; // namespace android
@@ -510,10 +538,10 @@ index 70d0e52..138f41e 100644
  
  EGL_ENTRY(EGLBoolean, eglHibernateProcessIMG, void)
 diff --git a/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp b/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp
-index cfa5443..83fada2 100644
+index 3bd9a7e..8022b57 100644
 --- a/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp
 +++ b/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp
-@@ -2760,6 +2760,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
+@@ -2769,6 +2769,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
      uint32_t code;
      Parcel const* data;
      Parcel* reply;
@@ -523,7 +551,7 @@ index cfa5443..83fada2 100644
  
      enum {
          MSG_API_CALL,
-@@ -2772,6 +2775,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
+@@ -2781,6 +2784,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
       */
      virtual status_t transact(uint32_t code,
              const Parcel& data, Parcel* reply, uint32_t flags) {
@@ -533,7 +561,7 @@ index cfa5443..83fada2 100644
          this->code = code;
          this->data = &data;
          this->reply = reply;
-@@ -2784,6 +2790,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
+@@ -2793,6 +2799,9 @@ class GraphicProducerWrapper : public BBinder, public MessageHandler {
              looper->sendMessage(this, Message(MSG_API_CALL));
              barrier.wait();
          }
