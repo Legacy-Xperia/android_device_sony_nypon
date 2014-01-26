@@ -1,5 +1,6 @@
 import init.st-ericsson.usb.rc
 import init.st-ericsson.device.rc
+import init.bluetooth.rc
 
 on early-init
     mkdir /mnt 0775 root system
@@ -445,14 +446,10 @@ service hdmid /system/bin/hdmid
 on propery:init.svc.hciattach=running
     exec /system/bin/cg2900-channel_init.sh
 
-service bluetoothd /system/bin/logwrapper /system/bin/bluetoothd
+service hciattach /system/bin/logwrapper /system/bin/hciattach -a 23 -n -s 115200 /dev/ttyAMA0 cg2900 115200 flow
     class main
-    socket bluetooth stream 660 bluetooth bluetooth
-    socket dbus_bluetooth stream 660 bluetooth bluetooth
-    # init.rc does not yet support applying capabilities, so run as root and
-    # let bluetoothd drop uid to bluetooth with the right linux capabilities
-    group bluetooth net_bt_admin misc net_admin radio
-    disabled
+    user bluetooth
+    group bluetooth net_bt_admin net_admin misc root system
     oneshot
 
 on property:init.svc.bluetoothd=stopped

@@ -72,6 +72,10 @@
 
 # bluetooth
 /sys/devices/platform/cg2900.0/cg2900-uart.0/bluetooth/hci0/rfkill* state 0666 root bluetooth
+/dev/uinput               0660   system     bluetooth
+/dev/ttyAMA0              0660   bluetooth  bluetooth
+/dev/ttyAMA1              0660   bluetooth  bluetooth
+/dev/ttyAMA2              0660   bluetooth  bluetooth
 
 /sys/devices/platform/musb-ux500.0/musb-hdrc/usb* uevent 0660 root usb
 /dev/input/event10                                 0666 system system
