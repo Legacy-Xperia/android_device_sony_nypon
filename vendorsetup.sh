@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 
-add_lunch_combo cm_nypon-userdebug
-add_lunch_combo cm_nypon-eng
+add_lunch_combo aosp_nypon-userdebug
+add_lunch_combo aosp_nypon-eng

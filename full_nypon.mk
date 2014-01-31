@@ -14,12 +14,16 @@
 # limitations under the License.
 #
  
-# Torch
-PRODUCT_PACKAGES := \
-    Torch
+# Live Wallpapers
+PRODUCT_PACKAGES += \
+        LiveWallpapers \
+        LiveWallpapersPicker \
+        MagicSmokeWallpapers \
+        VisualizationWallpapers \
+        librs_jni
 
 # Inherit from those products. Most specific first.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base.mk)
 
 #charging animation
 $(call inherit-product, device/sony/nypon/prebuilt/resources-540x960.mk)
@@ -32,4 +36,4 @@ PRODUCT_NAME := full_nypon
 PRODUCT_DEVICE := nypon
 PRODUCT_BRAND := Sony
 PRODUCT_MANUFACTURER := Sony
-PRODUCT_MODEL := Xperia P
+PRODUCT_MODEL := AOSP on Xperia P
