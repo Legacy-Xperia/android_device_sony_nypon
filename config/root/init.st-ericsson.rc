@@ -6,7 +6,6 @@ on early-init
     mkdir /mnt 0775 root system
     mkdir /mnt/shell 0700 shell shell
     mkdir /mnt/media_rw 0700 media_rw media_rw
-    mkdir /storage 0751 root sdcard_r
 
     # storage directories
     mkdir /mnt/media_rw/sdcard0 0700 media_rw media_rw
@@ -165,6 +164,10 @@ on post-fs
     write /sys/devices/platform/musb-ux500.0/musb-hdrc/gadget/lun1/nofua 1
 
 on post-fs-data
+
+    mkdir /data/media 0770 media_rw media_rw
+    chown media_rw media_rw /data/media
+
     # create basic filesystem structure
     mkdir /data/misc/hcid 0770 bluetooth bluetooth
     mkdir /data/misc/psdata
