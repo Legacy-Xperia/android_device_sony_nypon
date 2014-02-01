@@ -16,6 +16,8 @@
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 
+TARGET_SPECIFIC_HEADER_PATH := device/sony/nypon/include
+TARGET_SPECIFIC_HEADER_PATH += device/sony/nypon/hardware
 
 # Inherit the proprietary counterpart
 $(call inherit-product-if-exists, vendor/sony/nypon/nypon-vendor.mk)

@@ -23,7 +23,7 @@ PRODUCT_PACKAGES += \
         librs_jni
 
 # Inherit from those products. Most specific first.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base_telephony.mk)
 
 #charging animation
 $(call inherit-product, device/sony/nypon/prebuilt/resources-540x960.mk)
