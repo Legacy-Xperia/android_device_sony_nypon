@@ -297,3 +297,16 @@ $(call inherit-product-if-exists, vendor/sony/nypon/nypon-vendor.mk)
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=240
+
+#Goo Manager support
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.goo.developerid=percy215 \
+    ro.goo.board=$(subst full_,,$(TARGET_PRODUCT)) \
+    ro.goo.rom=Legacy-Xperia_cm \
+    ro.goo.version=$(shell date +%s)
+    
+#OTA Updater App
+PRODUCT_PROPERTY_OVERRIDES += \
+    otaupdater.otaid=**** \
+    otaupdater.otaver=26 \
+    otaupdater.otatime=$(shell date +%s)
