@@ -27,8 +27,9 @@
 
 #ifdef ANDROID
 #  include <cutils/log.h>
-#  define LOGE2(...) LOGE(__VA_ARGS__)
-#  define LOGI2(...) LOGI(__VA_ARGS__)
+#  define LOGE ALOGE
+#  define LOGE2(...) ALOGE(__VA_ARGS__)
+#  define LOGI2(...) ALOGI(__VA_ARGS__)
 #else
 #  define LOGE(format) fprintf(stderr, LOG_TAG format "\n")
 #  define LOGE2(format, ...) fprintf(stderr, LOG_TAG format "\n", __VA_ARGS__)
@@ -65,7 +66,7 @@ static int grow_datas(void)
 
     new_datas = malloc(new_data_count*sizeof(*new_datas));
     if (new_datas == NULL) {
-        ALOGE("Out of memory!");
+        LOGE("Out of memory!");
         errno = -ENOMEM;
         goto error;
     }
@@ -91,7 +92,7 @@ static int get_handle(struct blt_b2r2_data *data) {
 
         datas = malloc(DATAS_START_SIZE*sizeof(*datas));
         if (datas == NULL) {
-            ALOGE("Out of memory!\n");
+            LOGE("Out of memory!\n");
             errno = -ENOMEM;
             goto error;
         }
@@ -155,7 +156,7 @@ static void *callback_thread_run(void *arg)
             memset(&report, 0, sizeof(report));
             count = read(data->fd, &report, sizeof(report));
             if (count < 0) {
-                ALOGE("Pt%d: Could not read report from b2r2 (%s)",
+                LOGE2("Pt%d: Could not read report from b2r2 (%s)",
                     data->fd, strerror(errno));
                 goto thread_exit;
             } else if (report.report1 != 0) {
@@ -172,7 +173,7 @@ static void *callback_thread_run(void *arg)
 
 thread_exit:
     if (number_reports) {
-        ALOGE("Pt%d: Exit with outstanding reports: %d",
+        LOGE2("Pt%d: Exit with outstanding reports: %d",
             data->fd, number_reports);
     }
 
@@ -184,23 +185,23 @@ int blt_open(void)
     struct blt_b2r2_data *data = NULL;
     int fd;
     int handle;
+    int ret;
 
     fd = open(B2R2_BLT_DEV, O_RDWR);
     if (fd < 0) {
-        ALOGE("Could not open device %s", B2R2_BLT_DEV);
+        LOGE2("Could not open device %s", B2R2_BLT_DEV);
         goto error;
     }
 
     data = malloc(sizeof(struct blt_b2r2_data));
     if (data == NULL) {
-        ALOGE("Out of memory");
+        LOGE("Out of memory");
         goto error;
     }
 
     memset(data, 0, sizeof(*data));
 
     data->fd = fd;
-    data->callback_thread = -1;
     data->event = EVENT_NONE;
     data->number_reports = 0;
     pthread_cond_init(&data->event_cond, NULL);
@@ -210,10 +211,13 @@ int blt_open(void)
     if (handle < 0)
         goto error_free;
 
-    pthread_create(&data->callback_thread, NULL, callback_thread_run,
+    ret = pthread_create(&data->callback_thread, NULL, callback_thread_run,
             (void *)data);
 
-    ALOGI("Library opened (handle = %d, fd = %d)", handle, fd);
+    if (ret < 0)
+        goto error_free;
+
+    LOGI2("Library opened (handle = %d, fd = %d)", handle, fd);
 
     return handle;
 
@@ -230,19 +234,17 @@ void blt_close(int blt_handle)
     if (data == NULL)
         goto out;
 
-    if (data->callback_thread > 0) {
-        pthread_mutex_lock(&data->event_mutex);
-        data->event = EVENT_HANDLE_TERMINATED;
-        pthread_cond_signal(&data->event_cond);
-        pthread_mutex_unlock(&data->event_mutex);
-        pthread_join(data->callback_thread, NULL);
-    }
+    pthread_mutex_lock(&data->event_mutex);
+    data->event = EVENT_HANDLE_TERMINATED;
+    pthread_cond_signal(&data->event_cond);
+    pthread_mutex_unlock(&data->event_mutex);
+    pthread_join(data->callback_thread, NULL);
 
     pthread_mutex_destroy(&data->event_mutex);
     pthread_cond_destroy(&data->event_cond);
     close(data->fd);
 
-    ALOGI("Library closed (handle = %d, fd = %d)",
+    LOGI2("Library closed (handle = %d, fd = %d)",
             blt_handle, data->fd);
     free_handle(blt_handle);
     free(data);
@@ -303,7 +305,7 @@ int blt_query_cap(int blt_handle,
 		enum blt_cap capability,
 		uint32_t *cap)
 {
-    ALOGE("blt_query_cap not implemented yet");
+    LOGE("blt_query_cap not implemented yet");
     errno = ENOSYS;
     return -1;
 }

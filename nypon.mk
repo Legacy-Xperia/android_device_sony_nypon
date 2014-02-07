@@ -46,16 +46,16 @@ PRODUCT_COPY_FILES += \
 
 # Configs
 PRODUCT_COPY_FILES += \
-    device/sony/nypon/config/media_codecs.xml:system/etc/media_codecs.xml \
-    device/sony/nypon/config/egl.cfg:system/lib/egl/egl.cfg \
-    device/sony/nypon/config/asound.conf:system/etc/asound.conf \
-    device/sony/nypon/config/dbus.conf:system/etc/dbus.conf \
-    device/sony/nypon/config/hostapd.conf:system/etc/wifi/hostapd.conf \
-    device/sony/nypon/config/init.d/01stesetup:system/etc/init.d/01stesetup \
-    device/sony/nypon/config/init.d/10wireless:system/etc/init.d/10wireless \
-    device/sony/nypon/config/init.d/50selinuxrelabel:system/etc/init.d/50selinuxrelabel \
-    device/sony/nypon/config/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
-    device/sony/nypon/config/p2p_supplicant.conf:system/etc/wifi/p2p_supplicant.conf
+    device/sony/nypon/prebuilt/config/media_codecs.xml:system/etc/media_codecs.xml \
+    device/sony/nypon/prebuilt/config/egl.cfg:system/lib/egl/egl.cfg \
+    device/sony/nypon/prebuilt/config/asound.conf:system/etc/asound.conf \
+    device/sony/nypon/prebuilt/config/dbus.conf:system/etc/dbus.conf \
+    device/sony/nypon/prebuilt/config/hostapd.conf:system/etc/wifi/hostapd.conf \
+    device/sony/nypon/prebuilt/system/etc/init.d/01stesetup:system/etc/init.d/01stesetup \
+    device/sony/nypon/prebuilt/system/etc/init.d/10wireless:system/etc/init.d/10wireless \
+    device/sony/nypon/prebuilt/system/etc/init.d/50selinuxrelabel:system/etc/init.d/50selinuxrelabel \
+    device/sony/nypon/prebuilt/config/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
+    device/sony/nypon/prebuilt/config/p2p_supplicant.conf:system/etc/wifi/p2p_supplicant.conf
 
 #OTA Service
 PRODUCT_COPY_FILES += \
@@ -175,11 +175,11 @@ PRODUCT_BUILD_PROP_OVERRIDES += BUILD_UTC_DATE=0
 
 # Custom init / uevent
 PRODUCT_COPY_FILES += \
-    device/sony/nypon/config/root/init.rc:root/init.rc \
-    device/sony/nypon/config/root/fstab.st-ericsson:root/fstab.st-ericsson \
-    device/sony/nypon/config/root/init.st-ericsson.rc:root/init.st-ericsson.rc \
-    device/sony/nypon/config/root/ueventd.st-ericsson.rc:root/ueventd.st-ericsson.rc \
-    device/sony/nypon/config/root/init.environ.rc:root/init.environ.rc
+    device/sony/nypon/prebuilt/root/init.rc:root/init.rc \
+    device/sony/nypon/prebuilt/root/fstab.st-ericsson:root/fstab.st-ericsson \
+    device/sony/nypon/prebuilt/root/init.st-ericsson.rc:root/init.st-ericsson.rc \
+    device/sony/nypon/prebuilt/root/ueventd.st-ericsson.rc:root/ueventd.st-ericsson.rc \
+    device/sony/nypon/prebuilt/root/init.environ.rc:root/init.environ.rc
 
 # Recovery bootstrap script
 PRODUCT_COPY_FILES += \
@@ -190,15 +190,15 @@ PRODUCT_COPY_FILES += \
 
 # HW Configs
 PRODUCT_COPY_FILES += \
-    device/sony/nypon/config/ril_config:system/etc/ril_config \
-    device/sony/nypon/config/install_wlan:system/bin/install_wlan \
-    device/sony/nypon/config/ste_modem.sh:system/etc/ste_modem.sh \
-    device/sony/nypon/config/omxloaders:system/omxloaders
+    device/sony/nypon/prebuilt/config/ril_config:system/etc/ril_config \
+    device/sony/nypon/prebuilt/config/install_wlan:system/bin/install_wlan \
+    device/sony/nypon/prebuilt/config/ste_modem.sh:system/etc/ste_modem.sh \
+    device/sony/nypon/prebuilt/config/omxloaders:system/omxloaders
 
 # GPS
 PRODUCT_COPY_FILES += \
-    device/sony/nypon/config/gps.conf:system/etc/gps.conf\
-    device/sony/nypon/config/cacert.txt:system/etc/suplcert/cacert.txt
+    device/sony/nypon/prebuilt/config/gps.conf:system/etc/gps.conf\
+    device/sony/nypon/prebuilt/config/cacert.txt:system/etc/suplcert/cacert.txt
 
 PRODUCT_PROPERTY_OVERRIDES += \
     sys.mem.max_hidden_apps=10
@@ -223,12 +223,12 @@ PRODUCT_AAPT_PREF_CONFIG := hdpi
 
 # Configuration scripts
 PRODUCT_COPY_FILES += \
-   $(LOCAL_PATH)/config/root/init.st-ericsson.device.rc:root/init.st-ericsson.device.rc \
+   $(LOCAL_PATH)/prebuilt/root/init.st-ericsson.device.rc:root/init.st-ericsson.device.rc \
    device/sony/nypon/prebuilt/logo-540x960.rle:root/logo.rle
 
 # Configuration scripts
 PRODUCT_COPY_FILES += \
-   $(LOCAL_PATH)/config/dash.conf:system/etc/dash.conf \
+   $(LOCAL_PATH)/prebuilt/config/dash.conf:system/etc/dash.conf \
    $(LOCAL_PATH)/prebuilt/hw_config.sh:system/etc/hw_config.sh
 
 # fake script needed for recovery
@@ -238,27 +238,27 @@ PRODUCT_COPY_FILES += \
 
 # USB function switching
 PRODUCT_COPY_FILES += \
-   $(LOCAL_PATH)/config/root/init.st-ericsson.usb.rc:root/init.st-ericsson.usb.rc
+   $(LOCAL_PATH)/prebuilt/root/init.st-ericsson.usb.rc:root/init.st-ericsson.usb.rc
 
 PRODUCT_COPY_FILES += \
-   $(LOCAL_PATH)/config/media_profiles.xml:system/etc/media_profiles.xml
+   $(LOCAL_PATH)/prebuilt/config/media_profiles.xml:system/etc/media_profiles.xml
 
 # Key layouts and touchscreen
 PRODUCT_COPY_FILES += \
-   $(LOCAL_PATH)/config/AB8500_Hs_Button.kl:system/usr/keylayout/AB8500_Hs_Button.kl \
-   $(LOCAL_PATH)/config/simple_remote.kl:system/usr/keylayout/simple_remote.kl \
-   $(LOCAL_PATH)/config/so34-buttons.kl:system/usr/keylayout/so34-buttons.kl \
-   $(LOCAL_PATH)/config/STMPE-keypad.kl:system/usr/keylayout/STMPE-keypad.kl \
-   $(LOCAL_PATH)/config/tc3589x-keypad.kl:system/usr/keylayout/tc3589x-keypad.kl \
-   $(LOCAL_PATH)/config/ux500-ske-keypad.kl:system/usr/keylayout/ux500-ske-keypad.kl.kl \
-   $(LOCAL_PATH)/config/ux500-ske-keypad-qwertz.kl:system/usr/keylayout/ux500-ske-keypad-qwertz.kl \
-   $(LOCAL_PATH)/config/sensor00_f11_sensor0.idc:system/usr/idc/sensor00_f11_sensor0.idc \
-   $(LOCAL_PATH)/config/synaptics_rmi4_i2c.idc:system/usr/idc/synaptics_rmi4_i2c.idc
+   $(LOCAL_PATH)/prebuilt/config/AB8500_Hs_Button.kl:system/usr/keylayout/AB8500_Hs_Button.kl \
+   $(LOCAL_PATH)/prebuilt/config/simple_remote.kl:system/usr/keylayout/simple_remote.kl \
+   $(LOCAL_PATH)/prebuilt/config/so34-buttons.kl:system/usr/keylayout/so34-buttons.kl \
+   $(LOCAL_PATH)/prebuilt/config/STMPE-keypad.kl:system/usr/keylayout/STMPE-keypad.kl \
+   $(LOCAL_PATH)/prebuilt/config/tc3589x-keypad.kl:system/usr/keylayout/tc3589x-keypad.kl \
+   $(LOCAL_PATH)/prebuilt/config/ux500-ske-keypad.kl:system/usr/keylayout/ux500-ske-keypad.kl.kl \
+   $(LOCAL_PATH)/prebuilt/config/ux500-ske-keypad-qwertz.kl:system/usr/keylayout/ux500-ske-keypad-qwertz.kl \
+   $(LOCAL_PATH)/prebuilt/config/sensor00_f11_sensor0.idc:system/usr/idc/sensor00_f11_sensor0.idc \
+   $(LOCAL_PATH)/prebuilt/config/synaptics_rmi4_i2c.idc:system/usr/idc/synaptics_rmi4_i2c.idc
 
 # Misc configuration files
 PRODUCT_COPY_FILES += \
-   $(LOCAL_PATH)/config/cflashlib.cfg:system/etc/cflashlib.cfg \
-   $(LOCAL_PATH)/config/flashled_param_config.cfg:system/etc/flashled_param_config.cfg
+   $(LOCAL_PATH)/prebuilt/config/cflashlib.cfg:system/etc/cflashlib.cfg \
+   $(LOCAL_PATH)/prebuilt/config/flashled_param_config.cfg:system/etc/flashled_param_config.cfg
    
 # Barometar permissions
 PRODUCT_COPY_FILES += \
