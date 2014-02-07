@@ -57,6 +57,11 @@ PRODUCT_COPY_FILES += \
     device/sony/nypon/config/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
     device/sony/nypon/config/p2p_supplicant.conf:system/etc/wifi/p2p_supplicant.conf
 
+#OTA Service
+PRODUCT_COPY_FILES += \
+    device/sony/nypon/prebuilt/system/app/GooManager.apk:system/app/GooManager.apk \
+    device/sony/nypon/prebuilt/system/app/OTAUpdater.apk:system/app/OTAUpdater.apk
+
 # Filesystem management tools
 PRODUCT_PACKAGES += \
     make_ext4fs \
@@ -92,6 +97,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libbtio \
     libbluetooth
+
+# Power Module
+PRODUCT_PACKAGES += \
+    power.montblanc
 
 # Bluez 5.11 daemon, android hal and haltest
 PRODUCT_PACKAGES += \
@@ -303,10 +312,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.goo.developerid=percy215 \
     ro.goo.board=$(subst full_,,$(TARGET_PRODUCT)) \
     ro.goo.rom=Legacy-Xperia_cm \
-    ro.goo.version=$(shell date +%s)
+    ro.goo.version=2
     
 #OTA Updater App
 PRODUCT_PROPERTY_OVERRIDES += \
-    otaupdater.otaid=**** \
-    otaupdater.otaver=26 \
+    otaupdater.otaid=88999 \
+    otaupdater.otaver=2 \
     otaupdater.otatime=$(shell date +%s)
