@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 The Unofficial CyanogenMod Project For Sony Xperia P [Percy Gahlot]
+# Copyright (C) 2013 The Unofficial OMNI Project For Sony Xperia P [Percy Gahlot]
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,20 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
- 
-# Torch
-PRODUCT_PACKAGES := \
-    Torch
 
-# Inherit from those products. Most specific first.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
-
-# Inherit from nypon device
-$(call inherit-product, device/sony/nypon/nypon.mk)
-
-# Set those variables here to overwrite the inherited values.
-PRODUCT_NAME := full_nypon
-PRODUCT_DEVICE := nypon
-PRODUCT_BRAND := Sony
-PRODUCT_MANUFACTURER := Sony
-PRODUCT_MODEL := Xperia P
+$(call inherit-product, device/sony/nypon/full_nypon.mk)

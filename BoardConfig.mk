@@ -96,7 +96,7 @@ COMMON_GLOBAL_CFLAGS += -DEGL_NEEDS_FNW
 TARGET_PROVIDES_LIBLIGHTS := true
 
 # ril implementation
-BOARD_RIL_CLASS := ../../../device/sony/nypon/telephony-common/
+#BOARD_RIL_CLASS := ../../../device/sony/nypon/telephony-common/
 
 # Custom boot
 TARGET_PROVIDES_INIT_RC := true
@@ -104,16 +104,17 @@ TARGET_RECOVERY_PRE_COMMAND := "touch /cache/recovery/boot;sync;"
 BOARD_CUSTOM_BOOTIMG_MK := device/sony/nypon/custombootimg.mk
 TARGET_RELEASETOOL_OTA_FROM_TARGET_SCRIPT := device/sony/nypon/releasetools/semc_ota_from_target_files
 BOARD_CUSTOM_RECOVERY_KEYMAPPING := ../../device/sony/nypon/recovery/recovery-keys.c
-BOARD_USE_CUSTOM_RECOVERY_FONT := \"lucidaconsole_10x18.h\"
+#BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
 BOARD_USES_MMCUTILS := true
 
 #CWM Recovery TOUCH (All Rights Reserved By munjeni)
-RECOVERY_NAME := CWM-NYPON
-COMMON_GLOBAL_CFLAGS += -DXPERIA_CWM_TOUCH
+#RECOVERY_NAME := CWM-NYPON
+#COMMON_GLOBAL_CFLAGS += -DXPERIA_CWM_TOUCH
 
 #CWM recovery fix
 TARGET_RECOVERY_FSTAB = device/sony/nypon/prebuilt/root/fstab.st-ericsson
 RECOVERY_FSTAB_VERSION := 2
+TARGET_RECOVERY_INITRC := device/sony/nypon/recovery/init.rc
 
 #Vold
 TARGET_USE_CUSTOM_LUN_FILE_PATH := "/sys/devices/platform/musb-ux500.0/musb-hdrc/gadget/lun%d/file"
@@ -143,9 +144,15 @@ BOARD_FLASH_BLOCK_SIZE := 131072
 BOARD_FORCE_KERNEL_ADDRESS  := 0x00008000
 BOARD_MKBOOTIMG_ARGS := 0x01000000
 
-#BOARD_HAS_NO_SELECT_BUTTON := true
+BOARD_HAS_NO_SELECT_BUTTON := true
 TARGET_USERIMAGES_USE_EXT4 := true
 
 BOARD_SDCARD_INTERNAL_DEVICE := /dev/block/mmcblk0p14
 
 TARGET_OTA_ASSERT_DEVICE := LT22i,LT22a,nypon
+
+# TWRP
+DEVICE_RESOLUTION := 540x960
+RECOVERY_GRAPHICS_USE_LINELENGTH := true
+BOARD_HAS_NO_REAL_SDCARD := true
+TW_NO_USB_STORAGE := true

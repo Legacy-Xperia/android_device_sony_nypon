@@ -307,6 +307,10 @@ $(call inherit-product-if-exists, vendor/sony/nypon/nypon-vendor.mk)
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=240
 
+# TWRP
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/prebuilt/root/twrp.fstab:recovery/root/etc/twrp.fstab
+
 #Goo Manager support
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.goo.developerid=percy215 \
