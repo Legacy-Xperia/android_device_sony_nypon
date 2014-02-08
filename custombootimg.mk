@@ -6,8 +6,8 @@ $(INSTALLED_BOOTIMAGE_TARGET): $(PRODUCT_OUT)/kernel $(recovery_ramdisk) $(INSTA
 	$(call pretty,"Boot image: $@")
 	$(hide) mkdir -p $(PRODUCT_OUT)/combinedroot/
 	$(hide) cp -R $(PRODUCT_OUT)/root/* $(PRODUCT_OUT)/combinedroot/
-	$(hide) cp -R $(PRODUCT_OUT)/../../../../device/sony/nypon/config/root/default.prop $(PRODUCT_OUT)/combinedroot/
-	$(hide) cp -R $(PRODUCT_OUT)/../../../../device/sony/nypon/config/root/init.environ.rc $(PRODUCT_OUT)/combinedroot/
+	$(hide) cp -R $(PRODUCT_OUT)/../../../../device/sony/nypon/prebuilt/root/default.prop $(PRODUCT_OUT)/combinedroot/
+	$(hide) cp -R $(PRODUCT_OUT)/../../../../device/sony/nypon/prebuilt/root/init.environ.rc $(PRODUCT_OUT)/combinedroot/
 	$(hide) cp -R $(PRODUCT_OUT)/../../../../device/sony/nypon/recovery/init.rc $(PRODUCT_OUT)/recovery/root/
 	$(hide) $(MKBOOTFS) $(PRODUCT_OUT)/recovery/root > $(PRODUCT_OUT)/recoveryforkexec.cpio
 	$(hide) cat $(PRODUCT_OUT)/recoveryforkexec.cpio | gzip > $(PRODUCT_OUT)/recoveryforkexec.fs
