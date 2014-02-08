@@ -112,7 +112,7 @@ RECOVERY_NAME := CWM-NYPON
 COMMON_GLOBAL_CFLAGS += -DXPERIA_CWM_TOUCH
 
 #CWM recovery fix
-TARGET_RECOVERY_FSTAB = device/sony/nypon/config/root/fstab.st-ericsson
+TARGET_RECOVERY_FSTAB = device/sony/nypon/prebuilt/root/fstab.st-ericsson
 RECOVERY_FSTAB_VERSION := 2
 
 #Vold
