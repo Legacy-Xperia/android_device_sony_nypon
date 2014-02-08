@@ -73,7 +73,7 @@ BOARD_HOSTAPD_PRIVATE_LIB := private_lib_nl80211_cmd
 
 # Graphics
 USE_OPENGL_RENDERER := true
-BOARD_EGL_CFG := device/sony/nypon/config/egl.cfg
+BOARD_EGL_CFG := device/sony/nypon/prebuilt/config/egl.cfg
 COMMON_GLOBAL_CFLAGS += -DSTE_HARDWARE
 BOARD_HAVE_PIXEL_FORMAT_INFO := true
 
@@ -135,7 +135,7 @@ BOARD_VOLD_MAX_PARTITIONS := 16
 
 BOARD_BOOTIMAGE_PARTITION_SIZE := 0x01400000
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 0x01400000
-BOARD_CMDLINE := device/sony/nypon/config/cmdline.txt
+BOARD_CMDLINE := device/sony/nypon/prebuilt/config/cmdline.txt
 
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 1056964608
 BOARD_USERDATA_PARTITION_SIZE := 2147483648
