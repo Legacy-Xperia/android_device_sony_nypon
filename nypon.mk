@@ -200,8 +200,8 @@ PRODUCT_COPY_FILES += \
     device/sony/nypon/prebuilt/config/gps.conf:system/etc/gps.conf\
     device/sony/nypon/prebuilt/config/cacert.txt:system/etc/suplcert/cacert.txt
 
-PRODUCT_PROPERTY_OVERRIDES += \
-    sys.mem.max_hidden_apps=10
+#PRODUCT_PROPERTY_OVERRIDES += \
+#sys.mem.max_hidden_apps=10
 
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp \
