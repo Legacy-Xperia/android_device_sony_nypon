@@ -137,6 +137,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     lights.montblanc
 
+# OTA app (https://github.com/percy-g2/android_packages_apps_OTA-center)
+PRODUCT_PACKAGES += \
+    androdevlinuxCenter
+
 # Misc
 PRODUCT_PACKAGES += \
     com.android.future.usb.accessory
