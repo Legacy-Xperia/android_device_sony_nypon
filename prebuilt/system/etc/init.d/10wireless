@@ -11,13 +11,6 @@ if [ ! -f /data/misc/wifi/hostapd.conf ]; then
     chmod 660 /data/misc/wifi/hostapd.conf
 fi
 
-# copy p2p_supplicant.conf to data wifi if it doesnt exists...
-if [ ! -f /data/misc/wifi/p2p_supplicant.conf ]; then
-    cp /system/etc/wifi/p2p_supplicant.conf /data/misc/wifi/p2p_supplicant.conf
-    chown wifi.wifi /data/misc/wifi/p2p_supplicant.conf
-    chmod 660 /data/misc/wifi/p2p_supplicant.conf
-fi
-
 # create ipconfig.txt if not exisr - needed for WifiConfigStore
 if [ ! -f /data/misc/wifi/ipconfig.txt ]; then
      touch /data/misc/wifi/ipconfig.txt
