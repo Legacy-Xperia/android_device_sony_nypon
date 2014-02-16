@@ -16,6 +16,10 @@
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 
+TARGET_SPECIFIC_HEADER_PATH := device/sony/nypon/include
+TARGET_SPECIFIC_HEADER_PATH += device/sony/nypon/hardware
+TARGET_SPECIFIC_HEADER_PATH += hardware/semc/bluetooth/glib
+TARGET_SPECIFIC_HEADER_PATH += hardware/semc/bluetooth/bluez/lib
 
 # Inherit the proprietary counterpart
 $(call inherit-product-if-exists, vendor/sony/nypon/nypon-vendor.mk)
@@ -268,7 +272,7 @@ endif
 PRODUCT_COPY_FILES += \
     $(NFCEE_ACCESS_PATH):system/etc/nfcee_access.xml
 
-# patched JB cn_binary needed for mobile network for CM10.2 only
+# patched JB cn_binary needed for mobile network for 4.3.1
 PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/prebuilt/cn_server:system/bin/cn_server
 

@@ -75,7 +75,7 @@ COMMON_GLOBAL_CFLAGS += -DEGL_NEEDS_FNW
 TARGET_PROVIDES_LIBLIGHTS := true
 
 # ril implementation
-BOARD_RIL_CLASS := ../../../device/sony/nypon/telephony-common/
+#BOARD_RIL_CLASS := ../../../device/sony/nypon/telephony-common/
 
 # Custom boot
 TARGET_PROVIDES_INIT_RC := true
@@ -122,3 +122,6 @@ TARGET_USERIMAGES_USE_EXT4 := true
 BOARD_SDCARD_INTERNAL_DEVICE := /dev/block/mmcblk0p14
 
 TARGET_OTA_ASSERT_DEVICE := LT22i,LT22a,nypon
+
+#TWRP
+DEVICE_RESOLUTION := 540x960
