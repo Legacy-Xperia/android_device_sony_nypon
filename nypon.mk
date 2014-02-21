@@ -59,7 +59,6 @@ PRODUCT_COPY_FILES += \
 
 #OTA Service
 PRODUCT_COPY_FILES += \
-    device/sony/nypon/prebuilt/system/app/GooManager.apk:system/app/GooManager.apk \
     device/sony/nypon/prebuilt/system/app/OTAUpdater.apk:system/app/OTAUpdater.apk
 
 # Filesystem management tools
@@ -312,7 +311,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=240
 
 #Goo Manager support
-PRODUCT_PROPERTY_OVERRIDES += \
+#PRODUCT_PROPERTY_OVERRIDES += \
     ro.goo.developerid=percy215 \
     ro.goo.board=$(subst full_,,$(TARGET_PRODUCT)) \
     ro.goo.rom=Legacy-Xperia_cm \
@@ -321,5 +320,5 @@ PRODUCT_PROPERTY_OVERRIDES += \
 #OTA Updater App
 PRODUCT_PROPERTY_OVERRIDES += \
     otaupdater.otaid=88999 \
-    otaupdater.otaver=2 \
+    otaupdater.otaver=3 \
     otaupdater.otatime=$(shell date +%s)
