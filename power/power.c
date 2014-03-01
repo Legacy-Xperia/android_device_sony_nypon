@@ -1,6 +1,8 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
- * Copyright (c) 2012 The CyanogenMod Project
+ * Copyright (C) ST-Ericsson SA 2012. All rights reserved.
+ * This code is ST-Ericsson proprietary and confidential.
+ * Any use of the code for whatever purpose is subject to
+ * specific written permission of ST-Ericsson SA.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,223 +20,362 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <fcntl.h>
+#include <pthread.h>
 
-#define LOG_TAG "CM PowerHAL"
+#define LOG_TAG "Ux500 PowerHAL"
 #include <utils/Log.h>
 
 #include <hardware/hardware.h>
 #include <hardware/power.h>
 
-#define SCALING_GOVERNOR_PATH "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
-#define BOOSTPULSE_ONDEMAND "/sys/devices/system/cpu/cpufreq/ondemand/boostpulse"
-#define BOOSTPULSE_INTERACTIVE "/sys/devices/system/cpu/cpufreq/interactive/boostpulse"
-#define NOTIFY_ON_MIGRATE "/dev/cpuctl/apps/cpu.notify_on_migrate"
+/* Paths to device nodes */
+#define APE_OPP "/dev/ape_opp"
+#define DDR_OPP "/dev/ddr_opp"
+#define ARM_KHZ "/dev/arm_khz"
 
-struct cm_power_module {
-    struct power_module base;
-    pthread_mutex_t lock;
-    int boostpulse_fd;
-    int boostpulse_warned;
-};
+/* QoS levels*/
+#define DISABLE_QOS	0
+#define QOS_25		25
+#define QOS_50		50
+#define QOS_100		100
 
-static char governor[20];
+/* Default delay until deferred work kicks in */
+#define DELAY 100000 /* 100ms should be enough */
 
-static int sysfs_read(char *path, char *s, int num_bytes)
+struct power_state {
+	unsigned int ape_opp;
+	unsigned int ddr_opp;
+	unsigned int arm_khz;
+	int fd_ape;
+	int fd_ddr;
+	int fd_arm;
+	void *pending_completion;
+	pthread_t thread;
+	struct timeval expire_time;
+} state;
+
+pthread_mutex_t state_lock;
+
+static void dump_power_state(void)
 {
-    char buf[80];
-    int count;
-    int ret = 0;
-    int fd = open(path, O_RDONLY);
-
-    if (fd < 0) {
-        strerror_r(errno, buf, sizeof(buf));
-        ALOGE("Error opening %s: %s\n", path, buf);
-
-        return -1;
-    }
-
-    if ((count = read(fd, s, num_bytes - 1)) < 0) {
-        strerror_r(errno, buf, sizeof(buf));
-        ALOGE("Error writing to %s: %s\n", path, buf);
-
-        ret = -1;
-    } else {
-        s[count] = '\0';
-    }
-
-    close(fd);
-
-    return ret;
+#ifdef DEBUG
+	ALOGD("state: ape_opp: %d\n", state.ape_opp);
+	ALOGD("state: ddr_opp: %d\n", state.ddr_opp);
+	ALOGD("state: arm_khz: %d\n", state.arm_khz);
+	ALOGD("state: fd_ape: 0x%08x\n", state.fd_ape);
+	ALOGD("state: fd_ddr: 0x%08x\n", state.fd_ddr);
+	ALOGD("state: fd_arm: 0x%08x\n", state.fd_arm);
+	ALOGD("state: pending_completion: %p\n", state.pending_completion);
+	ALOGD("state: thread: %lu\n", state.thread);
+	ALOGD("state: expire_time: sec: %lu\n", state.expire_time.tv_sec);
+	ALOGD("state: expire_time: usec: %lu\n", state.expire_time.tv_usec);
+#endif
 }
 
-static void sysfs_write(char *path, char *s)
+static void qos_get(char *path, unsigned int QoS_level)
 {
-    char buf[80];
-    int len;
-    int fd = open(path, O_WRONLY);
+	char buf[80];
+	int *fd;
+	unsigned int *QoS;
 
-    if (fd < 0) {
-        strerror_r(errno, buf, sizeof(buf));
-        ALOGE("Error opening %s: %s\n", path, buf);
-        return;
-    }
+#ifdef DEBUG
+	ALOGD("New QoS %d requested for %s\n", QoS_level, path);
+#endif
 
-    len = write(fd, s, strlen(s));
-    if (len < 0) {
-        strerror_r(errno, buf, sizeof(buf));
-        ALOGE("Error writing to %s: %s\n", path, buf);
-    }
+	if (QoS_level == DISABLE_QOS)
+		return;
 
-    close(fd);
+	if (strcmp(path, APE_OPP) == 0) {
+		fd = &state.fd_ape;
+		QoS = &state.ape_opp;
+	} else if (strcmp(path, DDR_OPP) == 0) {
+		fd = &state.fd_ddr;
+		QoS = &state.ddr_opp;
+	} else if (strcmp(path, ARM_KHZ) == 0) {
+		fd = &state.fd_arm;
+		QoS = &state.arm_khz;
+	} else {
+		ALOGE("Invalid file path");
+		return;
+	}
+
+	/*
+	 * Check whether device node is already open.
+	 * N.B. Android PowerManagerService misbehave and don't call our init
+	 * function, thus we have to treat file descriptor zero as invalid.
+	 */
+	if (*fd <= 0) {
+		*fd = open(path, O_WRONLY);
+#ifdef DEBUG
+		ALOGD("Opened %s, with file descriptor 0x%08x\n", path, *fd);
+#endif
+	}
+
+	if (*fd < 0) {
+		strerror_r(errno, buf, sizeof(buf));
+		ALOGE("Error opening %s: %s\n", path, buf);
+		return;
+	}
+
+	/* Update device node with a QoS level */
+	if (write(*fd, &QoS_level, sizeof(QoS_level)) != sizeof(QoS_level)) {
+		strerror_r(errno, buf, sizeof(buf));
+		ALOGE("Error writing to %s: %s\n", path, buf);
+		return;
+	}
+
+	*QoS = QoS_level;
 }
 
-static int get_scaling_governor() {
-    if (sysfs_read(SCALING_GOVERNOR_PATH, governor,
-                sizeof(governor)) == -1) {
-        return -1;
-    } else {
-        // Strip newline at the end.
-        int len = strlen(governor);
+static void qos_put(char *path)
+{
+	char buf[80];
+	int *fd;
+	unsigned int *QoS;
 
-        len--;
+#ifdef DEBUG
+	ALOGD("QoS discarded for %s\n", path);
+#endif
 
-        while (len >= 0 && (governor[len] == '\n' || governor[len] == '\r'))
-            governor[len--] = '\0';
-    }
+	if (strcmp(path, APE_OPP) == 0) {
+		fd = &state.fd_ape;
+		QoS = &state.ape_opp;
+	} else if (strcmp(path, DDR_OPP) == 0) {
+		fd = &state.fd_ddr;
+		QoS = &state.ddr_opp;
+	} else if (strcmp(path, ARM_KHZ) == 0) {
+		fd = &state.fd_arm;
+		QoS = &state.arm_khz;
+	} else {
+		ALOGE("Invalid file path");
+		return;
+	}
 
-    return 0;
+	if (*fd < 0) {
+		ALOGE("Can not close %s, file not open\n", path);
+		return;
+	}
+
+	if (close(*fd) < 0) {
+		strerror_r(errno, buf, sizeof(buf));
+		ALOGE("Error closing %s: %s\n", path, buf);
+		return;
+	}
+
+	*QoS = DISABLE_QOS;
+
+	/* Invalidate filedescriptor */
+	*fd = -1;
 }
 
-static void cm_power_set_interactive(struct power_module *module, int on)
+static void * start_work(void * arg)
 {
-    if (strncmp(governor, "ondemand", 8) == 0)
-        sysfs_write(NOTIFY_ON_MIGRATE, on ? "1" : "0");
+	struct timeval now;
+
+#ifdef DEBUG
+	ALOGD("Work thread started with ID: %lu, arg: %p\n",
+		pthread_self(), arg);
+#endif
+
+	do {
+		/*
+		 * Timer for disabling this hint...
+		 * On average we only oversleep by DELAY/4.
+		 */
+		usleep(DELAY/2);
+		gettimeofday(&now, NULL);
+	} while (state.pending_completion ||
+		timercmp(&state.expire_time, &now, >) > 0);
+
+#ifdef DEBUG
+	ALOGD("deferred work expired at sec %lu, usec %lu\n",
+		(long) now.tv_sec, (long) now.tv_usec);
+#endif
+
+	pthread_mutex_lock(&state_lock);
+	qos_put(APE_OPP);
+	qos_put(DDR_OPP);
+	state.thread = (pthread_t) NULL;
+	pthread_mutex_unlock(&state_lock);
+
+	return arg;
 }
 
-
-static void configure_governor()
+static void ux500_power_init(struct power_module *module)
 {
-    cm_power_set_interactive(NULL, 1);
+#ifdef DEBUG
+	ALOGD("initializing power module\n");
+#endif
 
-    if (strncmp(governor, "ondemand", 8) == 0) {
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/up_threshold", "90");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/io_is_busy", "0");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor", "1");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/down_differential", "10");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/up_threshold_multi_core", "60");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/down_differential_multi_core", "3");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/optimal_freq", "918000");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/sync_freq", "1026000");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/up_threshold_any_cpu_load", "80");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/ondemand/sampling_rate", "20000");
+	pthread_mutex_lock(&state_lock);
+	/* Invalidate all filedescriptors */
+	state.fd_ape = -1;
+	state.fd_ddr = -1;
+	state.fd_arm = -1;
+	pthread_mutex_unlock(&state_lock);
 
-    } else if (strncmp(governor, "interactive", 11) == 0) {
-        sysfs_write("/sys/devices/system/cpu/cpufreq/interactive/min_sample_time", "90000");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/interactive/io_is_busy", "1");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/interactive/hispeed_freq", "1134000");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/interactive/above_hispeed_delay", "30000");
-        sysfs_write("/sys/devices/system/cpu/cpufreq/interactive/timer_rate", "30000");
-    }
+	dump_power_state();
 }
 
-static int boostpulse_open(struct cm_power_module *cm)
+static void ux500_power_set_interactive(struct power_module *module, int on)
 {
-    char buf[80];
-
-    pthread_mutex_lock(&cm->lock);
-
-    if (cm->boostpulse_fd < 0) {
-        if (get_scaling_governor() < 0) {
-            ALOGE("Can't read scaling governor.");
-            cm->boostpulse_warned = 1;
-        } else {
-            if (strncmp(governor, "ondemand", 8) == 0)
-                cm->boostpulse_fd = open(BOOSTPULSE_ONDEMAND, O_WRONLY);
-            else if (strncmp(governor, "interactive", 11) == 0)
-                cm->boostpulse_fd = open(BOOSTPULSE_INTERACTIVE, O_WRONLY);
-
-            if (cm->boostpulse_fd < 0 && !cm->boostpulse_warned) {
-                strerror_r(errno, buf, sizeof(buf));
-                ALOGV("Error opening boostpulse: %s\n", buf);
-                cm->boostpulse_warned = 1;
-            } else if (cm->boostpulse_fd > 0) {
-                configure_governor();
-                ALOGD("Opened %s boostpulse interface", governor);
-            }
-        }
-    }
-
-    pthread_mutex_unlock(&cm->lock);
-    return cm->boostpulse_fd;
+#ifdef DEBUG
+	ALOGD("setInteractive, on: %s\n", on ? "true" : "false");
+#endif
 }
 
-static void cm_power_hint(struct power_module *module, power_hint_t hint,
-                            void *data)
+static void ux500_power_hint(struct power_module *module, power_hint_t hint,
+		void *data)
 {
-    struct cm_power_module *cm = (struct cm_power_module *) module;
-    char buf[80];
-    int len;
-    int duration = 1;
+	char buf[80];
+	int QoS_level = (int) data;
+	struct timeval now, res, delay;
 
-    switch (hint) {
-    case POWER_HINT_INTERACTION:
-    case POWER_HINT_CPU_BOOST:
-        if (boostpulse_open(cm) >= 0) {
-            if (data != NULL)
-                duration = (int) data;
+	delay.tv_sec = 0;
+	delay.tv_usec = DELAY;
 
-            snprintf(buf, sizeof(buf), "%d", duration);
-            len = write(cm->boostpulse_fd, buf, strlen(buf));
+#ifdef DEBUG
+	ALOGD("powerHint, hint: 0x%08x, QoS_level: %d\n", hint, QoS_level);
+#endif
+	dump_power_state();
 
-            if (len < 0) {
-                strerror_r(errno, buf, sizeof(buf));
-                ALOGE("Error writing to boostpulse: %s\n", buf);
+	switch (hint) {
+	case POWER_HINT_VSYNC:
+		pthread_mutex_lock(&state_lock);
+		switch (QoS_level) {
+		case DISABLE_QOS:
+			/* update deferred work expire time */
+			gettimeofday(&now, NULL);
+			timeradd(&now, &delay, &res);
 
-                pthread_mutex_lock(&cm->lock);
-                close(cm->boostpulse_fd);
-                cm->boostpulse_fd = -1;
-                cm->boostpulse_warned = 0;
-                pthread_mutex_unlock(&cm->lock);
-            }
-        }
-        break;
+			state.expire_time = res;
+			state.pending_completion = data;
 
-    case POWER_HINT_VSYNC:
-        break;
+#ifdef DEBUG
+			ALOGD("updated deferred work expiry time to "
+					"sec %lu, usec %lu\n",
+					(long) res.tv_sec, (long) res.tv_usec);
+#endif
 
-    default:
-        break;
-    }
-}
+			if (state.thread) {
+#ifdef DEBUG
+				ALOGD("An existing thread with ID: %lu is "
+					"running\n", state.thread);
+#endif
+			} else {
 
-static void cm_power_init(struct power_module *module)
-{
-    get_scaling_governor();
-    configure_governor();
+				/*
+				 * Spawn a new thread to create a deferred
+				 * work, that way we can avoid re-opening the
+				 * dev nodes immediately after closing them.
+				 * Android tend to give us a new hint just short
+				 * after disabling the previous one.
+				 */
+				if (pthread_create(&state.thread, NULL,
+							start_work, NULL)) {
+					strerror_r(errno, buf, sizeof(buf));
+					ALOGE("Error creating thread: %s\n",
+							buf);
+				}
+
+			}
+			break;
+		case QOS_25:
+			if (state.ape_opp < QOS_50 ||
+				state.ddr_opp < QOS_25) {
+
+				qos_get(APE_OPP, QOS_50);
+				qos_get(DDR_OPP, QOS_25);
+			}
+			break;
+
+		case QOS_50:
+			if (state.ape_opp < QOS_50) {
+				qos_get(APE_OPP, QOS_50);
+			}
+			if (state.ddr_opp < QOS_50) {
+				qos_get(DDR_OPP, QOS_50);
+			}
+
+			break;
+		case QOS_100:
+		default:
+			if (state.ape_opp < QOS_100 ||
+				state.ddr_opp < QOS_100) {
+
+				qos_get(APE_OPP, QOS_100);
+				qos_get(DDR_OPP, QOS_100);
+			}
+			state.pending_completion = data;
+			break;
+		}
+		pthread_mutex_unlock(&state_lock);
+		break;
+	case POWER_HINT_INTERACTION:
+
+		/* update deferred work expire time */
+		gettimeofday(&now, NULL);
+		timeradd(&now, &delay, &res);
+
+		pthread_mutex_lock(&state_lock);
+		state.expire_time = res;
+		pthread_mutex_unlock(&state_lock);
+
+#ifdef DEBUG
+		ALOGD("updated deferred work expiry time to "
+				"sec %lu, usec %lu\n",
+				(long) res.tv_sec, (long) res.tv_usec);
+#endif
+
+		if (state.thread) {
+#ifdef DEBUG
+			ALOGD("An existing thread with ID: %lu is running\n",
+				state.thread);
+#endif
+			return;
+		}
+
+		pthread_mutex_lock(&state_lock);
+		if (state.ape_opp < QOS_100 || state.ddr_opp < QOS_100) {
+			qos_get(APE_OPP, QOS_100);
+			qos_get(DDR_OPP, QOS_100);
+		}
+
+		/*
+		 * Spawn a new thread to create a deferred work. We cannot
+		 * sleep in the callers context 'cause it will make the UI
+		 * experience horrible.
+		 */
+		if (pthread_create(&state.thread, NULL, start_work, NULL)) {
+			strerror_r(errno, buf, sizeof(buf));
+			ALOGE("Error creating thread: %s\n", buf);
+		}
+
+		pthread_mutex_unlock(&state_lock);
+		break;
+	default:
+		break;
+	}
 }
 
 static struct hw_module_methods_t power_module_methods = {
-    .open = NULL,
+	.open = NULL,
 };
 
-struct cm_power_module HAL_MODULE_INFO_SYM = {
-    base: {
-        common: {
-            tag: HARDWARE_MODULE_TAG,
-            module_api_version: POWER_MODULE_API_VERSION_0_2,
-            hal_api_version: HARDWARE_HAL_API_VERSION,
-            id: POWER_HARDWARE_MODULE_ID,
-            name: "CM Power HAL",
-            author: "The CyanogenMod Project",
-            methods: &power_module_methods,
-        },
-       init: cm_power_init,
-       setInteractive: cm_power_set_interactive,
-       powerHint: cm_power_hint,
-    },
+struct power_module HAL_MODULE_INFO_SYM = {
+	.common = {
+		.tag = HARDWARE_MODULE_TAG,
+		.module_api_version = POWER_MODULE_API_VERSION_0_2,
+		.hal_api_version = HARDWARE_HAL_API_VERSION,
+		.id = POWER_HARDWARE_MODULE_ID,
+		.name = "Ux500 Power HAL",
+		.author = "Daniel WILLERUD for ST-Ericsson",
+		.methods = &power_module_methods,
+	},
 
-    lock: PTHREAD_MUTEX_INITIALIZER,
-    boostpulse_fd: -1,
-    boostpulse_warned: 0,
+	.init = ux500_power_init,
+	.setInteractive = ux500_power_set_interactive,
+	.powerHint = ux500_power_hint,
 };
