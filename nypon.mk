@@ -253,7 +253,7 @@ PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/prebuilt/config/so34-buttons.kl:system/usr/keylayout/so34-buttons.kl \
    $(LOCAL_PATH)/prebuilt/config/STMPE-keypad.kl:system/usr/keylayout/STMPE-keypad.kl \
    $(LOCAL_PATH)/prebuilt/config/tc3589x-keypad.kl:system/usr/keylayout/tc3589x-keypad.kl \
-   $(LOCAL_PATH)/prebuilt/config/ux500-ske-keypad.kl:system/usr/keylayout/ux500-ske-keypad.kl.kl \
+   $(LOCAL_PATH)/prebuilt/config/ux500-ske-keypad.kl:system/usr/keylayout/ux500-ske-keypad.kl \
    $(LOCAL_PATH)/prebuilt/config/ux500-ske-keypad-qwertz.kl:system/usr/keylayout/ux500-ske-keypad-qwertz.kl \
    $(LOCAL_PATH)/prebuilt/config/sensor00_f11_sensor0.idc:system/usr/idc/sensor00_f11_sensor0.idc \
    $(LOCAL_PATH)/prebuilt/config/synaptics_rmi4_i2c.idc:system/usr/idc/synaptics_rmi4_i2c.idc
