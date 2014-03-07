@@ -321,5 +321,5 @@ PRODUCT_PROPERTY_OVERRIDES += \
 #OTA Updater App
 PRODUCT_PROPERTY_OVERRIDES += \
     otaupdater.otaid=88999 \
-    otaupdater.otaver=3 \
+    otaupdater.otaver=4 \
     otaupdater.otatime=$(shell date +%s)
