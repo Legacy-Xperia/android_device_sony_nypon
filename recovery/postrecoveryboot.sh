@@ -1,4 +1,3 @@
 #!/system/bin/sh
-touch /cache/recovery/boot;
+rm -f /cache/recovery/boot;
 sync;
-reboot;
