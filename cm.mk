@@ -28,5 +28,8 @@ $(call inherit-product, vendor/cm/config/nfc_enhanced.mk)
 
 PRODUCT_BUILD_PROP_OVERRIDES += PRODUCT_NAME=LT22i_1257-4009 BUILD_FINGERPRINT=SEMC/LT22i_1257-4009/LT22i:4.4/6.1.A.0.452/O_5_zw:user/release-keys PRIVATE_BUILD_DESC="LT22i-user 4.4 6.1.A.0.452 O_5_zw test-keys"
 
+#Sony Apps in play store
+PRODUCT_GMS_CLIENTID_BASE := android-sonyericsson
+
 PRODUCT_NAME := cm_nypon
 PRODUCT_DEVICE := nypon
