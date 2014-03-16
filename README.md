@@ -44,6 +44,21 @@ You are ready to build :
 Credits:- Munjeni , Joise87 , 95A31 , mike(semc-2011 DEV) , Gava97 ,Andrewasth ,areshinakya ,FXP Team , CyanogenMod , Sony , Devswift1 and Paul.L for early help in cm-10.1 and Users ;)
 
 
+Sources are now in bitbucket and i have closed all the sources , if anyone interested PM me .
+
+<manifest>
+ 
+<remote name="bitbucket"
+          fetch="git+ssh://git@bitbucket.org/" />
+
+<project path="kernel/sony/u8500" name="percy_g2/android_kernel_sony_u8500" remote="bitbucket" revision="cm-11" />
+<project path="vendor/sony/nypon" name="percy_g2/android_vendor_sony-nypon" remote="bitbucket" revision="master" />
+<project path="device/sony/nypon" name="percy_g2/android_device_sony_nypon" remote="bitbucket" revision="cm-11.0" />
+<project path="hardware/semc" name="percy_g2/android_hardware_semc" remote="bitbucket" revision="master" />
+ 
+ 
+</manifest>
+
 ENJOY! 
 
 
