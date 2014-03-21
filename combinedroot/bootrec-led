@@ -1,0 +1,139 @@
+#!/sbin/busybox sh
+
+# trigger button-backlight
+busybox echo '10' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '0' > /sys/class/leds/m-key-red/brightness
+busybox echo '0' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '0' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.2
+busybox echo '80' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '0' > /sys/class/leds/m-key-red/brightness
+busybox echo '0' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '0' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.2
+busybox echo '160' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '0' > /sys/class/leds/m-key-red/brightness
+busybox echo '0' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '0' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.2
+busybox echo '255' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '0' > /sys/class/leds/m-key-red/brightness
+busybox echo '0' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '0' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.2
+
+busybox echo '255' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '20' > /sys/class/leds/m-key-red/brightness
+busybox echo '10' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '0' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.2
+busybox echo '255' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '60' > /sys/class/leds/m-key-red/brightness
+busybox echo '30' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '0' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.2
+busybox echo '255' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '120' > /sys/class/leds/m-key-red/brightness
+busybox echo '60' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '0' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.2
+busybox echo '255' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '200' > /sys/class/leds/m-key-red/brightness
+busybox echo '100' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '0' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.2
+
+busybox echo '255' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '200' > /sys/class/leds/m-key-red/brightness
+busybox echo '100' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '10' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.2
+busybox echo '255' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '200' > /sys/class/leds/m-key-red/brightness
+busybox echo '100' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '80' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.2
+busybox echo '255' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '200' > /sys/class/leds/m-key-red/brightness
+busybox echo '100' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '160' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.2
+busybox echo '255' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '200' > /sys/class/leds/m-key-red/brightness
+busybox echo '100' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '255' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness
+busybox sleep 0.8
+
+# trigger vibration
+busybox echo '200' > /sys/class/timed_output/vibrator/enable
+
+# disable LED bar
+busybox echo '0' > /sys/class/leds/l-key-red/brightness
+busybox echo '0' > /sys/class/leds/l-key-green/brightness
+busybox echo '0' > /sys/class/leds/l-key-blue/brightness
+busybox echo '0' > /sys/class/leds/m-key-red/brightness
+busybox echo '0' > /sys/class/leds/m-key-green/brightness
+busybox echo '0' > /sys/class/leds/m-key-blue/brightness
+busybox echo '0' > /sys/class/leds/r-key-red/brightness
+busybox echo '0' > /sys/class/leds/r-key-green/brightness
+busybox echo '0' > /sys/class/leds/r-key-blue/brightness

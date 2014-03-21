@@ -65,7 +65,9 @@ PRODUCT_COPY_FILES += \
 # Filesystem management tools
 PRODUCT_PACKAGES += \
     make_ext4fs \
-    setup_fs
+    setup_fs \
+    e2fsck \
+    f2fs \
 
 # Hostapd
 PRODUCT_PACKAGES += \
@@ -183,7 +185,6 @@ PRODUCT_COPY_FILES += \
 
 # Recovery bootstrap script
 PRODUCT_COPY_FILES += \
-    device/sony/nypon/recovery/bootrec:root/sbin/bootrec \
     device/sony/nypon/recovery/usbid_init.sh:root/sbin/usbid_init.sh \
     device/sony/nypon/recovery/postrecoveryboot.sh:root/sbin/postrecoveryboot.sh
 
