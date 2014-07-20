@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2011 The CyanogenMod Project
+# Copyright (C) 2014 Legacy-Xperia Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -86,31 +86,24 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libasound
 
-# Bluez
+# BlueZ
 PRODUCT_PACKAGES += \
-    libbtio \
-    libbluetooth
-
-# Bluez 5.13 daemon, android hal and haltest
-  PRODUCT_PACKAGES += \
-    bluetoothd \
-    bluetooth.default \
-    audio.a2dp.default \
-    haltest
-
-# Bluez 5.13 tools
-  PRODUCT_PACKAGES += \
-    hciattach \
-    hciconfig \
-    hcitool \
-    hcidump \
-    rfcomm \
-    rctest \
-    l2test \
-    l2ping \
-    sdptool \
-    ciptool \
-    bccmd
+        libglib \
+        bluetoothd \
+        bluetooth.default \
+        haltest \
+        btmon \
+        btproxy \
+        audio.a2dp.default \
+        l2test \
+        bluetoothd-snoop \
+        init.bluetooth.rc \
+        btmgmt \
+        hcitool \
+        l2ping \
+        avtest \
+        libsbc \
+        hciattach
 
 # Bluez 5.13 btmon
 #PRODUCT_PACKAGES += \
@@ -228,7 +221,7 @@ PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/config/so34-buttons.kl:system/usr/keylayout/so34-buttons.kl \
    $(LOCAL_PATH)/config/STMPE-keypad.kl:system/usr/keylayout/STMPE-keypad.kl \
    $(LOCAL_PATH)/config/tc3589x-keypad.kl:system/usr/keylayout/tc3589x-keypad.kl \
-   $(LOCAL_PATH)/config/ux500-ske-keypad.kl:system/usr/keylayout/ux500-ske-keypad.kl.kl \
+   $(LOCAL_PATH)/config/ux500-ske-keypad.kl:system/usr/keylayout/ux500-ske-keypad.kl \
    $(LOCAL_PATH)/config/ux500-ske-keypad-qwertz.kl:system/usr/keylayout/ux500-ske-keypad-qwertz.kl \
    $(LOCAL_PATH)/config/sensor00_f11_sensor0.idc:system/usr/idc/sensor00_f11_sensor0.idc \
    $(LOCAL_PATH)/config/synaptics_rmi4_i2c.idc:system/usr/idc/synaptics_rmi4_i2c.idc
@@ -237,12 +230,7 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
    $(LOCAL_PATH)/config/cflashlib.cfg:system/etc/cflashlib.cfg \
    $(LOCAL_PATH)/config/flashled_param_config.cfg:system/etc/flashled_param_config.cfg
-   
-# Barometar permissions
-PRODUCT_COPY_FILES += \
-   frameworks/native/data/etc/android.hardware.sensor.barometer.xml:system/etc/permissions/android.hardware.sensor.barometer.xml
-   
-   
+
 # NFC Support
 PRODUCT_PACKAGES += \
     libnfc \

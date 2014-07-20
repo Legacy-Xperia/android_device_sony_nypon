@@ -5,8 +5,6 @@ USE_CAMERA_STUB := true
 
 TARGET_SPECIFIC_HEADER_PATH := device/sony/nypon/include
 TARGET_SPECIFIC_HEADER_PATH += device/sony/nypon/hardware
-TARGET_SPECIFIC_HEADER_PATH += hardware/semc/bluetooth/glib
-TARGET_SPECIFIC_HEADER_PATH += hardware/semc/bluetooth/bluez/lib
 
 TARGET_NO_BOOTLOADER := true
 TARGET_NO_RADIOIMAGE := true
@@ -59,11 +57,7 @@ COMMON_GLOBAL_CFLAGS += -DUSES_TI_MAC80211 -DCONFIG_DRIVER_NL80211
 USE_OPENGL_RENDERER := true
 BOARD_EGL_CFG := device/sony/nypon/config/egl.cfg
 COMMON_GLOBAL_CFLAGS += -DSTE_HARDWARE
-
-# jb camera
 COMMON_GLOBAL_CFLAGS += -DICS_CAMERA_BLOB
-
-# surfaceflinger support for Xperia Sola,Go...
 BOARD_EGL_NEEDS_LEGACY_FB := true
 COMMON_GLOBAL_CFLAGS += -DEGL_NEEDS_FNW
 
